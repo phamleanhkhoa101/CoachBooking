@@ -48,6 +48,9 @@
     <Reference Include="Guna.UI2, Version=2.0.4.7, Culture=neutral, PublicKeyToken=8b9d14aa5142e261, processorArchitecture=MSIL">
       <HintPath>..\packages\Guna.UI2.WinForms.2.0.4.7\lib\net48\Guna.UI2.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.13.0.4\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
@@ -311,6 +314,12 @@
     <Compile Include="GUI\Admin\UCXe.Designer.cs">
       <DependentUpon>UCXe.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\Admin\XacNhanDatVeDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\Admin\XacNhanDatVeDialog.Designer.cs">
+      <DependentUpon>XacNhanDatVeDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\Admin\XeDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -343,6 +352,7 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\MoMoPaymentService.cs" />
     <Compile Include="Utils\EmailHelper.cs" />
     <Compile Include="Utils\HashHelper.cs" />
     <Compile Include="Utils\Validation.cs" />
@@ -424,6 +434,9 @@
     <EmbeddedResource Include="GUI\Admin\UCXe.resx">
       <DependentUpon>UCXe.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Admin\XacNhanDatVeDialog.resx">
+      <DependentUpon>XacNhanDatVeDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GUI\Admin\XeDialog.resx">
       <DependentUpon>XeDialog.cs</DependentUpon>
     </EmbeddedResource>
@@ -451,19 +464,29 @@
     <None Include="EF\BXMDModel.edmx.diagram">
       <DependentUpon>BXMDModel.edmx</DependentUpon>
     </None>
+    <None Include="GUI\Admin\DATVE_DIALOG_SUMMARY.md" />
     <None Include="GUI\Admin\FINAL_GIAVETHUCTE_COMPLETE.md" />
     <None Include="GUI\Admin\FIX_ENCODING_UCDATVE_DESIGNER.md" />
+    <None Include="GUI\Admin\FIX_RADIO_BUTTON_GROUP.md" />
     <None Include="GUI\Admin\HUONG_DAN_GAN_TAI_KHOAN.md" />
+    <None Include="GUI\Admin\MOMO_FINAL_SUMMARY.md" />
+    <None Include="GUI\Admin\MOMO_INTEGRATION_GUIDE.md" />
+    <None Include="GUI\Admin\MOMO_INTEGRATION_SUMMARY.md" />
+    <None Include="GUI\Admin\MOMO_QUICK_REFERENCE.md" />
+    <None Include="GUI\Admin\MOMO_README.md" />
     <None Include="GUI\Admin\NHAN_VIEN_KHACH_HANG_README.md" />
     <None Include="GUI\Admin\QUICK_FIX_SUMMARY.md" />
     <None Include="GUI\Admin\SO_SANH_NHANVIEN_VS_KHACHHANG.md" />
     <None Include="GUI\Admin\TAI_KHOAN_README.md" />
+    <None Include="GUI\Admin\TICH_HOP_MOMO_COMPLETE.md" />
     <None Include="GUI\Admin\TICH_HOP_VAO_MAIN_ADMIN.md" />
+    <None Include="GUI\Admin\UCDATVE_AUTOSIZE_COMPLETE.md" />
     <None Include="GUI\Admin\UCDATVE_DEBUG_UPDATING_ENTRIES_ERROR.md" />
     <None Include="GUI\Admin\UCDATVE_FEATURE_TIM_KH.md" />
     <None Include="GUI\Admin\UCDATVE_FIX_COMPLETE.md" />
     <None Include="GUI\Admin\UCDATVE_FIX_DBUPDATE_EXCEPTION.md" />
     <None Include="GUI\Admin\UCDATVE_FIX_SUMMARY.md" />
+    <None Include="GUI\Admin\UCDATVE_FIX_THONGTIN_BI_CHE.md" />
     <None Include="GUI\Admin\UCDATVE_FIX_TONG_TIEN_0.md" />
     <None Include="GUI\Admin\UCDATVE_HUONG_DAN.md" />
     <None Include="GUI\Admin\UCDATVE_QUICK_START.md" />
@@ -472,6 +495,8 @@
     <None Include="GUI\Admin\UCDATVE_USE_GIAVETHUCTE.md" />
     <None Include="GUI\Admin\UCHOADON_VE_FEATURE.md" />
     <None Include="GUI\Admin\UCKHACHHANG_TESTING_GUIDE.md" />
+    <None Include="GUI\Admin\XACNHAN_DATVE_DIALOG.md" />
+    <None Include="INSTALL_NEWTONSOFT_JSON.md" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

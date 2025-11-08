@@ -3,6 +3,7 @@ using QLBXMD.EF;
 using System;
 using System.Collections.Generic;
 using System.Linq; // add
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace QLBXMD.GUI.Admin
@@ -14,7 +15,7 @@ namespace QLBXMD.GUI.Admin
 		private NhanVien nhanVien;
 		private TaiKhoanBUS taiKhoanBus = new TaiKhoanBUS();
 
-		// Collapsible groups: Chung, DanhMuc, GiaoDich, HeThong
+		// Collapsible groups: Chung, DanhMuc, HeThong
 		private class GroupState
 		{
 			public string Name { get; set; }
@@ -47,9 +48,10 @@ namespace QLBXMD.GUI.Admin
 		private void FrmMainAdmin_Load(object sender, EventArgs e)
 		{
 			sidebarButtons = new List<Button> { 
-				btnTrangChu, btnDatVe, btnNhaXe, btnLoaiXe, btnXe, 
-				btnTuyenDuong, btnChuyenXe, btnGiaVe, btnTaiXe, btnHoaDon,
-				btnKhachHang // Thêm button khách hàng
+				btnTrangChu, btnDatVe, btnHoaDon, btnKhachHang,
+				btnNhaXe, btnLoaiXe, btnXe, 
+				btnTuyenDuong, btnChuyenXe, btnGiaVe, btnTaiXe,
+				btnTaiKhoan, btnThongKe, btnPhanQuyen
 			};
 			//lblName.Text = taiKhoan.
 			lblRole.Text = taiKhoan.Quyen.TenQuyen;
@@ -64,14 +66,13 @@ namespace QLBXMD.GUI.Admin
 			// Build collapsible groups and wire click events
 			BuildGroups();
 			label1.Click += label1_Click; // Chung
-			label4.Click += label4_Click; // Giao dịch
 			// label3 click is already wired in designer
 			label5.Click += label5_Click; // Hệ thống
 			btnTrangChu.Click += btnTrangChu_Click; // Home
 			btnGiaVe.Click += btnGiaVe_Click; // Giá vé
 			btnTaiXe.Click += btnTaiXe_Click; // Tài xế
 			btnHoaDon.Click += btnHoaDon_Click; // Hóa đơn
-			btnKhachHang.Click += btnKhachHang_Click; // Khách hàng - Thêm event
+			btnKhachHang.Click += btnKhachHang_Click; // Khách hàng
 
 			ApplyPermissions();
 		}
@@ -85,7 +86,7 @@ namespace QLBXMD.GUI.Admin
 			// If not admin, treat as ticket seller: only allow Home and Booking
 			if (!isAdmin)
 			{
-				var allowedForStaff = new HashSet<Button> { btnTrangChu, btnDatVe };
+				var allowedForStaff = new HashSet<Button> { btnTrangChu, btnDatVe, btnHoaDon, btnKhachHang };
 				foreach (var btn in sidebarButtons)
 				{
 					btn.Enabled = allowedForStaff.Contains(btn);
@@ -112,8 +113,10 @@ namespace QLBXMD.GUI.Admin
 			foreach (var btn in sidebarButtons)
 			{
 				btn.BackColor = System.Drawing.Color.White;
+				btn.ForeColor = System.Drawing.Color.Black;
 			}
-			selectedButton.BackColor = System.Drawing.Color.FromArgb(41, 128, 185);
+			selectedButton.BackColor = System.Drawing.Color.FromArgb(32, 58, 115);
+			selectedButton.ForeColor = System.Drawing.Color.White;
 		}
 
 		private void btnLoaiXe_Click(object sender, EventArgs e)
@@ -188,10 +191,6 @@ namespace QLBXMD.GUI.Admin
 		{
 			ToggleGroup("Chung");
 		}
-		private void label4_Click(object sender, EventArgs e) // Giao dịch
-		{
-			ToggleGroup("GiaoDich");
-		}
 		private void label5_Click(object sender, EventArgs e) // Hệ thống
 		{
 			ToggleGroup("HeThong");
@@ -204,7 +203,7 @@ namespace QLBXMD.GUI.Admin
 
 			AddGroup(
 				"Chung",
-				new[] { "btnTrangChu", "btnDatVe" }
+				new[] { "btnTrangChu", "btnDatVe", "btnHoaDon", "btnKhachHang" }
 			);
 
 			AddGroup(
@@ -213,13 +212,8 @@ namespace QLBXMD.GUI.Admin
 			);
 
 			AddGroup(
-				"GiaoDich",
-				new[] { "btnHoaDon", "btnVe", "button1" } // include legacy 'button1' if present
-			);
-
-			AddGroup(
 				"HeThong",
-				new[] { "button4", "button3", "button2", "btnKhachHang" } // Thêm btnKhachHang vào nhóm Hệ thống
+				new[] { "btnTaiKhoan", "btnThongKe", "btnPhanQuyen" }
 			);
 
 			// After groups are defined, record original geometry for each group based on original Tops
@@ -322,17 +316,86 @@ namespace QLBXMD.GUI.Admin
 
 		private void thôngTinToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-
+			ShowControl(new UCThongTin());
 		}
 
 		private void đăngXuấtToolStripMenuItem_Click(object sender, EventArgs e)
 		{
+			DialogResult result = MessageBox.Show(
+				"Bạn có chắc chắn muốn đăng xuất?",
+				"Xác nhận đăng xuất",
+				MessageBoxButtons.YesNo,
+				MessageBoxIcon.Question
+			);
 
+			if (result == DialogResult.Yes)
+			{
+				this.Close();
+			}
 		}
 
 		private void btnSetting_Click(object sender, EventArgs e)
 		{
 			contextMenuStrip1.Show(Cursor.Position);
+		}
+
+		private void pnlMenu_Paint(object sender, PaintEventArgs e)
+		{
+
+		}
+
+		private void btnTuyenDuong_Click_1(object sender, EventArgs e)
+		{
+			ShowControl(new UCTuyenDuong());
+			HightlightButton(btnTuyenDuong);
+		}
+
+		private void btnChuyenXe_Click_1(object sender, EventArgs e)
+		{
+			ShowControl(new UCChuyenXe());
+			HightlightButton(btnChuyenXe);
+		}
+
+		private void btnGiaVe_Click_1(object sender, EventArgs e)
+		{
+			ShowControl(new UCGiaVe());
+			HightlightButton(btnGiaVe);
+		}
+
+		private void btnTaiXe_Click_1(object sender, EventArgs e)
+		{
+			ShowControl(new UCTaiXe());
+			HightlightButton(btnTaiXe);
+		}
+
+		private void btnTaiKhoan_Click(object sender, EventArgs e)
+		{
+			ShowControl(new UCTaiKhoan());
+			HightlightButton(btnTaiKhoan);
+		}
+
+		private void btnPhanQuyen_Click_1(object sender, EventArgs e)
+		{
+			ShowControl(new UCNhanVien());
+			HightlightButton(btnPhanQuyen);
+		}
+
+		private void btnThongKe_Click(object sender, EventArgs e)
+		{
+			//ShowControl(new UCTaiXe());
+			//HightlightButton(btnTaiXe);
+		}
+
+		private void btnKhachHang_Click_1(object sender, EventArgs e)
+		{
+			ShowControl(new UCKhachHang());
+			HightlightButton(btnKhachHang);
+		}
+
+		private void btnHoaDon_Click_1(object sender, EventArgs e)
+		{
+			ShowControl(new UCHoaDon());
+			HightlightButton(btnHoaDon);
 		}
 	}
 }

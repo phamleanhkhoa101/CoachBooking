@@ -353,6 +353,8 @@ namespace QLBXMD.GUI.Admin
 
 		private void CreateSeatButtons(FlowLayoutPanel panel, int startSeat, int endSeat)
 		{
+			panel.SuspendLayout();
+			
 			for (int i = startSeat; i <= endSeat; i++)
 			{
 				Button btnSeat = new Button
@@ -387,6 +389,9 @@ namespace QLBXMD.GUI.Admin
 
 				panel.Controls.Add(btnSeat);
 			}
+			
+			panel.ResumeLayout();
+			panel.PerformLayout();
 		}
 
 		private void BtnSeat_Click(object sender, EventArgs e)
@@ -433,12 +438,25 @@ namespace QLBXMD.GUI.Admin
 					? string.Join(", ", selectedSeats.OrderBy(s => s)) 
 					: "Chưa chọn";
 
-				lblThongTinChuyen.Text = $"Tuyến: {selectedDiemDi} → {selectedDiemDen}\n" +
-										 $"Ngày: {selectedNgayDi:dd/MM/yyyy}\n" +
-										 $"Ghế đã chọn: {gheDaChon}";
+				// ✅ Tạo text với line breaks rõ ràng
+				lblThongTinChuyen.Text = string.Format(
+					"Tuyến: {0} → {1}{2}" +
+					"Ngày: {3}{4}" +
+					"Ghế đã chọn: {5}",
+					selectedDiemDi, 
+					selectedDiemDen,
+					Environment.NewLine,
+					selectedNgayDi.ToString("dd/MM/yyyy"),
+					Environment.NewLine,
+					gheDaChon
+				);
 
 				decimal tongTien = selectedSeats.Count * selectedGiaVe.Value;
 				lblTongTien.Text = $"Tổng: {tongTien:#,##0} VNĐ";
+
+				// ✅ Auto-size label để hiển thị đầy đủ
+				lblThongTinChuyen.AutoSize = true;
+				lblThongTinChuyen.MaximumSize = new Size(1200, 0); // Giới hạn rộng, không giới hạn cao
 
 				// Debug
 				Console.WriteLine($"UpdateThongTinChuyen - Số ghế: {selectedSeats.Count}, Giá: {selectedGiaVe}, Tổng: {tongTien}");
@@ -583,18 +601,49 @@ namespace QLBXMD.GUI.Admin
 			// Tính tổng tiền trước khi confirm
 			decimal tienTam = selectedSeats.Count * selectedGiaVe.Value;
 
-			// Xác nhận đặt vé
-			var confirm = MessageBox.Show(
-				$"Bạn có chắc chắn muốn đặt {selectedSeats.Count} vé?\n" +
-				$"Ghế: {string.Join(", ", selectedSeats.OrderBy(s => s))}\n" +
-				$"Tổng tiền: {tienTam:#,##0} VNĐ",
-				"Xác nhận đặt vé",
-				MessageBoxButtons.YesNo,
-				MessageBoxIcon.Question
-			);
+			// ✅ Hiển thị dialog xác nhận với phương thức thanh toán
+			DateTime ngayKhoiHanh = DateTime.Now;
+			using (var db = new BXMDEntities())
+			{
+				var chuyenXe = db.ChuyenXes.FirstOrDefault(cx => cx.MaChuyen == selectedMaChuyen);
+				if (chuyenXe != null)
+				{
+					ngayKhoiHanh = chuyenXe.NgayGioKhoiHanh;
+				}
+			}
 
-			if (confirm != DialogResult.Yes) return;
+			// ✅ Lấy phương thức thanh toán từ dialog
+			string phuongThucThanhToan = "Tiền mặt";
+			using (var confirmDialog = new XacNhanDatVeDialog())
+			{
+				confirmDialog.TenKhachHang = txtTenKH.Text.Trim();
+				confirmDialog.SoDienThoai = txtSDT.Text.Trim();
+				confirmDialog.GioiTinh = cboGioiTinh.SelectedItem.ToString();
+				confirmDialog.NamSinh = dtpNamSinh.Value.Date;
+				confirmDialog.DiemDi = selectedDiemDi;
+				confirmDialog.DiemDen = selectedDiemDen;
+				confirmDialog.NgayKhoiHanh = ngayKhoiHanh;
+				confirmDialog.GheDaChon = string.Join(", ", selectedSeats.OrderBy(s => s));
+				confirmDialog.GiaVe = selectedGiaVe.Value;
+				confirmDialog.SoLuongGhe = selectedSeats.Count;
+				confirmDialog.TongTien = tienTam;
 
+				if (confirmDialog.ShowDialog() != DialogResult.OK)
+					return;
+
+				// ✅ FIX: Lưu phương thức thanh toán từ dialog
+				phuongThucThanhToan = confirmDialog.PhuongThucThanhToan;
+				Console.WriteLine($"✅ Phương thức thanh toán đã chọn: {phuongThucThanhToan}");
+			}
+
+			// ✅ Nếu chọn MoMo → Xử lý thanh toán MoMo
+			if (phuongThucThanhToan == "MoMo")
+			{
+				ProcessMoMoPayment(tienTam);
+				return;
+			}
+
+			// ✅ Tiếp tục với thanh toán tiền mặt
 			try
 			{
 				int maHD = 0;
@@ -776,7 +825,8 @@ namespace QLBXMD.GUI.Admin
 					$"Đặt vé thành công!\n" +
 					$"Mã hóa đơn: {maHD}\n" +
 					$"Số lượng vé: {soLuongVe}\n" +
-					$"Tổng tiền: {tongTien:#,##0} VNĐ",
+					$"Tổng tiền: {tongTien:#,##0} VNĐ\n" +
+					$"Phương thức thanh toán: {phuongThucThanhToan}",
 					"Thông báo",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Information
@@ -800,6 +850,90 @@ namespace QLBXMD.GUI.Admin
 				Console.WriteLine(ex.ToString());
 
 				MessageBox.Show(errorMsg, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
+
+		/// <summary>
+		/// Xử lý thanh toán MoMo
+		/// </summary>
+		private async void ProcessMoMoPayment(decimal amount)
+		{
+			try
+			{
+				// Hiển thị loading
+				this.Cursor = Cursors.WaitCursor;
+				
+				// Tạo orderId unique
+				string orderId = $"HD{DateTime.Now:yyyyMMddHHmmss}";
+				string orderInfo = $"Thanh toan ve xe - {selectedDiemDi} den {selectedDiemDen}";
+				
+				// Tạo request thanh toán MoMo
+				var momoService = new Services.MoMoPaymentService();
+				var response = await momoService.CreatePaymentRequest(
+					orderId,
+					(long)amount,
+					orderInfo
+				);
+
+				this.Cursor = Cursors.Default;
+
+				if (response.ResultCode == 0)
+				{
+					// Thành công - Mở trình duyệt với PayUrl
+					MessageBox.Show(
+						"Đang chuyển đến trang thanh toán MoMo...\n\n" +
+						"Vui lòng hoàn tất thanh toán trong trình duyệt.\n" +
+						$"Mã đơn hàng: {orderId}",
+						"Thanh toán MoMo",
+						MessageBoxButtons.OK,
+						MessageBoxIcon.Information
+					);
+
+					System.Diagnostics.Process.Start(response.PayUrl);
+
+					// ✅ TODO: Implement callback handler để cập nhật trạng thái
+					// Hiện tại chỉ mở payment page, cần implement:
+					// 1. Web API để nhận IPN callback từ MoMo
+					// 2. Verify signature
+					// 3. Cập nhật database khi thanh toán thành công
+					// 4. Hiển thị kết quả cho user
+
+					MessageBox.Show(
+						"⚠️ Lưu ý:\n" +
+						"- Sau khi thanh toán thành công trên MoMo, vui lòng quay lại ứng dụng.\n" +
+						"- Hệ thống sẽ tự động xác nhận và cập nhật trạng thái đơn hàng.\n" +
+						"- Nếu có vấn đề, vui lòng liên hệ quản trị viên.\n\n" +
+						$"Mã đơn hàng: {orderId}",
+						"Hướng dẫn",
+						MessageBoxButtons.OK,
+						MessageBoxIcon.Information
+					);
+				}
+				else
+				{
+					// Lỗi
+					MessageBox.Show(
+						$"Lỗi tạo yêu cầu thanh toán MoMo:\n\n" +
+						$"Mã lỗi: {response.ResultCode}\n" +
+						$"Thông báo: {response.Message}\n\n" +
+						$"Vui lòng thử lại hoặc chọn phương thức thanh toán khác.",
+						"Lỗi thanh toán",
+						MessageBoxButtons.OK,
+						MessageBoxIcon.Error
+					);
+				}
+			}
+			catch (Exception ex)
+			{
+				this.Cursor = Cursors.Default;
+				MessageBox.Show(
+					$"Lỗi kết nối với MoMo:\n{ex.Message}\n\n" +
+					$"Vui lòng kiểm tra kết nối internet và thử lại.",
+					"Lỗi",
+					MessageBoxButtons.OK,
+					MessageBoxIcon.Error
+				);
+				Console.WriteLine($"❌ MoMo Payment Error: {ex.ToString()}");
 			}
 		}
 

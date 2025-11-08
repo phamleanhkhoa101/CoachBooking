@@ -47,6 +47,7 @@
 			this.lblKhachHang = new System.Windows.Forms.Label();
 			this.lblKhachHangValue = new System.Windows.Forms.Label();
 			this.lblWelcome = new System.Windows.Forms.Label();
+			this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
 			this.pnlCard4.SuspendLayout();
 			this.pnlIcon4.SuspendLayout();
 			this.pnlCard3.SuspendLayout();
@@ -54,6 +55,7 @@
 			this.pnlCard2.SuspendLayout();
 			this.pnlIcon2.SuspendLayout();
 			this.pnlCard1.SuspendLayout();
+			this.flowLayoutPanel1.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// pnlCard4
@@ -63,7 +65,8 @@
 			this.pnlCard4.Controls.Add(this.pnlIcon4);
 			this.pnlCard4.Controls.Add(this.lblSoVe);
 			this.pnlCard4.Controls.Add(this.lblSoVeValue);
-			this.pnlCard4.Location = new System.Drawing.Point(1007, 177);
+			this.pnlCard4.Location = new System.Drawing.Point(935, 10);
+			this.pnlCard4.Margin = new System.Windows.Forms.Padding(20, 10, 20, 10);
 			this.pnlCard4.Name = "pnlCard4";
 			this.pnlCard4.Size = new System.Drawing.Size(269, 140);
 			this.pnlCard4.TabIndex = 9;
@@ -115,7 +118,8 @@
 			this.pnlCard3.Controls.Add(this.pnlIcon3);
 			this.pnlCard3.Controls.Add(this.lblTongDoanhThu);
 			this.pnlCard3.Controls.Add(this.lblTongDoanhThuValue);
-			this.pnlCard3.Location = new System.Drawing.Point(697, 177);
+			this.pnlCard3.Location = new System.Drawing.Point(629, 10);
+			this.pnlCard3.Margin = new System.Windows.Forms.Padding(20, 10, 20, 10);
 			this.pnlCard3.Name = "pnlCard3";
 			this.pnlCard3.Size = new System.Drawing.Size(266, 140);
 			this.pnlCard3.TabIndex = 8;
@@ -167,7 +171,8 @@
 			this.pnlCard2.Controls.Add(this.pnlIcon2);
 			this.pnlCard2.Controls.Add(this.lblSoChuyenXe);
 			this.pnlCard2.Controls.Add(this.lblSoChuyenXeValue);
-			this.pnlCard2.Location = new System.Drawing.Point(387, 177);
+			this.pnlCard2.Location = new System.Drawing.Point(323, 10);
+			this.pnlCard2.Margin = new System.Windows.Forms.Padding(20, 10, 20, 10);
 			this.pnlCard2.Name = "pnlCard2";
 			this.pnlCard2.Size = new System.Drawing.Size(266, 140);
 			this.pnlCard2.TabIndex = 7;
@@ -218,7 +223,8 @@
 			this.pnlCard1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 			this.pnlCard1.Controls.Add(this.lblKhachHang);
 			this.pnlCard1.Controls.Add(this.lblKhachHangValue);
-			this.pnlCard1.Location = new System.Drawing.Point(77, 177);
+			this.pnlCard1.Location = new System.Drawing.Point(20, 10);
+			this.pnlCard1.Margin = new System.Windows.Forms.Padding(20, 10, 20, 10);
 			this.pnlCard1.Name = "pnlCard1";
 			this.pnlCard1.Size = new System.Drawing.Size(263, 140);
 			this.pnlCard1.TabIndex = 6;
@@ -250,21 +256,31 @@
 			this.lblWelcome.AutoSize = true;
 			this.lblWelcome.Font = new System.Drawing.Font("Segoe UI", 22F, System.Drawing.FontStyle.Bold);
 			this.lblWelcome.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(108)))), ((int)(((byte)(117)))), ((int)(((byte)(125)))));
-			this.lblWelcome.Location = new System.Drawing.Point(67, 87);
+			this.lblWelcome.Location = new System.Drawing.Point(40, 40);
 			this.lblWelcome.Name = "lblWelcome";
 			this.lblWelcome.Size = new System.Drawing.Size(576, 60);
 			this.lblWelcome.TabIndex = 5;
 			this.lblWelcome.Text = "Welcome to Administrator";
 			// 
+			// flowLayoutPanel1
+			// 
+			this.flowLayoutPanel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.flowLayoutPanel1.Controls.Add(this.pnlCard1);
+			this.flowLayoutPanel1.Controls.Add(this.pnlCard2);
+			this.flowLayoutPanel1.Controls.Add(this.pnlCard3);
+			this.flowLayoutPanel1.Controls.Add(this.pnlCard4);
+			this.flowLayoutPanel1.Location = new System.Drawing.Point(29, 128);
+			this.flowLayoutPanel1.Name = "flowLayoutPanel1";
+			this.flowLayoutPanel1.Size = new System.Drawing.Size(1249, 425);
+			this.flowLayoutPanel1.TabIndex = 10;
+			// 
 			// UCTrangChu
 			// 
-			this.Controls.Add(this.pnlCard4);
-			this.Controls.Add(this.pnlCard3);
-			this.Controls.Add(this.pnlCard2);
-			this.Controls.Add(this.pnlCard1);
+			this.Controls.Add(this.flowLayoutPanel1);
 			this.Controls.Add(this.lblWelcome);
 			this.Name = "UCTrangChu";
-			this.Size = new System.Drawing.Size(1346, 728);
+			this.Size = new System.Drawing.Size(1349, 728);
 			this.Load += new System.EventHandler(this.UCTrangChu_Load);
 			this.pnlCard4.ResumeLayout(false);
 			this.pnlIcon4.ResumeLayout(false);
@@ -273,6 +289,7 @@
 			this.pnlCard2.ResumeLayout(false);
 			this.pnlIcon2.ResumeLayout(false);
 			this.pnlCard1.ResumeLayout(false);
+			this.flowLayoutPanel1.ResumeLayout(false);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -299,5 +316,6 @@
 		private System.Windows.Forms.Label lblKhachHangValue;
 		private System.Windows.Forms.Label lblWelcome;
 		private System.Windows.Forms.Label lblIcon2;
+		private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
 	}
 }

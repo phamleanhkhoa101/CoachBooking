@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -6,13 +7,8 @@ namespace QLBXMD.GUI.Admin
 {
 	public enum TaiXeDialogMode { Add, View, Edit }
 
-	public class TaiXeDialog : Form
+	public partial class TaiXeDialog : Form
 	{
-		private TextBox txtMaTX, txtTenTX, txtCCCD, txtSDT, txtDiaChi, txtBangLai;
-		private DateTimePicker dtpNamSinh, dtpNgayCap;
-		private ComboBox cbbGioiTinh, cbbTrangThai;
-		private Button btnPrimary, btnCancel;
-
 		public TaiXeDialogMode Mode { get; private set; } = TaiXeDialogMode.Add;
 
 		public string MaTX { get => txtMaTX.Text; set => txtMaTX.Text = value; }
@@ -59,6 +55,9 @@ namespace QLBXMD.GUI.Admin
 		public TaiXeDialog()
 		{
 			InitializeComponent();
+			dtpNamSinh.Value = DateTime.Now.AddYears(-25);
+			cbbGioiTinh.SelectedIndex = 0;
+			cbbTrangThai.SelectedIndex = 0;
 		}
 
 		public void SetMode(TaiXeDialogMode mode)
@@ -111,109 +110,19 @@ namespace QLBXMD.GUI.Admin
 			cbbTrangThai.TabStop = !ro;
 		}
 
-		private void InitializeComponent()
+		private void btnPrimary_Click(object sender, EventArgs e)
 		{
-			this.Text = "Tài x?";
-			this.StartPosition = FormStartPosition.CenterParent;
-			this.Size = new Size(650, 580);
-			this.FormBorderStyle = FormBorderStyle.FixedDialog;
-			this.MaximizeBox = false;
-			this.MinimizeBox = false;
-			this.AutoScroll = true;
-
-			int leftLabel = 20;
-			int leftControl = 160;
-			int controlWidth = 450;
-			int startTop = 20;
-			int rowHeight = 40;
-
-			var lblMaTX = new Label { Text = "Mã tài x?", Left = leftLabel, Top = startTop, AutoSize = true };
-			txtMaTX = new TextBox { Left = leftControl, Top = startTop - 4, Width = controlWidth, ReadOnly = true, BackColor = Color.LightGray };
-
-			var lblTenTX = new Label { Text = "Tên tài x?", Left = leftLabel, Top = startTop + rowHeight, AutoSize = true };
-			txtTenTX = new TextBox { Left = leftControl, Top = startTop + rowHeight - 4, Width = controlWidth };
-
-			var lblNamSinh = new Label { Text = "N?m sinh", Left = leftLabel, Top = startTop + rowHeight * 2, AutoSize = true };
-			dtpNamSinh = new DateTimePicker
+			if (ValidateInput())
 			{
-				Left = leftControl,
-				Top = startTop + rowHeight * 2 - 4,
-				Width = 220,
-				Format = DateTimePickerFormat.Short,
-				Value = DateTime.Now.AddYears(-25)
-			};
+				this.DialogResult = DialogResult.OK;
+				this.Close();
+			}
+		}
 
-			var lblCCCD = new Label { Text = "CCCD", Left = leftLabel, Top = startTop + rowHeight * 3, AutoSize = true };
-			txtCCCD = new TextBox { Left = leftControl, Top = startTop + rowHeight * 3 - 4, Width = controlWidth };
-
-			var lblGioiTinh = new Label { Text = "Gi?i tính", Left = leftLabel, Top = startTop + rowHeight * 4, AutoSize = true };
-			cbbGioiTinh = new ComboBox
-			{
-				Left = leftControl,
-				Top = startTop + rowHeight * 4 - 4,
-				Width = 150,
-				DropDownStyle = ComboBoxStyle.DropDownList
-			};
-			cbbGioiTinh.Items.AddRange(new string[] { "Nam", "N?" });
-			cbbGioiTinh.SelectedIndex = 0;
-
-			var lblSDT = new Label { Text = "S? ?i?n tho?i", Left = leftLabel, Top = startTop + rowHeight * 5, AutoSize = true };
-			txtSDT = new TextBox { Left = leftControl, Top = startTop + rowHeight * 5 - 4, Width = controlWidth };
-
-			var lblDiaChi = new Label { Text = "??a ch?", Left = leftLabel, Top = startTop + rowHeight * 6, AutoSize = true };
-			txtDiaChi = new TextBox { Left = leftControl, Top = startTop + rowHeight * 6 - 4, Width = controlWidth };
-
-			var lblBangLai = new Label { Text = "B?ng lái", Left = leftLabel, Top = startTop + rowHeight * 7, AutoSize = true };
-			txtBangLai = new TextBox { Left = leftControl, Top = startTop + rowHeight * 7 - 4, Width = controlWidth };
-
-			var lblNgayCap = new Label { Text = "Ngày c?p", Left = leftLabel, Top = startTop + rowHeight * 8, AutoSize = true };
-			dtpNgayCap = new DateTimePicker
-			{
-				Left = leftControl,
-				Top = startTop + rowHeight * 8 - 4,
-				Width = 220,
-				Format = DateTimePickerFormat.Short,
-				Value = DateTime.Now
-			};
-
-			var lblTrangThai = new Label { Text = "Tr?ng thái", Left = leftLabel, Top = startTop + rowHeight * 9, AutoSize = true };
-			cbbTrangThai = new ComboBox
-			{
-				Left = leftControl,
-				Top = startTop + rowHeight * 9 - 4,
-				Width = 200,
-				DropDownStyle = ComboBoxStyle.DropDownList
-			};
-			cbbTrangThai.Items.AddRange(new string[] { "Ho?t ??ng", "Ng?ng ho?t ??ng" });
-			cbbTrangThai.SelectedIndex = 0;
-
-			btnPrimary = new Button { Left = 420, Top = startTop + rowHeight * 10 + 10, Width = 90, Text = "L?u" };
-			btnCancel = new Button { Left = 520, Top = startTop + rowHeight * 10 + 10, Width = 90, Text = "H?y" };
-
-			btnPrimary.Click += (s, e) =>
-			{
-				if (ValidateInput())
-				{
-					this.DialogResult = DialogResult.OK;
-					this.Close();
-				}
-			};
-			btnCancel.Click += (s, e) => { this.DialogResult = DialogResult.Cancel; this.Close(); };
-
-			Controls.AddRange(new Control[]
-			{
-				lblMaTX, txtMaTX,
-				lblTenTX, txtTenTX,
-				lblNamSinh, dtpNamSinh,
-				lblCCCD, txtCCCD,
-				lblGioiTinh, cbbGioiTinh,
-				lblSDT, txtSDT,
-				lblDiaChi, txtDiaChi,
-				lblBangLai, txtBangLai,
-				lblNgayCap, dtpNgayCap,
-				lblTrangThai, cbbTrangThai,
-				btnPrimary, btnCancel
-			});
+		private void btnCancel_Click(object sender, EventArgs e)
+		{
+			this.DialogResult = DialogResult.Cancel;
+			this.Close();
 		}
 
 		private bool ValidateInput()

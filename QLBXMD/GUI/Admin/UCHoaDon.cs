@@ -16,15 +16,26 @@ namespace QLBXMD.GUI.Admin
 		{
 			InitializeComponent();
 			this.Load += UCHoaDon_Load;
-			this.dgv.SelectionChanged += Dgv_SelectionChanged;
+			this.dgvVe.SelectionChanged += Dgv_SelectionChanged;
 		}
 
 		private void Dgv_SelectionChanged(object sender, EventArgs e)
 		{
-			bool has = dgv.SelectedRows.Count > 0 && dgv.SelectedRows[0].Cells[0].Value != null;
+			bool has = dgvVe.SelectedRows.Count > 0 && dgvVe.SelectedRows[0].Cells[0].Value != null;
 			btnXem.Enabled = has; 
 			btnSua.Enabled = has; 
 			btnXoa.Enabled = has;
+			
+			// Load vé khi chọn hóa đơn
+			if (has)
+			{
+				int maHD = int.Parse(dgvVe.SelectedRows[0].Cells[0].Value.ToString());
+				LoadVeXeByHoaDon(maHD);
+			}
+			else
+			{
+				ClearVeXeGrid();
+			}
 		}
 
 		private void UCHoaDon_Load(object sender, EventArgs e)
@@ -32,6 +43,7 @@ namespace QLBXMD.GUI.Admin
 			try
 			{
 				SetupGridHeaders();
+				SetupVeXeGridHeaders();
 
 				var list = _bus.GetAll() ?? new List<HoaDon>();
 				_data = list
@@ -54,6 +66,7 @@ namespace QLBXMD.GUI.Admin
 				LoadData(_data);
 				InitCbb();
 				btnXem.Enabled = btnSua.Enabled = btnXoa.Enabled = false;
+				ClearVeXeGrid();
 			}
 			catch (Exception ex)
 			{
@@ -63,13 +76,74 @@ namespace QLBXMD.GUI.Admin
 
 		private void SetupGridHeaders()
 		{
-			dgv.Columns.Clear();
-			dgv.Columns.Add("MaHD", "Mã hóa đơn");
-			dgv.Columns.Add("KhachHang", "Khách hàng");
-			dgv.Columns.Add("NhanVien", "Nhân viên");
-			dgv.Columns.Add("NgayLap", "Ngày lập");
-			dgv.Columns.Add("TongTien", "Tổng tiền (₫)");
-			dgv.Columns.Add("TrangThai", "Trạng thái");
+			dgvVe.Columns.Clear();
+			dgvVe.Columns.Add("MaHD", "Mã hóa đơn");
+			dgvVe.Columns.Add("KhachHang", "Khách hàng");
+			dgvVe.Columns.Add("NhanVien", "Nhân viên");
+			dgvVe.Columns.Add("NgayLap", "Ngày lập");
+			dgvVe.Columns.Add("TongTien", "Tổng tiền (₫)");
+			dgvVe.Columns.Add("TrangThai", "Trạng thái");
+		}
+
+		private void SetupVeXeGridHeaders()
+		{
+			dgvVeXe.Columns.Clear();
+			dgvVeXe.Columns.Add("MaVe", "Mã vé");
+			dgvVeXe.Columns.Add("TuyenDuong", "Tuyến đường");
+			dgvVeXe.Columns.Add("NgayKhoiHanh", "Ngày khởi hành");
+			dgvVeXe.Columns.Add("GioKhoiHanh", "Giờ khởi hành");
+			dgvVeXe.Columns.Add("ChoNgoi", "Chỗ ngồi");
+			dgvVeXe.Columns.Add("GiaVe", "Giá vé (₫)");
+		}
+
+		private void LoadVeXeByHoaDon(int maHD)
+		{
+			try
+			{
+				dgvVeXe.Rows.Clear();
+				
+				using (var db = new BXMDEntities())
+				{
+					var veXeList = db.VeXes
+						.Where(v => v.MaHD == maHD)
+						.Select(v => new
+						{
+							MaVe = v.MaVe,
+							TuyenDuong = v.ChuyenXe != null && v.ChuyenXe.TuyenDuong != null 
+								? v.ChuyenXe.TuyenDuong.DiemDi + " - " + v.ChuyenXe.TuyenDuong.DiemDen
+								: "N/A",
+							NgayGioKhoiHanh = v.ChuyenXe != null 
+								? v.ChuyenXe.NgayGioKhoiHanh 
+								: (DateTime?)null,
+							ChoNgoi = v.ChoNgoi,
+							GiaVe = v.GiaVe ?? 0
+						})
+						.ToList();
+
+					foreach (var ve in veXeList)
+					{
+						dgvVeXe.Rows.Add(
+							ve.MaVe,
+							ve.TuyenDuong,
+							ve.NgayGioKhoiHanh.HasValue ? ve.NgayGioKhoiHanh.Value.ToString("dd/MM/yyyy") : "N/A",
+							ve.NgayGioKhoiHanh.HasValue ? ve.NgayGioKhoiHanh.Value.ToString("HH:mm") : "N/A",
+							ve.ChoNgoi,
+							ve.GiaVe.ToString("N0")
+						);
+					}
+				}
+				
+				dgvVeXe.ClearSelection();
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show("Tải danh sách vé thất bại: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
+
+		private void ClearVeXeGrid()
+		{
+			dgvVeXe.Rows.Clear();
 		}
 
 		private void InitCbb()
@@ -87,11 +161,11 @@ namespace QLBXMD.GUI.Admin
 
 		private void LoadData(List<dynamic> list)
 		{
-			dgv.Rows.Clear();
+			dgvVe.Rows.Clear();
 
 			foreach (var item in list)
 			{
-				dgv.Rows.Add(
+				dgvVe.Rows.Add(
 					item.MaHD, 
 					item.KhachHang, 
 					item.NhanVien, 
@@ -101,7 +175,7 @@ namespace QLBXMD.GUI.Admin
 				);
 			}
 
-			dgv.ClearSelection();
+			dgvVe.ClearSelection();
 		}
 
 		private void txtSearch_TextChanged(object sender, EventArgs e)
@@ -170,8 +244,8 @@ namespace QLBXMD.GUI.Admin
 
 		private void btnXem_Click(object sender, EventArgs e)
 		{
-			if (dgv.SelectedRows.Count == 0) return;
-			var r = dgv.SelectedRows[0];
+			if (dgvVe.SelectedRows.Count == 0) return;
+			var r = dgvVe.SelectedRows[0];
 			if (r.Cells[0].Value == null) return;
 			
 			int maHD = int.Parse(r.Cells[0].Value.ToString());
@@ -195,8 +269,8 @@ namespace QLBXMD.GUI.Admin
 
 		private void btnSua_Click(object sender, EventArgs e)
 		{
-			if (dgv.SelectedRows.Count == 0) return;
-			var r = dgv.SelectedRows[0];
+			if (dgvVe.SelectedRows.Count == 0) return;
+			var r = dgvVe.SelectedRows[0];
 			if (r.Cells[0].Value == null) return;
 			
 			int maHD = int.Parse(r.Cells[0].Value.ToString());
@@ -243,13 +317,13 @@ namespace QLBXMD.GUI.Admin
 
 		private void btnXoa_Click(object sender, EventArgs e)
 		{
-			if (dgv.SelectedRows.Count == 0)
+			if (dgvVe.SelectedRows.Count == 0)
 			{
 				MessageBox.Show("Vui lòng chọn hóa đơn cần xóa.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				return;
 			}
 			
-			var r = dgv.SelectedRows[0];
+			var r = dgvVe.SelectedRows[0];
 			if (r.Cells[0].Value == null)
 			{
 				MessageBox.Show("Vui lòng chọn hóa đơn cần xóa.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -344,15 +418,15 @@ namespace QLBXMD.GUI.Admin
 				return;
 			}
 			
-			if (dgv.Rows[e.RowIndex].Cells[0].Value == null)
+			if (dgvVe.Rows[e.RowIndex].Cells[0].Value == null)
 			{
 				EnableBtn(false);
 				return;
 			}
 			
-			dgv.Rows[e.RowIndex].Selected = true;
+			dgvVe.Rows[e.RowIndex].Selected = true;
 			
-			if (dgv.Rows[e.RowIndex].Selected && btnSua.Enabled == false)
+			if (dgvVe.Rows[e.RowIndex].Selected && btnSua.Enabled == false)
 			{
 				EnableBtn(true);
 			}

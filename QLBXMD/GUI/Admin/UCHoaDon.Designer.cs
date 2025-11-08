@@ -29,6 +29,8 @@
 		private void InitializeComponent()
 		{
 			this.panel1 = new System.Windows.Forms.Panel();
+			this.lblVeXe = new System.Windows.Forms.Label();
+			this.dgvVeXe = new System.Windows.Forms.DataGridView();
 			this.btnXoa = new System.Windows.Forms.Button();
 			this.btnSua = new System.Windows.Forms.Button();
 			this.btnXem = new System.Windows.Forms.Button();
@@ -37,9 +39,10 @@
 			this.label2 = new System.Windows.Forms.Label();
 			this.label1 = new System.Windows.Forms.Label();
 			this.txtSearch = new System.Windows.Forms.TextBox();
-			this.dgv = new System.Windows.Forms.DataGridView();
+			this.dgvVe = new System.Windows.Forms.DataGridView();
 			this.panel1.SuspendLayout();
-			((System.ComponentModel.ISupportInitialize)(this.dgv)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.dgvVeXe)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.dgvVe)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// panel1
@@ -48,6 +51,8 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
 			this.panel1.AutoScroll = true;
+			this.panel1.Controls.Add(this.lblVeXe);
+			this.panel1.Controls.Add(this.dgvVeXe);
 			this.panel1.Controls.Add(this.btnXoa);
 			this.panel1.Controls.Add(this.btnSua);
 			this.panel1.Controls.Add(this.btnXem);
@@ -56,11 +61,21 @@
 			this.panel1.Controls.Add(this.label2);
 			this.panel1.Controls.Add(this.label1);
 			this.panel1.Controls.Add(this.txtSearch);
-			this.panel1.Controls.Add(this.dgv);
+			this.panel1.Controls.Add(this.dgvVe);
 			this.panel1.Location = new System.Drawing.Point(8, 8);
 			this.panel1.Name = "panel1";
 			this.panel1.Size = new System.Drawing.Size(1333, 715);
 			this.panel1.TabIndex = 12;
+			// 
+			// lblVeXe
+			// 
+			this.lblVeXe.AutoSize = true;
+			this.lblVeXe.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblVeXe.Location = new System.Drawing.Point(35, 428);
+			this.lblVeXe.Name = "lblVeXe";
+			this.lblVeXe.Size = new System.Drawing.Size(152, 25);
+			this.lblVeXe.TabIndex = 10;
+			this.lblVeXe.Text = "Danh sách vé";
 			// 
 			// btnXoa
 			// 
@@ -142,23 +157,39 @@
 			this.txtSearch.TabIndex = 1;
 			this.txtSearch.TextChanged += new System.EventHandler(this.txtSearch_TextChanged);
 			// 
-			// dgv
+			// dgvVe
 			// 
-			this.dgv.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+			this.dgvVe.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.dgvVe.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+			this.dgvVe.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+			this.dgvVe.Location = new System.Drawing.Point(27, 195);
+			this.dgvVe.MultiSelect = false;
+			this.dgvVe.Name = "dgvVe";
+			this.dgvVe.ReadOnly = true;
+			this.dgvVe.RowHeadersWidth = 62;
+			this.dgvVe.RowTemplate.Height = 28;
+			this.dgvVe.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+			this.dgvVe.Size = new System.Drawing.Size(1293, 210);
+			this.dgvVe.TabIndex = 0;
+			this.dgvVe.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_CellClick);
+			// 
+			// dgvVeXe
+			// 
+			this.dgvVeXe.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-			this.dgv.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
-			this.dgv.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-			this.dgv.Location = new System.Drawing.Point(27, 195);
-			this.dgv.MultiSelect = false;
-			this.dgv.Name = "dgv";
-			this.dgv.ReadOnly = true;
-			this.dgv.RowHeadersWidth = 62;
-			this.dgv.RowTemplate.Height = 28;
-			this.dgv.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-			this.dgv.Size = new System.Drawing.Size(1293, 504);
-			this.dgv.TabIndex = 0;
-			this.dgv.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_CellClick);
+			this.dgvVeXe.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+			this.dgvVeXe.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+			this.dgvVeXe.Location = new System.Drawing.Point(27, 463);
+			this.dgvVeXe.MultiSelect = false;
+			this.dgvVeXe.Name = "dgvVeXe";
+			this.dgvVeXe.ReadOnly = true;
+			this.dgvVeXe.RowHeadersWidth = 62;
+			this.dgvVeXe.RowTemplate.Height = 28;
+			this.dgvVeXe.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+			this.dgvVeXe.Size = new System.Drawing.Size(1293, 240);
+			this.dgvVeXe.TabIndex = 9;
 			// 
 			// UCHoaDon
 			// 
@@ -169,7 +200,8 @@
 			this.Size = new System.Drawing.Size(1349, 731);
 			this.panel1.ResumeLayout(false);
 			this.panel1.PerformLayout();
-			((System.ComponentModel.ISupportInitialize)(this.dgv)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.dgvVeXe)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.dgvVe)).EndInit();
 			this.ResumeLayout(false);
 
 		}
@@ -185,6 +217,8 @@
 		private System.Windows.Forms.Label label2;
 		private System.Windows.Forms.Label label1;
 		private System.Windows.Forms.TextBox txtSearch;
-		private System.Windows.Forms.DataGridView dgv;
+		private System.Windows.Forms.DataGridView dgvVe;
+		private System.Windows.Forms.Label lblVeXe;
+		private System.Windows.Forms.DataGridView dgvVeXe;
 	}
 }

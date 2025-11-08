@@ -89,6 +89,7 @@ namespace QLBXMD.BUS
 			);
 			return emailSent ? "success" : "Gửi email thất bại. Vui lòng thử lại.";
 		}
+		
 		private string GenerateRandomPassword(int length)
 		{
 			const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
@@ -101,16 +102,187 @@ namespace QLBXMD.BUS
 			return sb.ToString();
 		}
 
-
 		public NhanVien GetNhanVienByTaiKhoan(TaiKhoan taiKhoan)
 		{
 			if (taiKhoan == null) return null;
 			return taiKhoanDAO.GetNhanVienByMaTK(taiKhoan.MaTK);
 		}
+		
 		public KhachHang GetKhachHangByTaiKhoan(TaiKhoan taiKhoan)
 		{
 			if (taiKhoan == null) return null;
 			return taiKhoanDAO.GetKhachHangByMaTK(taiKhoan.MaTK);
+		}
+
+		// CRUD operations for admin
+		public List<TaiKhoan> GetAll()
+		{
+			return taiKhoanDAO.GetAll();
+		}
+
+		public TaiKhoan GetById(int maTK)
+		{
+			return taiKhoanDAO.GetById(maTK);
+		}
+
+		public string Add(TaiKhoan tk, string matKhau)
+		{
+			if (string.IsNullOrWhiteSpace(tk.TenDangNhap))
+				return "Vui lòng nhập tên đăng nhập.";
+
+			if (!Validation.IsValidTenDangNhap(tk.TenDangNhap))
+				return "Tên đăng nhập phải có ít nhất 6 ký tự.";
+
+			if (string.IsNullOrWhiteSpace(tk.Email))
+				return "Vui lòng nhập email.";
+
+			if (!Validation.IsValidEmail(tk.Email))
+				return "Email không đúng định dạng.";
+
+			if (string.IsNullOrWhiteSpace(matKhau))
+				return "Vui lòng nhập mật khẩu.";
+
+			if (!Validation.IsValidMatKhau(matKhau))
+				return "Mật khẩu phải lớn hơn 8 ký tự, bao gồm chữ thường, chữ hoa, số và ký tự đặc biệt.";
+
+			if (tk.MaQuyen == null || tk.MaQuyen == 0)
+				return "Vui lòng chọn quyền.";
+
+			if (taiKhoanDAO.ExistsTenDangNhap(tk.TenDangNhap))
+				return "Tên đăng nhập đã được sử dụng.";
+
+			if (taiKhoanDAO.ExistsEmail(tk.Email))
+				return "Email đã được sử dụng.";
+
+			tk.MatKhau = HashHelper.ComputeHash(matKhau);
+
+			try
+			{
+				bool success = taiKhoanDAO.Add(tk);
+				return success ? "Thêm tài khoản thành công." : "Thêm tài khoản thất bại.";
+			}
+			catch (Exception ex)
+			{
+				return "Lỗi: " + ex.Message;
+			}
+		}
+
+		public string Update(TaiKhoan tk)
+		{
+			if (string.IsNullOrWhiteSpace(tk.Email))
+				return "Vui lòng nhập email.";
+
+			if (!Validation.IsValidEmail(tk.Email))
+				return "Email không đúng định dạng.";
+
+			if (tk.MaQuyen == null || tk.MaQuyen == 0)
+				return "Vui lòng chọn quyền.";
+
+			var existing = taiKhoanDAO.GetById(tk.MaTK);
+			if (existing == null)
+				return "Tài khoản không tồn tại.";
+
+			// Check email duplicate (excluding current account)
+			var existingEmail = taiKhoanDAO.GetByEmail(tk.Email);
+			if (existingEmail != null && existingEmail.MaTK != tk.MaTK)
+				return "Email đã được sử dụng bởi tài khoản khác.";
+
+			try
+			{
+				existing.Email = tk.Email;
+				existing.MaQuyen = tk.MaQuyen;
+				existing.TrangThai = tk.TrangThai;
+
+				bool success = taiKhoanDAO.Update(existing);
+				return success ? "Cập nhật tài khoản thành công." : "Cập nhật tài khoản thất bại.";
+			}
+			catch (Exception ex)
+			{
+				return "Lỗi: " + ex.Message;
+			}
+		}
+
+		public string ResetPassword(int maTK)
+		{
+			var tk = taiKhoanDAO.GetById(maTK);
+			if (tk == null)
+				return "Tài khoản không tồn tại.";
+
+			string newPassword = GenerateRandomPassword(10);
+			tk.MatKhau = HashHelper.ComputeHash(newPassword);
+
+			try
+			{
+				bool success = taiKhoanDAO.Update(tk);
+				if (!success)
+					return "Đặt lại mật khẩu thất bại.";
+
+				bool emailSent = EmailHelper.SendEmail(
+					tk.Email,
+					"Đặt lại mật khẩu",
+					$"Mật khẩu mới của bạn là: {newPassword}\nVui lòng đăng nhập và đổi mật khẩu ngay."
+				);
+
+				return emailSent 
+					? "Đặt lại mật khẩu thành công. Mật khẩu mới đã được gửi qua email." 
+					: "Đặt lại mật khẩu thành công nhưng không thể gửi email.";
+			}
+			catch (Exception ex)
+			{
+				return "Lỗi: " + ex.Message;
+			}
+		}
+
+		public string Delete(int maTK)
+		{
+			var tk = taiKhoanDAO.GetById(maTK);
+			if (tk == null)
+				return "Tài khoản không tồn tại.";
+
+			// Check if account is linked to employee or customer
+			var nhanVien = taiKhoanDAO.GetNhanVienByMaTK(maTK);
+			var khachHang = taiKhoanDAO.GetKhachHangByMaTK(maTK);
+
+			if (nhanVien != null)
+				return "Không thể xóa tài khoản này vì đã được liên kết với nhân viên.";
+
+			if (khachHang != null)
+				return "Không thể xóa tài khoản này vì đã được liên kết với khách hàng.";
+
+			try
+			{
+				bool success = taiKhoanDAO.Delete(maTK);
+				return success ? "Xóa tài khoản thành công." : "Xóa tài khoản thất bại.";
+			}
+			catch (Exception ex)
+			{
+				return "Lỗi: " + ex.Message;
+			}
+		}
+
+		/// <summary>
+		/// Lấy danh sách tài khoản chưa được gắn với nhân viên hoặc khách hàng
+		/// </summary>
+		public List<TaiKhoan> GetAvailableAccounts()
+		{
+			var all = taiKhoanDAO.GetAll();
+			return all.Where(tk => 
+				taiKhoanDAO.GetNhanVienByMaTK(tk.MaTK) == null && 
+				taiKhoanDAO.GetKhachHangByMaTK(tk.MaTK) == null
+			).ToList();
+		}
+
+		/// <summary>
+		/// Lấy tài khoản chưa gắn HOẶC tài khoản hiện tại của entity này (dùng cho Edit)
+		/// </summary>
+		public List<TaiKhoan> GetAvailableAccountsForEdit(int? currentMaTK)
+		{
+			var all = taiKhoanDAO.GetAll();
+			return all.Where(tk => 
+				tk.MaTK == currentMaTK ||
+				(taiKhoanDAO.GetNhanVienByMaTK(tk.MaTK) == null && 
+				 taiKhoanDAO.GetKhachHangByMaTK(tk.MaTK) == null)
+			).ToList();
 		}
 	}
 }

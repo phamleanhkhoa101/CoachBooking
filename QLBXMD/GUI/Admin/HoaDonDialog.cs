@@ -1,4 +1,4 @@
-using System;
+Ôªøusing System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -8,14 +8,8 @@ namespace QLBXMD.GUI.Admin
 {
 	public enum HoaDonDialogMode { Add, View, Edit }
 
-	public class HoaDonDialog : Form
+	public partial class HoaDonDialog : Form
 	{
-		private TextBox txtMaHD;
-		private ComboBox cbbKhachHang, cbbNhanVien, cbbTrangThai;
-		private DateTimePicker dtpNgayLap;
-		private NumericUpDown numTongTien;
-		private Button btnPrimary, btnCancel;
-
 		public HoaDonDialogMode Mode { get; private set; } = HoaDonDialogMode.Add;
 
 		public string MaHD { get => txtMaHD.Text; set => txtMaHD.Text = value; }
@@ -38,8 +32,8 @@ namespace QLBXMD.GUI.Admin
 		{
 			get
 			{
-				if (cbbTrangThai.SelectedIndex == 0) return true; // ?„ thanh to·n
-				if (cbbTrangThai.SelectedIndex == 1) return false; // Ch?a thanh to·n
+				if (cbbTrangThai.SelectedIndex == 0) return true; // ?√£ thanh to√°n
+				if (cbbTrangThai.SelectedIndex == 1) return false; // Ch?a thanh to√°n
 				return null;
 			}
 			set
@@ -53,12 +47,13 @@ namespace QLBXMD.GUI.Admin
 		public HoaDonDialog()
 		{
 			InitializeComponent();
+			cbbTrangThai.SelectedIndex = 1; // M?c ??nh ch?a thanh to√°n
 		}
 
 		public void BindKhachHang(IEnumerable<KeyValuePair<int, string>> items)
 		{
 			var list = items?.ToList() ?? new List<KeyValuePair<int, string>>();
-			list.Insert(0, new KeyValuePair<int, string>(0, "-- KhÙng ch?n --"));
+			list.Insert(0, new KeyValuePair<int, string>(0, "-- Kh√¥ng ch?n --"));
 			cbbKhachHang.DataSource = list;
 			cbbKhachHang.DisplayMember = "Value";
 			cbbKhachHang.ValueMember = "Key";
@@ -67,7 +62,7 @@ namespace QLBXMD.GUI.Admin
 		public void BindNhanVien(IEnumerable<KeyValuePair<int, string>> items)
 		{
 			var list = items?.ToList() ?? new List<KeyValuePair<int, string>>();
-			list.Insert(0, new KeyValuePair<int, string>(0, "-- KhÙng ch?n --"));
+			list.Insert(0, new KeyValuePair<int, string>(0, "-- Kh√¥ng ch?n --"));
 			cbbNhanVien.DataSource = list;
 			cbbNhanVien.DisplayMember = "Value";
 			cbbNhanVien.ValueMember = "Key";
@@ -79,21 +74,21 @@ namespace QLBXMD.GUI.Admin
 			switch (mode)
 			{
 				case HoaDonDialogMode.Add:
-					Text = "ThÍm hÛa ??n";
-					btnPrimary.Text = "ThÍm";
+					Text = "Th√™m h√≥a ??n";
+					btnPrimary.Text = "Th√™m";
 					txtMaHD.Enabled = false;
 					SetReadOnly(false);
 					break;
 				case HoaDonDialogMode.Edit:
-					Text = "S?a hÛa ??n";
+					Text = "S?a h√≥a ??n";
 					btnPrimary.Text = "L?u";
 					txtMaHD.Enabled = false;
 					SetReadOnly(false);
 					break;
 				case HoaDonDialogMode.View:
-					Text = "Xem hÛa ??n";
+					Text = "Xem h√≥a ??n";
 					btnPrimary.Visible = false;
-					btnCancel.Text = "?Ûng";
+					btnCancel.Text = "?√≥ng";
 					SetReadOnly(true);
 					break;
 			}
@@ -115,100 +110,19 @@ namespace QLBXMD.GUI.Admin
 			cbbTrangThai.TabStop = !ro;
 		}
 
-		private void InitializeComponent()
+		private void btnPrimary_Click(object sender, EventArgs e)
 		{
-			this.Text = "HÛa ??n";
-			this.StartPosition = FormStartPosition.CenterParent;
-			this.Size = new Size(600, 450);
-			this.FormBorderStyle = FormBorderStyle.FixedDialog;
-			this.MaximizeBox = false;
-			this.MinimizeBox = false;
-
-			int leftLabel = 20;
-			int leftControl = 160;
-			int controlWidth = 400;
-			int startTop = 20;
-			int rowHeight = 50;
-
-			var lblMaHD = new Label { Text = "M„ hÛa ??n", Left = leftLabel, Top = startTop, AutoSize = true };
-			txtMaHD = new TextBox { Left = leftControl, Top = startTop - 4, Width = controlWidth, ReadOnly = true, BackColor = Color.LightGray };
-
-			var lblKhachHang = new Label { Text = "Kh·ch h‡ng", Left = leftLabel, Top = startTop + rowHeight, AutoSize = true };
-			cbbKhachHang = new ComboBox 
-			{ 
-				Left = leftControl, 
-				Top = startTop + rowHeight - 4, 
-				Width = controlWidth, 
-				DropDownStyle = ComboBoxStyle.DropDownList 
-			};
-
-			var lblNhanVien = new Label { Text = "Nh‚n viÍn", Left = leftLabel, Top = startTop + rowHeight * 2, AutoSize = true };
-			cbbNhanVien = new ComboBox 
-			{ 
-				Left = leftControl, 
-				Top = startTop + rowHeight * 2 - 4, 
-				Width = controlWidth, 
-				DropDownStyle = ComboBoxStyle.DropDownList 
-			};
-
-			var lblNgayLap = new Label { Text = "Ng‡y l?p", Left = leftLabel, Top = startTop + rowHeight * 3, AutoSize = true };
-			dtpNgayLap = new DateTimePicker
+			if (ValidateInput())
 			{
-				Left = leftControl,
-				Top = startTop + rowHeight * 3 - 4,
-				Width = 250,
-				Format = DateTimePickerFormat.Custom,
-				CustomFormat = "dd/MM/yyyy HH:mm",
-				Value = DateTime.Now
-			};
+				this.DialogResult = DialogResult.OK;
+				this.Close();
+			}
+		}
 
-			var lblTongTien = new Label { Text = "T?ng ti?n (?)", Left = leftLabel, Top = startTop + rowHeight * 4, AutoSize = true };
-			numTongTien = new NumericUpDown
-			{
-				Left = leftControl,
-				Top = startTop + rowHeight * 4 - 4,
-				Width = 250,
-				Maximum = 1000000000,
-				Minimum = 0,
-				Increment = 1000,
-				ThousandsSeparator = true,
-				Value = 0
-			};
-
-			var lblTrangThai = new Label { Text = "Tr?ng th·i", Left = leftLabel, Top = startTop + rowHeight * 5, AutoSize = true };
-			cbbTrangThai = new ComboBox
-			{
-				Left = leftControl,
-				Top = startTop + rowHeight * 5 - 4,
-				Width = 250,
-				DropDownStyle = ComboBoxStyle.DropDownList
-			};
-			cbbTrangThai.Items.AddRange(new string[] { "?„ thanh to·n", "Ch?a thanh to·n" });
-			cbbTrangThai.SelectedIndex = 1; // M?c ??nh ch?a thanh to·n
-
-			btnPrimary = new Button { Left = 370, Top = startTop + rowHeight * 6 + 10, Width = 90, Text = "L?u" };
-			btnCancel = new Button { Left = 470, Top = startTop + rowHeight * 6 + 10, Width = 90, Text = "H?y" };
-
-			btnPrimary.Click += (s, e) =>
-			{
-				if (ValidateInput())
-				{
-					this.DialogResult = DialogResult.OK;
-					this.Close();
-				}
-			};
-			btnCancel.Click += (s, e) => { this.DialogResult = DialogResult.Cancel; this.Close(); };
-
-			Controls.AddRange(new Control[]
-			{
-				lblMaHD, txtMaHD,
-				lblKhachHang, cbbKhachHang,
-				lblNhanVien, cbbNhanVien,
-				lblNgayLap, dtpNgayLap,
-				lblTongTien, numTongTien,
-				lblTrangThai, cbbTrangThai,
-				btnPrimary, btnCancel
-			});
+		private void btnCancel_Click(object sender, EventArgs e)
+		{
+			this.DialogResult = DialogResult.Cancel;
+			this.Close();
 		}
 
 		private bool ValidateInput()
@@ -216,27 +130,27 @@ namespace QLBXMD.GUI.Admin
 			if (Mode == HoaDonDialogMode.View)
 				return true;
 
-			// Ph?i ch?n Ìt nh?t kh·ch h‡ng ho?c nh‚n viÍn
+			// Ph?i ch?n √≠t nh?t kh√°ch h√†ng ho?c nh√¢n vi√™n
 			int? maKH = SelectedMaKH;
 			int? maNV = SelectedMANV;
 			
 			if ((maKH == null || maKH == 0) && (maNV == null || maNV == 0))
 			{
-				MessageBox.Show("Vui lÚng ch?n Ìt nh?t kh·ch h‡ng ho?c nh‚n viÍn.", "ThÙng b·o", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				MessageBox.Show("Vui l√≤ng ch·ªçn √≠t nh·∫•t kh√°ch h√†ng ho?c nh√¢n vi√™n.", "Th√¥ng b√°o", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				cbbKhachHang.Focus();
 				return false;
 			}
 
 			if (dtpNgayLap.Value > DateTime.Now)
 			{
-				MessageBox.Show("Ng‡y l?p khÙng ???c l?n h?n ng‡y hi?n t?i.", "ThÙng b·o", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				MessageBox.Show("Ng√†y l?p kh√¥ng ???c l?n h?n ng√†y hi?n t?i.", "Th√¥ng b√°o", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				dtpNgayLap.Focus();
 				return false;
 			}
 
 			if (numTongTien.Value <= 0)
 			{
-				MessageBox.Show("T?ng ti?n ph?i l?n h?n 0.", "ThÙng b·o", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				MessageBox.Show("T?ng ti?n ph?i l?n h?n 0.", "Th√¥ng b√°o", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				numTongTien.Focus();
 				return false;
 			}

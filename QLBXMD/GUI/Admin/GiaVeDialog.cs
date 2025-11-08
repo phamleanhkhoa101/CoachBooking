@@ -8,13 +8,8 @@ namespace QLBXMD.GUI.Admin
 {
 	public enum GiaVeDialogMode { Add, View, Edit }
 
-	public class GiaVeDialog : Form
+	public partial class GiaVeDialog : Form
 	{
-		private TextBox txtMaGV;
-		private ComboBox cbbNhaXe, cbbLoaiXe, cbbTuyen;
-		private NumericUpDown numGiaVe;
-		private Button btnPrimary, btnCancel;
-
 		public GiaVeDialogMode Mode { get; private set; } = GiaVeDialogMode.Add;
 
 		public string MaGV { get => txtMaGV.Text; set => txtMaGV.Text = value; }
@@ -109,62 +104,19 @@ namespace QLBXMD.GUI.Admin
 			numGiaVe.TabStop = !ro;
 		}
 
-		private void InitializeComponent()
+		private void btnPrimary_Click(object sender, EventArgs e)
 		{
-			this.Text = "Giá vé";
-			this.StartPosition = FormStartPosition.CenterParent;
-			this.Size = new Size(560, 360);
-			this.FormBorderStyle = FormBorderStyle.FixedDialog;
-			this.MaximizeBox = false;
-			this.MinimizeBox = false;
-
-			var lblMaGV = new Label { Text = "Mã giá vé", Left = 20, Top = 20, AutoSize = true };
-			txtMaGV = new TextBox { Left = 160, Top = 16, Width = 360, ReadOnly = true, BackColor = Color.LightGray };
-			
-			var lblNhaXe = new Label { Text = "Nhà xe", Left = 20, Top = 55, AutoSize = true };
-			cbbNhaXe = new ComboBox { Left = 160, Top = 51, Width = 360, DropDownStyle = ComboBoxStyle.DropDownList };
-			
-			var lblLoaiXe = new Label { Text = "Lo?i xe", Left = 20, Top = 90, AutoSize = true };
-			cbbLoaiXe = new ComboBox { Left = 160, Top = 86, Width = 360, DropDownStyle = ComboBoxStyle.DropDownList };
-			
-			var lblTuyen = new Label { Text = "Tuy?n ???ng", Left = 20, Top = 125, AutoSize = true };
-			cbbTuyen = new ComboBox { Left = 160, Top = 121, Width = 360, DropDownStyle = ComboBoxStyle.DropDownList };
-			
-			var lblGiaVe = new Label { Text = "Giá vé (?)", Left = 20, Top = 160, AutoSize = true };
-			numGiaVe = new NumericUpDown
+			if (ValidateInput())
 			{
-				Left = 160,
-				Top = 156,
-				Width = 220,
-				Maximum = 10000000,
-				Minimum = 0,
-				Increment = 1000,
-				ThousandsSeparator = true,
-				Value = 0
-			};
+				this.DialogResult = DialogResult.OK;
+				this.Close();
+			}
+		}
 
-			btnPrimary = new Button { Left = 330, Top = 260, Width = 90, Text = "L?u" };
-			btnCancel = new Button { Left = 430, Top = 260, Width = 90, Text = "H?y" };
-
-			btnPrimary.Click += (s, e) => 
-			{ 
-				if (ValidateInput())
-				{
-					this.DialogResult = DialogResult.OK; 
-					this.Close(); 
-				}
-			};
-			btnCancel.Click += (s, e) => { this.DialogResult = DialogResult.Cancel; this.Close(); };
-
-			Controls.AddRange(new Control[]
-			{
-				lblMaGV, txtMaGV,
-				lblNhaXe, cbbNhaXe,
-				lblLoaiXe, cbbLoaiXe,
-				lblTuyen, cbbTuyen,
-				lblGiaVe, numGiaVe,
-				btnPrimary, btnCancel
-			});
+		private void btnCancel_Click(object sender, EventArgs e)
+		{
+			this.DialogResult = DialogResult.Cancel;
+			this.Close();
 		}
 
 		private bool ValidateInput()

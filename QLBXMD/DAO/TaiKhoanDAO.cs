@@ -22,6 +22,10 @@ namespace QLBXMD.DAO
 			var user = db.TaiKhoans.FirstOrDefault(tk => tk.TenDangNhap == TenDangNhap && tk.Email == Email);
 			return user;
 		}
+		public TaiKhoan GetByEmail(string email)
+		{
+			return db.TaiKhoans.FirstOrDefault(tk => tk.Email == email);
+		}
 		public List<TaiKhoan> GetAll()
 		{
 			return db.TaiKhoans.ToList();

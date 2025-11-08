@@ -42,9 +42,14 @@
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.5.1\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
+    <Reference Include="FontAwesome.Sharp, Version=6.6.0.0, Culture=neutral, PublicKeyToken=d16d1e4e568ec10f, processorArchitecture=MSIL">
+      <HintPath>..\packages\FontAwesome.Sharp.6.6.0\lib\net48\FontAwesome.Sharp.dll</HintPath>
+    </Reference>
     <Reference Include="Guna.UI2, Version=2.0.4.7, Culture=neutral, PublicKeyToken=8b9d14aa5142e261, processorArchitecture=MSIL">
       <HintPath>..\packages\Guna.UI2.WinForms.2.0.4.7\lib\net48\Guna.UI2.dll</HintPath>
     </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
@@ -53,6 +58,7 @@
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Security" />
     <Reference Include="System.Web" />
+    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -62,6 +68,7 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BUS\ChuyenXeBUS.cs" />
@@ -71,6 +78,7 @@
     <Compile Include="BUS\LoaiXeBUS.cs" />
     <Compile Include="BUS\NhanVienBUS.cs" />
     <Compile Include="BUS\NhaXeBUS.cs" />
+    <Compile Include="BUS\QuyenBUS.cs" />
     <Compile Include="BUS\TaiKhoanBUS.cs" />
     <Compile Include="BUS\TaiXeBUS.cs" />
     <Compile Include="BUS\TuyenDuongBUS.cs" />
@@ -153,20 +161,47 @@
     <Compile Include="GUI\Admin\ChuyenXeDialog.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="GUI\Admin\ChuyenXeDialog.Designer.cs">
+      <DependentUpon>ChuyenXeDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\Admin\FrmMainAdmin.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="GUI\Admin\FrmMainAdmin.Designer.cs">
       <DependentUpon>FrmMainAdmin.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\Admin\GanTaiKhoanDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\Admin\GanTaiKhoanDialog.Designer.cs">
+      <DependentUpon>GanTaiKhoanDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\Admin\GiaVeDialog.cs">
       <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\Admin\GiaVeDialog.Designer.cs">
+      <DependentUpon>GiaVeDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\Admin\HoaDonDialog.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Include="GUI\Admin\HoaDonDialog.Designer.cs">
+      <DependentUpon>HoaDonDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\Admin\KhachHangDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\Admin\KhachHangDialog.Designer.cs">
+      <DependentUpon>KhachHangDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\Admin\LoaiXeDialog.cs">
       <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\Admin\NhanVienDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\Admin\NhanVienDialog.Designer.cs">
+      <DependentUpon>NhanVienDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\Admin\NhaXeDialog.cs">
       <SubType>Form</SubType>
@@ -174,8 +209,17 @@
     <Compile Include="GUI\Admin\NhaXeDialog.Designer.cs">
       <DependentUpon>NhaXeDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\Admin\TaiKhoanDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\Admin\TaiKhoanDialog.Designer.cs">
+      <DependentUpon>TaiKhoanDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\Admin\TaiXeDialog.cs">
       <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\Admin\TaiXeDialog.Designer.cs">
+      <DependentUpon>TaiXeDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\Admin\TuyenDuongDialog.cs">
       <SubType>Form</SubType>
@@ -189,6 +233,12 @@
     <Compile Include="GUI\Admin\UCChuyenXe.Designer.cs">
       <DependentUpon>UCChuyenXe.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\Admin\UCDatVe.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\Admin\UCDatVe.Designer.cs">
+      <DependentUpon>UCDatVe.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\Admin\UCGiaVe.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -201,17 +251,35 @@
     <Compile Include="GUI\Admin\UCHoaDon.Designer.cs">
       <DependentUpon>UCHoaDon.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\Admin\UCKhachHang.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\Admin\UCKhachHang.Designer.cs">
+      <DependentUpon>UCKhachHang.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\Admin\UCLoaiXe.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="GUI\Admin\UCLoaiXe.Designer.cs">
       <DependentUpon>UCLoaiXe.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\Admin\UCNhanVien.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\Admin\UCNhanVien.Designer.cs">
+      <DependentUpon>UCNhanVien.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\Admin\UCNhaXe.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="GUI\Admin\UCNhaXe.Designer.cs">
       <DependentUpon>UCNhaXe.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\Admin\UCTaiKhoan.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\Admin\UCTaiKhoan.Designer.cs">
+      <DependentUpon>UCTaiKhoan.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\Admin\UCTaiXe.cs">
       <SubType>UserControl</SubType>
@@ -224,6 +292,12 @@
     </Compile>
     <Compile Include="GUI\Admin\UCThongTin.Designer.cs">
       <DependentUpon>UCThongTin.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\Admin\UCTrangChu.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\Admin\UCTrangChu.Designer.cs">
+      <DependentUpon>UCTrangChu.cs</DependentUpon>
     </Compile>
     <Compile Include="GUI\Admin\UCTuyenDuong.cs">
       <SubType>UserControl</SubType>
@@ -272,14 +346,38 @@
     <Compile Include="Utils\EmailHelper.cs" />
     <Compile Include="Utils\HashHelper.cs" />
     <Compile Include="Utils\Validation.cs" />
+    <EmbeddedResource Include="GUI\Admin\ChuyenXeDialog.resx">
+      <DependentUpon>ChuyenXeDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GUI\Admin\FrmMainAdmin.resx">
       <DependentUpon>FrmMainAdmin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Admin\GanTaiKhoanDialog.resx">
+      <DependentUpon>GanTaiKhoanDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Admin\GiaVeDialog.resx">
+      <DependentUpon>GiaVeDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Admin\HoaDonDialog.resx">
+      <DependentUpon>HoaDonDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Admin\KhachHangDialog.resx">
+      <DependentUpon>KhachHangDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\Admin\LoaiXeDialog.resx">
       <DependentUpon>LoaiXeDialog.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Admin\NhanVienDialog.resx">
+      <DependentUpon>NhanVienDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GUI\Admin\NhaXeDialog.resx">
       <DependentUpon>NhaXeDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Admin\TaiKhoanDialog.resx">
+      <DependentUpon>TaiKhoanDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Admin\TaiXeDialog.resx">
+      <DependentUpon>TaiXeDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\Admin\TuyenDuongDialog.resx">
       <DependentUpon>TuyenDuongDialog.cs</DependentUpon>
@@ -287,23 +385,38 @@
     <EmbeddedResource Include="GUI\Admin\UCChuyenXe.resx">
       <DependentUpon>UCChuyenXe.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Admin\UCDatVe.resx">
+      <DependentUpon>UCDatVe.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GUI\Admin\UCGiaVe.resx">
       <DependentUpon>UCGiaVe.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\Admin\UCHoaDon.resx">
       <DependentUpon>UCHoaDon.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Admin\UCKhachHang.resx">
+      <DependentUpon>UCKhachHang.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GUI\Admin\UCLoaiXe.resx">
       <DependentUpon>UCLoaiXe.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Admin\UCNhanVien.resx">
+      <DependentUpon>UCNhanVien.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GUI\Admin\UCNhaXe.resx">
       <DependentUpon>UCNhaXe.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Admin\UCTaiKhoan.resx">
+      <DependentUpon>UCTaiKhoan.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\Admin\UCTaiXe.resx">
       <DependentUpon>UCTaiXe.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\Admin\UCThongTin.resx">
       <DependentUpon>UCThongTin.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Admin\UCTrangChu.resx">
+      <DependentUpon>UCTrangChu.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\Admin\UCTuyenDuong.resx">
       <DependentUpon>UCTuyenDuong.cs</DependentUpon>
@@ -338,6 +451,27 @@
     <None Include="EF\BXMDModel.edmx.diagram">
       <DependentUpon>BXMDModel.edmx</DependentUpon>
     </None>
+    <None Include="GUI\Admin\FINAL_GIAVETHUCTE_COMPLETE.md" />
+    <None Include="GUI\Admin\FIX_ENCODING_UCDATVE_DESIGNER.md" />
+    <None Include="GUI\Admin\HUONG_DAN_GAN_TAI_KHOAN.md" />
+    <None Include="GUI\Admin\NHAN_VIEN_KHACH_HANG_README.md" />
+    <None Include="GUI\Admin\QUICK_FIX_SUMMARY.md" />
+    <None Include="GUI\Admin\SO_SANH_NHANVIEN_VS_KHACHHANG.md" />
+    <None Include="GUI\Admin\TAI_KHOAN_README.md" />
+    <None Include="GUI\Admin\TICH_HOP_VAO_MAIN_ADMIN.md" />
+    <None Include="GUI\Admin\UCDATVE_DEBUG_UPDATING_ENTRIES_ERROR.md" />
+    <None Include="GUI\Admin\UCDATVE_FEATURE_TIM_KH.md" />
+    <None Include="GUI\Admin\UCDATVE_FIX_COMPLETE.md" />
+    <None Include="GUI\Admin\UCDATVE_FIX_DBUPDATE_EXCEPTION.md" />
+    <None Include="GUI\Admin\UCDATVE_FIX_SUMMARY.md" />
+    <None Include="GUI\Admin\UCDATVE_FIX_TONG_TIEN_0.md" />
+    <None Include="GUI\Admin\UCDATVE_HUONG_DAN.md" />
+    <None Include="GUI\Admin\UCDATVE_QUICK_START.md" />
+    <None Include="GUI\Admin\UCDATVE_TEST_DATA.md" />
+    <None Include="GUI\Admin\UCDATVE_UPDATE_V2.md" />
+    <None Include="GUI\Admin\UCDATVE_USE_GIAVETHUCTE.md" />
+    <None Include="GUI\Admin\UCHOADON_VE_FEATURE.md" />
+    <None Include="GUI\Admin\UCKHACHHANG_TESTING_GUIDE.md" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -362,6 +496,8 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="resource\setting.png" />
+    <None Include="resource\user.png" />
     <None Include="resource\logout.png" />
     <Content Include="EF\BXMDModel.Context.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
@@ -373,6 +509,12 @@
       <DependentUpon>BXMDModel.edmx</DependentUpon>
       <LastGenOutput>BXMDModel.cs</LastGenOutput>
     </Content>
+    <None Include="resource\Bus-icon.png" />
+    <None Include="resource\padlock.png" />
+    <None Include="resource\home.png" />
+    <None Include="resource\menu.png" />
+    <None Include="resource\personal-security.png" />
+    <Content Include="GUI\Admin\UPDATE_GIAVETHUCTE.sql" />
     <Content Include="resource\plus.png" />
     <None Include="resource\bus.png" />
     <None Include="resource\login_picture.svg" />

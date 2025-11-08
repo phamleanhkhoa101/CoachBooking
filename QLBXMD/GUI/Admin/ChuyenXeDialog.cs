@@ -9,15 +9,8 @@ namespace QLBXMD.GUI.Admin
 {
 	public enum ChuyenXeDialogMode { Add, View, Edit, Delete }
 
-	public class ChuyenXeDialog : Form
+	public partial class ChuyenXeDialog : Form
 	{
-		private TextBox txtMaChuyen;
-		private ComboBox cbbXe, cbbTuyen, cbbTaiXe;
-		private DateTimePicker dtpKhoiHanh, dtpDenDuKien;
-		private NumericUpDown numGiaVe;
-		private Button btnPrimary, btnCancel;
-		private Label lblGiaVeInfo; // Label để hiển thị thông báo giá vé
-
 		public ChuyenXeDialogMode Mode { get; private set; } = ChuyenXeDialogMode.Add;
 
 		public string MaChuyen { get => txtMaChuyen.Text; set => txtMaChuyen.Text = value; }
@@ -191,92 +184,16 @@ namespace QLBXMD.GUI.Admin
 			numGiaVe.TabStop = !ro;
 		}
 
-		private void InitializeComponent()
+		private void btnPrimary_Click(object sender, EventArgs e)
 		{
-			this.Text = "Chuyến xe";
-			this.StartPosition = FormStartPosition.CenterParent;
-			this.Size = new Size(560, 420); // Tăng chiều cao để chứa label mới
-			this.FormBorderStyle = FormBorderStyle.FixedDialog;
-			this.MaximizeBox = false;
-			this.MinimizeBox = false;
+			this.DialogResult = DialogResult.OK;
+			this.Close();
+		}
 
-			var lblMaChuyen = new Label { Text = "Mã chuyến", Left = 20, Top = 20, AutoSize = true };
-			txtMaChuyen = new TextBox { Left = 160, Top = 16, Width = 360, ReadOnly = true };
-			
-			var lblXe = new Label { Text = "Xe", Left = 20, Top = 55, AutoSize = true };
-			cbbXe = new ComboBox { Left = 160, Top = 51, Width = 360, DropDownStyle = ComboBoxStyle.DropDownList };
-			
-			var lblTuyen = new Label { Text = "Tuyến", Left = 20, Top = 90, AutoSize = true };
-			cbbTuyen = new ComboBox { Left = 160, Top = 86, Width = 360, DropDownStyle = ComboBoxStyle.DropDownList };
-			
-			var lblTaiXe = new Label { Text = "Tài xế", Left = 20, Top = 125, AutoSize = true };
-			cbbTaiXe = new ComboBox { Left = 160, Top = 121, Width = 360, DropDownStyle = ComboBoxStyle.DropDownList };
-			
-			var lblKhoiHanh = new Label { Text = "Khởi hành", Left = 20, Top = 160, AutoSize = true };
-			dtpKhoiHanh = new DateTimePicker
-			{
-				Left = 160,
-				Top = 156,
-				Width = 220,
-				Format = DateTimePickerFormat.Custom,
-				CustomFormat = "dd/MM/yyyy HH:mm",
-				ShowUpDown = false
-			};
-			
-			var lblDenDuKien = new Label { Text = "Đến dự kiến", Left = 20, Top = 195, AutoSize = true };
-			dtpDenDuKien = new DateTimePicker
-			{
-				Left = 160,
-				Top = 191,
-				Width = 220,
-				Format = DateTimePickerFormat.Custom,
-				CustomFormat = "dd/MM/yyyy HH:mm",
-				ShowCheckBox = true,
-				ShowUpDown = false
-			};
-			
-			var lblGiaVe = new Label { Text = "Giá vé (₫)", Left = 20, Top = 230, AutoSize = true };
-			numGiaVe = new NumericUpDown
-			{
-				Left = 160,
-				Top = 226,
-				Width = 220,
-				Maximum = 1000000000,
-				Minimum = 0,
-				Increment = 1000,
-				ThousandsSeparator = true
-			};
-
-			// Label thông báo giá vé
-			lblGiaVeInfo = new Label
-			{
-				Left = 160,
-				Top = 254,
-				Width = 360,
-				Height = 20,
-				ForeColor = Color.Green,
-				Text = "",
-				AutoSize = false
-			};
-
-			btnPrimary = new Button { Left = 330, Top = 320, Width = 90, Text = "Lưu" };
-			btnCancel = new Button { Left = 430, Top = 320, Width = 90, Text = "Hủy" };
-
-			btnPrimary.Click += (s, e) => { this.DialogResult = DialogResult.OK; this.Close(); };
-			btnCancel.Click += (s, e) => { this.DialogResult = DialogResult.Cancel; this.Close(); };
-
-			Controls.AddRange(new Control[]
-			{
-				lblMaChuyen, txtMaChuyen,
-				lblXe, cbbXe,
-				lblTuyen, cbbTuyen,
-				lblTaiXe, cbbTaiXe,
-				lblKhoiHanh, dtpKhoiHanh,
-				lblDenDuKien, dtpDenDuKien,
-				lblGiaVe, numGiaVe,
-				lblGiaVeInfo, // Thêm label thông báo
-				btnPrimary, btnCancel
-			});
+		private void btnCancel_Click(object sender, EventArgs e)
+		{
+			this.DialogResult = DialogResult.Cancel;
+			this.Close();
 		}
 	}
 }

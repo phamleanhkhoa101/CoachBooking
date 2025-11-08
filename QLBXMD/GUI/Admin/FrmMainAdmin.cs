@@ -46,7 +46,11 @@ namespace QLBXMD.GUI.Admin
 
 		private void FrmMainAdmin_Load(object sender, EventArgs e)
 		{
-			sidebarButtons = new List<Button> { btnTrangChu, btnDatVe, btnNhaXe, btnLoaiXe, btnXe, btnTuyenDuong, btnChuyenXe, btnGiaVe, btnTaiXe, btnHoaDon };
+			sidebarButtons = new List<Button> { 
+				btnTrangChu, btnDatVe, btnNhaXe, btnLoaiXe, btnXe, 
+				btnTuyenDuong, btnChuyenXe, btnGiaVe, btnTaiXe, btnHoaDon,
+				btnKhachHang // Thêm button khách hàng
+			};
 			//lblName.Text = taiKhoan.
 			lblRole.Text = taiKhoan.Quyen.TenQuyen;
 
@@ -67,6 +71,7 @@ namespace QLBXMD.GUI.Admin
 			btnGiaVe.Click += btnGiaVe_Click; // Giá vé
 			btnTaiXe.Click += btnTaiXe_Click; // Tài xế
 			btnHoaDon.Click += btnHoaDon_Click; // Hóa đơn
+			btnKhachHang.Click += btnKhachHang_Click; // Khách hàng - Thêm event
 
 			ApplyPermissions();
 		}
@@ -170,8 +175,7 @@ namespace QLBXMD.GUI.Admin
 
 		private void btnTrangChu_Click(object sender, EventArgs e)
 		{
-			// Simple home action: clear content and highlight button
-			pnlMain.Controls.Clear();
+			ShowControl(new UCTrangChu());
 			HightlightButton(btnTrangChu);
 		}
 
@@ -215,7 +219,7 @@ namespace QLBXMD.GUI.Admin
 
 			AddGroup(
 				"HeThong",
-				new[] { "button4", "button3", "button2" } // Tài khoản, Phân quyền, Thống kê
+				new[] { "button4", "button3", "button2", "btnKhachHang" } // Thêm btnKhachHang vào nhóm Hệ thống
 			);
 
 			// After groups are defined, record original geometry for each group based on original Tops
@@ -290,6 +294,45 @@ namespace QLBXMD.GUI.Admin
 			ucThongTin.SetData(taiKhoan, nhanVien);
 			ShowControl(ucThongTin);
 			//HightlightButton(btn);
+		}
+
+		private void button2_Click(object sender, EventArgs e)
+		{
+			ShowControl(new UCTaiKhoan());
+			//HightlightButton(btnTrangChu);
+		}
+
+		private void btnPhanQuyen_Click(object sender, EventArgs e)
+		{
+			ShowControl(new UCNhanVien());
+			HightlightButton(btnPhanQuyen);
+		}
+
+		private void btnKhachHang_Click(object sender, EventArgs e)
+		{
+			ShowControl(new UCKhachHang());
+			HightlightButton(btnKhachHang);
+		}
+
+		private void btnDatVe_Click(object sender, EventArgs e)
+		{
+			ShowControl(new UCDatVe());
+			HightlightButton(btnDatVe);
+		}
+
+		private void thôngTinToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+
+		}
+
+		private void đăngXuấtToolStripMenuItem_Click(object sender, EventArgs e)
+		{
+
+		}
+
+		private void btnSetting_Click(object sender, EventArgs e)
+		{
+			contextMenuStrip1.Show(Cursor.Position);
 		}
 	}
 }

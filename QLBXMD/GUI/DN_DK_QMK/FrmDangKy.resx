@@ -125,15 +125,18 @@
   <data name="label2.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="label2.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 10pt</value>
+  </data>
   <data name="label2.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
-  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="label2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>64, 179</value>
+    <value>86, 187</value>
   </data>
   <data name="label2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>79, 20</value>
+    <value>99, 25</value>
   </data>
   <data name="label2.TabIndex" type="System.Int32, mscorlib">
     <value>11</value>
@@ -157,7 +160,7 @@
     <value>Microsoft Sans Serif, 10pt</value>
   </data>
   <data name="txtMatKhau.Location" type="System.Drawing.Point, System.Drawing">
-    <value>64, 202</value>
+    <value>91, 215</value>
   </data>
   <data name="txtMatKhau.PasswordChar" type="System.Char, mscorlib" xml:space="preserve">
     <value>*</value>
@@ -183,14 +186,17 @@
   <data name="label1.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
+  <data name="label1.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 10pt</value>
+  </data>
   <data name="label1.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
   <data name="label1.Location" type="System.Drawing.Point, System.Drawing">
-    <value>64, 108</value>
+    <value>86, 106</value>
   </data>
   <data name="label1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>82, 20</value>
+    <value>105, 25</value>
   </data>
   <data name="label1.TabIndex" type="System.Int32, mscorlib">
     <value>9</value>
@@ -214,7 +220,7 @@
     <value>Microsoft Sans Serif, 10pt</value>
   </data>
   <data name="txtTenDangNhap.Location" type="System.Drawing.Point, System.Drawing">
-    <value>64, 131</value>
+    <value>91, 134</value>
   </data>
   <data name="txtTenDangNhap.Size" type="System.Drawing.Size, System.Drawing">
     <value>388, 30</value>
@@ -237,14 +243,17 @@
   <data name="lblEmail.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
+  <data name="lblEmail.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 10pt</value>
+  </data>
   <data name="lblEmail.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
   <data name="lblEmail.Location" type="System.Drawing.Point, System.Drawing">
-    <value>64, 35</value>
+    <value>86, 23</value>
   </data>
   <data name="lblEmail.Size" type="System.Drawing.Size, System.Drawing">
-    <value>52, 20</value>
+    <value>66, 25</value>
   </data>
   <data name="lblEmail.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -268,7 +277,7 @@
     <value>Microsoft Sans Serif, 10pt</value>
   </data>
   <data name="txtEmail.Location" type="System.Drawing.Point, System.Drawing">
-    <value>64, 58</value>
+    <value>91, 51</value>
   </data>
   <data name="txtEmail.Size" type="System.Drawing.Size, System.Drawing">
     <value>388, 30</value>
@@ -291,14 +300,17 @@
   <data name="lblPassword.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
+  <data name="lblPassword.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 10pt</value>
+  </data>
   <data name="lblPassword.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
   <data name="lblPassword.Location" type="System.Drawing.Point, System.Drawing">
-    <value>64, 250</value>
+    <value>86, 269</value>
   </data>
   <data name="lblPassword.Size" type="System.Drawing.Size, System.Drawing">
-    <value>140, 20</value>
+    <value>174, 25</value>
   </data>
   <data name="lblPassword.TabIndex" type="System.Int32, mscorlib">
     <value>4</value>
@@ -322,7 +334,7 @@
     <value>Microsoft Sans Serif, 10pt</value>
   </data>
   <data name="txtMatKhau2.Location" type="System.Drawing.Point, System.Drawing">
-    <value>64, 270</value>
+    <value>91, 297</value>
   </data>
   <data name="txtMatKhau2.PasswordChar" type="System.Char, mscorlib" xml:space="preserve">
     <value>*</value>
@@ -348,14 +360,17 @@
   <data name="btnDangNhap.FlatStyle" type="System.Windows.Forms.FlatStyle, System.Windows.Forms">
     <value>Flat</value>
   </data>
+  <data name="btnDangNhap.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 10pt, style=Bold</value>
+  </data>
   <data name="btnDangNhap.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
   <data name="btnDangNhap.Location" type="System.Drawing.Point, System.Drawing">
-    <value>108, 340</value>
+    <value>135, 365</value>
   </data>
   <data name="btnDangNhap.Size" type="System.Drawing.Size, System.Drawing">
-    <value>300, 40</value>
+    <value>300, 49</value>
   </data>
   <data name="btnDangNhap.TabIndex" type="System.Int32, mscorlib">
     <value>6</value>
@@ -378,14 +393,17 @@
   <data name="linkDangKy.AutoSize" type="System.Boolean, mscorlib">
     <value>True</value>
   </data>
+  <data name="linkDangKy.Font" type="System.Drawing.Font, System.Drawing">
+    <value>Microsoft Sans Serif, 9pt</value>
+  </data>
   <data name="linkDangKy.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
   <data name="linkDangKy.Location" type="System.Drawing.Point, System.Drawing">
-    <value>193, 399</value>
+    <value>220, 426</value>
   </data>
   <data name="linkDangKy.Size" type="System.Drawing.Size, System.Drawing">
-    <value>120, 20</value>
+    <value>135, 22</value>
   </data>
   <data name="linkDangKy.TabIndex" type="System.Int32, mscorlib">
     <value>8</value>
@@ -409,7 +427,7 @@
     <value>3, 103</value>
   </data>
   <data name="panel2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>514, 471</value>
+    <value>562, 510</value>
   </data>
   <data name="panel2.TabIndex" type="System.Int32, mscorlib">
     <value>10</value>
@@ -430,16 +448,16 @@
     <value>True</value>
   </data>
   <data name="lblTitle.Font" type="System.Drawing.Font, System.Drawing">
-    <value>Segoe UI, 14pt, style=Bold</value>
+    <value>Segoe UI, 18pt, style=Bold</value>
   </data>
   <data name="lblTitle.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
     <value>NoControl</value>
   </data>
   <data name="lblTitle.Location" type="System.Drawing.Point, System.Drawing">
-    <value>211, 33</value>
+    <value>219, 35</value>
   </data>
   <data name="lblTitle.Size" type="System.Drawing.Size, System.Drawing">
-    <value>126, 38</value>
+    <value>159, 48</value>
   </data>
   <data name="lblTitle.TabIndex" type="System.Int32, mscorlib">
     <value>2</value>
@@ -469,7 +487,7 @@
     <value>418, 0</value>
   </data>
   <data name="panel1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>520, 574</value>
+    <value>568, 613</value>
   </data>
   <data name="panel1.TabIndex" type="System.Int32, mscorlib">
     <value>1</value>
@@ -496,7 +514,7 @@
     <value>0, 0</value>
   </data>
   <data name="pictureBox1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>418, 574</value>
+    <value>418, 613</value>
   </data>
   <data name="pictureBox1.SizeMode" type="System.Windows.Forms.PictureBoxSizeMode, System.Windows.Forms">
     <value>Zoom</value>
@@ -523,7 +541,7 @@
     <value>9, 20</value>
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>938, 574</value>
+    <value>986, 613</value>
   </data>
   <data name="$this.StartPosition" type="System.Windows.Forms.FormStartPosition, System.Windows.Forms">
     <value>CenterScreen</value>

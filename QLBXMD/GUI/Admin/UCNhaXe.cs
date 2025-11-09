@@ -285,5 +285,10 @@ namespace QLBXMD.GUI.Admin
 			// Mở dialog xem khi double click
 			btnXem_Click(sender, e);
 		}
+
+		private void panel1_Paint(object sender, PaintEventArgs e)
+		{
+
+		}
 	}
 }

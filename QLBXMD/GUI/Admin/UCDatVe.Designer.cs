@@ -33,7 +33,6 @@
 			this.pnlSearch = new System.Windows.Forms.Panel();
 			this.cboGioDi = new System.Windows.Forms.ComboBox();
 			this.labelGioDi = new System.Windows.Forms.Label();
-			this.btnTimChuyen = new System.Windows.Forms.Button();
 			this.dtpNgayDi = new System.Windows.Forms.DateTimePicker();
 			this.cboDiemDen = new System.Windows.Forms.ComboBox();
 			this.cboDiemDi = new System.Windows.Forms.ComboBox();
@@ -70,6 +69,7 @@
 			this.label8 = new System.Windows.Forms.Label();
 			this.label7 = new System.Windows.Forms.Label();
 			this.label6 = new System.Windows.Forms.Label();
+			this.btnTimChuyen = new System.Windows.Forms.Button();
 			this.flowMain.SuspendLayout();
 			this.pnlSearch.SuspendLayout();
 			this.pnlResults.SuspendLayout();
@@ -131,7 +131,7 @@
 			this.pnlSearch.MinimumSize = new System.Drawing.Size(1280, 180);
 			this.pnlSearch.Name = "pnlSearch";
 			this.pnlSearch.Padding = new System.Windows.Forms.Padding(20);
-			this.pnlSearch.Size = new System.Drawing.Size(1280, 180);
+			this.pnlSearch.Size = new System.Drawing.Size(1280, 185);
 			this.pnlSearch.TabIndex = 1;
 			// 
 			// cboGioDi
@@ -160,26 +160,11 @@
 			this.labelGioDi.TabIndex = 7;
 			this.labelGioDi.Text = "Giờ đi";
 			// 
-			// btnTimChuyen
-			// 
-			this.btnTimChuyen.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(198)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
-			this.btnTimChuyen.FlatAppearance.BorderSize = 0;
-			this.btnTimChuyen.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this.btnTimChuyen.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.btnTimChuyen.ForeColor = System.Drawing.Color.White;
-			this.btnTimChuyen.Location = new System.Drawing.Point(380, 117);
-			this.btnTimChuyen.Name = "btnTimChuyen";
-			this.btnTimChuyen.Size = new System.Drawing.Size(180, 45);
-			this.btnTimChuyen.TabIndex = 6;
-			this.btnTimChuyen.Text = "Tìm chuyến";
-			this.btnTimChuyen.UseVisualStyleBackColor = false;
-			this.btnTimChuyen.Click += new System.EventHandler(this.btnTimChuyen_Click);
-			// 
 			// dtpNgayDi
 			// 
 			this.dtpNgayDi.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.dtpNgayDi.Format = System.Windows.Forms.DateTimePickerFormat.Short;
-			this.dtpNgayDi.Location = new System.Drawing.Point(713, 36);
+			this.dtpNgayDi.Location = new System.Drawing.Point(713, 44);
 			this.dtpNgayDi.Name = "dtpNgayDi";
 			this.dtpNgayDi.Size = new System.Drawing.Size(250, 34);
 			this.dtpNgayDi.TabIndex = 5;
@@ -189,7 +174,7 @@
 			this.cboDiemDen.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.cboDiemDen.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.cboDiemDen.FormattingEnabled = true;
-			this.cboDiemDen.Location = new System.Drawing.Point(380, 36);
+			this.cboDiemDen.Location = new System.Drawing.Point(380, 44);
 			this.cboDiemDen.Name = "cboDiemDen";
 			this.cboDiemDen.Size = new System.Drawing.Size(250, 36);
 			this.cboDiemDen.TabIndex = 4;
@@ -199,7 +184,7 @@
 			this.cboDiemDi.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.cboDiemDi.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.cboDiemDi.FormattingEnabled = true;
-			this.cboDiemDi.Location = new System.Drawing.Point(23, 36);
+			this.cboDiemDi.Location = new System.Drawing.Point(23, 44);
 			this.cboDiemDi.Name = "cboDiemDi";
 			this.cboDiemDi.Size = new System.Drawing.Size(250, 36);
 			this.cboDiemDi.TabIndex = 3;
@@ -208,7 +193,7 @@
 			// 
 			this.label3.AutoSize = true;
 			this.label3.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.label3.Location = new System.Drawing.Point(708, 0);
+			this.label3.Location = new System.Drawing.Point(708, 8);
 			this.label3.Name = "label3";
 			this.label3.Size = new System.Drawing.Size(87, 28);
 			this.label3.TabIndex = 2;
@@ -218,7 +203,7 @@
 			// 
 			this.label2.AutoSize = true;
 			this.label2.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.label2.Location = new System.Drawing.Point(375, 0);
+			this.label2.Location = new System.Drawing.Point(375, 8);
 			this.label2.Name = "label2";
 			this.label2.Size = new System.Drawing.Size(104, 28);
 			this.label2.TabIndex = 1;
@@ -228,7 +213,7 @@
 			// 
 			this.label1.AutoSize = true;
 			this.label1.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.label1.Location = new System.Drawing.Point(18, 0);
+			this.label1.Location = new System.Drawing.Point(18, 8);
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(87, 28);
 			this.label1.TabIndex = 0;
@@ -241,13 +226,13 @@
 			this.pnlResults.BackColor = System.Drawing.Color.White;
 			this.pnlResults.Controls.Add(this.dgvChuyenXe);
 			this.pnlResults.Controls.Add(this.label4);
-			this.pnlResults.Location = new System.Drawing.Point(23, 300);
+			this.pnlResults.Location = new System.Drawing.Point(23, 305);
 			this.pnlResults.Margin = new System.Windows.Forms.Padding(3, 3, 3, 20);
 			this.pnlResults.MaximumSize = new System.Drawing.Size(1280, 0);
 			this.pnlResults.MinimumSize = new System.Drawing.Size(1280, 350);
 			this.pnlResults.Name = "pnlResults";
 			this.pnlResults.Padding = new System.Windows.Forms.Padding(20);
-			this.pnlResults.Size = new System.Drawing.Size(1280, 350);
+			this.pnlResults.Size = new System.Drawing.Size(1280, 353);
 			this.pnlResults.TabIndex = 2;
 			this.pnlResults.Visible = false;
 			// 
@@ -289,12 +274,12 @@
 			this.pnlSeatMap.Controls.Add(this.gbTangDuoi);
 			this.pnlSeatMap.Controls.Add(this.pnlLegend);
 			this.pnlSeatMap.Controls.Add(this.label5);
-			this.pnlSeatMap.Location = new System.Drawing.Point(23, 673);
+			this.pnlSeatMap.Location = new System.Drawing.Point(23, 681);
 			this.pnlSeatMap.Margin = new System.Windows.Forms.Padding(3, 3, 3, 20);
 			this.pnlSeatMap.MaximumSize = new System.Drawing.Size(1280, 0);
 			this.pnlSeatMap.Name = "pnlSeatMap";
 			this.pnlSeatMap.Padding = new System.Windows.Forms.Padding(20);
-			this.pnlSeatMap.Size = new System.Drawing.Size(1280, 0);
+			this.pnlSeatMap.Size = new System.Drawing.Size(703, 230);
 			this.pnlSeatMap.TabIndex = 3;
 			this.pnlSeatMap.Visible = false;
 			// 
@@ -308,7 +293,7 @@
 			this.gbTangTren.MaximumSize = new System.Drawing.Size(600, 0);
 			this.gbTangTren.Name = "gbTangTren";
 			this.gbTangTren.Padding = new System.Windows.Forms.Padding(10);
-			this.gbTangTren.Size = new System.Drawing.Size(600, 0);
+			this.gbTangTren.Size = new System.Drawing.Size(40, 67);
 			this.gbTangTren.TabIndex = 3;
 			this.gbTangTren.TabStop = false;
 			this.gbTangTren.Text = "Tầng trên";
@@ -322,7 +307,7 @@
 			this.flpTangTren.MaximumSize = new System.Drawing.Size(580, 0);
 			this.flpTangTren.Name = "flpTangTren";
 			this.flpTangTren.Padding = new System.Windows.Forms.Padding(10);
-			this.flpTangTren.Size = new System.Drawing.Size(580, 0);
+			this.flpTangTren.Size = new System.Drawing.Size(20, 20);
 			this.flpTangTren.TabIndex = 0;
 			// 
 			// gbTangDuoi
@@ -335,7 +320,7 @@
 			this.gbTangDuoi.MaximumSize = new System.Drawing.Size(600, 0);
 			this.gbTangDuoi.Name = "gbTangDuoi";
 			this.gbTangDuoi.Padding = new System.Windows.Forms.Padding(10);
-			this.gbTangDuoi.Size = new System.Drawing.Size(600, 0);
+			this.gbTangDuoi.Size = new System.Drawing.Size(40, 67);
 			this.gbTangDuoi.TabIndex = 2;
 			this.gbTangDuoi.TabStop = false;
 			this.gbTangDuoi.Text = "Tầng dưới";
@@ -349,7 +334,7 @@
 			this.flpTangDuoi.MaximumSize = new System.Drawing.Size(580, 0);
 			this.flpTangDuoi.Name = "flpTangDuoi";
 			this.flpTangDuoi.Padding = new System.Windows.Forms.Padding(10);
-			this.flpTangDuoi.Size = new System.Drawing.Size(580, 0);
+			this.flpTangDuoi.Size = new System.Drawing.Size(20, 20);
 			this.flpTangDuoi.TabIndex = 0;
 			// 
 			// pnlLegend
@@ -459,13 +444,13 @@
 			this.pnlThongTinKH.Controls.Add(this.label8);
 			this.pnlThongTinKH.Controls.Add(this.label7);
 			this.pnlThongTinKH.Controls.Add(this.label6);
-			this.pnlThongTinKH.Location = new System.Drawing.Point(23, 1196);
+			this.pnlThongTinKH.Location = new System.Drawing.Point(23, 934);
 			this.pnlThongTinKH.Margin = new System.Windows.Forms.Padding(3, 3, 3, 20);
 			this.pnlThongTinKH.MaximumSize = new System.Drawing.Size(1280, 0);
 			this.pnlThongTinKH.MinimumSize = new System.Drawing.Size(1280, 450);
 			this.pnlThongTinKH.Name = "pnlThongTinKH";
 			this.pnlThongTinKH.Padding = new System.Windows.Forms.Padding(20);
-			this.pnlThongTinKH.Size = new System.Drawing.Size(1280, 450);
+			this.pnlThongTinKH.Size = new System.Drawing.Size(1280, 453);
 			this.pnlThongTinKH.TabIndex = 4;
 			this.pnlThongTinKH.Visible = false;
 			// 
@@ -609,6 +594,23 @@
 			this.label6.TabIndex = 0;
 			this.label6.Text = "Thông tin khách hàng";
 			// 
+			// btnTimChuyen
+			// 
+			this.btnTimChuyen.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(198)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
+			this.btnTimChuyen.FlatAppearance.BorderSize = 0;
+			this.btnTimChuyen.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.btnTimChuyen.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.btnTimChuyen.ForeColor = System.Drawing.Color.White;
+			this.btnTimChuyen.Image = global::QLBXMD.Properties.Resources.search;
+			this.btnTimChuyen.Location = new System.Drawing.Point(380, 117);
+			this.btnTimChuyen.Name = "btnTimChuyen";
+			this.btnTimChuyen.Size = new System.Drawing.Size(222, 45);
+			this.btnTimChuyen.TabIndex = 6;
+			this.btnTimChuyen.Text = "Tìm chuyến";
+			this.btnTimChuyen.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+			this.btnTimChuyen.UseVisualStyleBackColor = false;
+			this.btnTimChuyen.Click += new System.EventHandler(this.btnTimChuyen_Click);
+			// 
 			// UCDatVe
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
@@ -626,7 +628,9 @@
 			this.pnlSeatMap.ResumeLayout(false);
 			this.pnlSeatMap.PerformLayout();
 			this.gbTangTren.ResumeLayout(false);
+			this.gbTangTren.PerformLayout();
 			this.gbTangDuoi.ResumeLayout(false);
+			this.gbTangDuoi.PerformLayout();
 			this.pnlLegend.ResumeLayout(false);
 			this.pnlLegend.PerformLayout();
 			this.pnlThongTinKH.ResumeLayout(false);

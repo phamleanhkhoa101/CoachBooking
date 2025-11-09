@@ -44,6 +44,8 @@
 			this.lblSoChuyenXe = new System.Windows.Forms.Label();
 			this.lblSoChuyenXeValue = new System.Windows.Forms.Label();
 			this.pnlCard1 = new System.Windows.Forms.Panel();
+			this.pnlIcon1 = new System.Windows.Forms.Panel();
+			this.lblIcon1 = new System.Windows.Forms.Label();
 			this.lblKhachHang = new System.Windows.Forms.Label();
 			this.lblKhachHangValue = new System.Windows.Forms.Label();
 			this.lblWelcome = new System.Windows.Forms.Label();
@@ -55,6 +57,7 @@
 			this.pnlCard2.SuspendLayout();
 			this.pnlIcon2.SuspendLayout();
 			this.pnlCard1.SuspendLayout();
+			this.pnlIcon1.SuspendLayout();
 			this.flowLayoutPanel1.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -219,8 +222,9 @@
 			// 
 			// pnlCard1
 			// 
-			this.pnlCard1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(230)))), ((int)(((byte)(240)))), ((int)(((byte)(255)))));
+			this.pnlCard1.BackColor = System.Drawing.Color.White;
 			this.pnlCard1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+			this.pnlCard1.Controls.Add(this.pnlIcon1);
 			this.pnlCard1.Controls.Add(this.lblKhachHang);
 			this.pnlCard1.Controls.Add(this.lblKhachHangValue);
 			this.pnlCard1.Location = new System.Drawing.Point(20, 10);
@@ -228,6 +232,25 @@
 			this.pnlCard1.Name = "pnlCard1";
 			this.pnlCard1.Size = new System.Drawing.Size(263, 140);
 			this.pnlCard1.TabIndex = 6;
+			// 
+			// pnlIcon1
+			// 
+			this.pnlIcon1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(214)))), ((int)(((byte)(231)))), ((int)(((byte)(255)))));
+			this.pnlIcon1.Controls.Add(this.lblIcon1);
+			this.pnlIcon1.Location = new System.Drawing.Point(20, 25);
+			this.pnlIcon1.Name = "pnlIcon1";
+			this.pnlIcon1.Size = new System.Drawing.Size(60, 60);
+			this.pnlIcon1.TabIndex = 3;
+			// 
+			// lblIcon1
+			// 
+			this.lblIcon1.Font = new System.Drawing.Font("Segoe UI", 24F);
+			this.lblIcon1.Location = new System.Drawing.Point(0, 0);
+			this.lblIcon1.Name = "lblIcon1";
+			this.lblIcon1.Size = new System.Drawing.Size(60, 60);
+			this.lblIcon1.TabIndex = 0;
+			this.lblIcon1.Text = "👥";
+			this.lblIcon1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 			// 
 			// lblKhachHang
 			// 
@@ -243,10 +266,9 @@
 			// 
 			this.lblKhachHangValue.Font = new System.Drawing.Font("Segoe UI", 26F, System.Drawing.FontStyle.Bold);
 			this.lblKhachHangValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(58)))), ((int)(((byte)(64)))));
-			this.lblKhachHangValue.ImageAlign = System.Drawing.ContentAlignment.TopCenter;
-			this.lblKhachHangValue.Location = new System.Drawing.Point(100, 10);
+			this.lblKhachHangValue.Location = new System.Drawing.Point(100, 20);
 			this.lblKhachHangValue.Name = "lblKhachHangValue";
-			this.lblKhachHangValue.Size = new System.Drawing.Size(160, 70);
+			this.lblKhachHangValue.Size = new System.Drawing.Size(160, 50);
 			this.lblKhachHangValue.TabIndex = 1;
 			this.lblKhachHangValue.Text = "0";
 			this.lblKhachHangValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -256,7 +278,7 @@
 			this.lblWelcome.AutoSize = true;
 			this.lblWelcome.Font = new System.Drawing.Font("Segoe UI", 22F, System.Drawing.FontStyle.Bold);
 			this.lblWelcome.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(108)))), ((int)(((byte)(117)))), ((int)(((byte)(125)))));
-			this.lblWelcome.Location = new System.Drawing.Point(40, 40);
+			this.lblWelcome.Location = new System.Drawing.Point(61, 81);
 			this.lblWelcome.Name = "lblWelcome";
 			this.lblWelcome.Size = new System.Drawing.Size(576, 60);
 			this.lblWelcome.TabIndex = 5;
@@ -266,17 +288,22 @@
 			// 
 			this.flowLayoutPanel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+			this.flowLayoutPanel1.AutoSize = true;
+			this.flowLayoutPanel1.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
 			this.flowLayoutPanel1.Controls.Add(this.pnlCard1);
 			this.flowLayoutPanel1.Controls.Add(this.pnlCard2);
 			this.flowLayoutPanel1.Controls.Add(this.pnlCard3);
 			this.flowLayoutPanel1.Controls.Add(this.pnlCard4);
-			this.flowLayoutPanel1.Location = new System.Drawing.Point(29, 128);
+			this.flowLayoutPanel1.Location = new System.Drawing.Point(50, 169);
+			this.flowLayoutPanel1.MinimumSize = new System.Drawing.Size(1000, 160);
 			this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-			this.flowLayoutPanel1.Size = new System.Drawing.Size(1249, 425);
+			this.flowLayoutPanel1.Size = new System.Drawing.Size(1224, 160);
 			this.flowLayoutPanel1.TabIndex = 10;
 			// 
 			// UCTrangChu
 			// 
+			this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
+			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.Controls.Add(this.flowLayoutPanel1);
 			this.Controls.Add(this.lblWelcome);
 			this.Name = "UCTrangChu";
@@ -289,6 +316,7 @@
 			this.pnlCard2.ResumeLayout(false);
 			this.pnlIcon2.ResumeLayout(false);
 			this.pnlCard1.ResumeLayout(false);
+			this.pnlIcon1.ResumeLayout(false);
 			this.flowLayoutPanel1.ResumeLayout(false);
 			this.ResumeLayout(false);
 			this.PerformLayout();
@@ -312,6 +340,8 @@
 		private System.Windows.Forms.Label lblSoChuyenXe;
 		private System.Windows.Forms.Label lblSoChuyenXeValue;
 		private System.Windows.Forms.Panel pnlCard1;
+		private System.Windows.Forms.Panel pnlIcon1;
+		private System.Windows.Forms.Label lblIcon1;
 		private System.Windows.Forms.Label lblKhachHang;
 		private System.Windows.Forms.Label lblKhachHangValue;
 		private System.Windows.Forms.Label lblWelcome;

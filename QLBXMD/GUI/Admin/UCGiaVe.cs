@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using QLBXMD.BUS;
@@ -10,21 +11,29 @@ namespace QLBXMD.GUI.Admin
 	public partial class UCGiaVe : UserControl
 	{
 		private readonly GiaVeBUS _bus = new GiaVeBUS();
-		private List<dynamic> _data;
+		private List<dynamic> _dataDaCo;
+		private List<dynamic> _dataChuaCo;
 
 		public UCGiaVe()
 		{
 			InitializeComponent();
 			this.Load += UCGiaVe_Load;
-			this.dgv.SelectionChanged += Dgv_SelectionChanged;
+			this.dgvDaCo.SelectionChanged += DgvDaCo_SelectionChanged;
+			this.dgvChuaCo.SelectionChanged += DgvChuaCo_SelectionChanged;
 		}
 
-		private void Dgv_SelectionChanged(object sender, EventArgs e)
+		private void DgvDaCo_SelectionChanged(object sender, EventArgs e)
 		{
-			bool has = dgv.SelectedRows.Count > 0 && dgv.SelectedRows[0].Cells[0].Value != null;
+			bool has = dgvDaCo.SelectedRows.Count > 0 && dgvDaCo.SelectedRows[0].Cells[0].Value != null;
 			btnXem.Enabled = has; 
 			btnSua.Enabled = has; 
 			btnXoa.Enabled = has;
+		}
+
+		private void DgvChuaCo_SelectionChanged(object sender, EventArgs e)
+		{
+			bool has = dgvChuaCo.SelectedRows.Count > 0;
+			btnThemChuaCo.Enabled = has;
 		}
 
 		private void UCGiaVe_Load(object sender, EventArgs e)
@@ -33,25 +42,51 @@ namespace QLBXMD.GUI.Admin
 			{
 				SetupGridHeaders();
 
-				var list = _bus.GetAll() ?? new List<GiaVe>();
-				_data = list
-					.Select(gv => new
+				// Sử dụng GetAllCombinations để lấy tất cả tổ hợp
+				var allCombos = _bus.GetAllCombinations() ?? new List<dynamic>();
+				
+				// Tách dữ liệu thành 2 danh sách
+				_dataDaCo = allCombos
+					.Where(combo => combo.HasPrice)
+					.Select(combo => new
 					{
-						MaGV = gv.MaGV,
-						NhaXeName = gv.NhaXe != null ? gv.NhaXe.TenNX : (gv.MaNX != 0 ? $"NX {gv.MaNX}" : ""),
-						LoaiXeName = gv.LoaiXe != null ? gv.LoaiXe.TenLX : (gv.MaLX != 0 ? $"LX {gv.MaLX}" : ""),
-						TuyenName = gv.TuyenDuong != null ? ($"{gv.TuyenDuong.DiemDi} -> {gv.TuyenDuong.DiemDen}") : (gv.MaTuyen != 0 ? $"Tuyến {gv.MaTuyen}" : ""),
-						GiaVe = gv.GiaVe1.ToString("N0"),
-						MaNX = gv.MaNX,
-						MaLX = gv.MaLX,
-						MaTuyen = gv.MaTuyen,
-						GiaVeValue = gv.GiaVe1
+						MaGV = combo.MaGV,
+						NhaXeName = combo.TenNX ?? "",
+						LoaiXeName = combo.TenLX ?? "",
+						TuyenName = $"{combo.DiemDi} -> {combo.DiemDen}",
+						GiaVe = combo.GiaVe != null ? ((decimal)combo.GiaVe).ToString("N0") : "0",
+						MaNX = combo.MaNX,
+						MaLX = combo.MaLX,
+						MaTuyen = combo.MaTuyen,
+						GiaVeValue = combo.GiaVe,
+						HasPrice = combo.HasPrice
 					})
 					.ToList<dynamic>();
 
-				LoadData(_data);
+				_dataChuaCo = allCombos
+					.Where(combo => !combo.HasPrice)
+					.Select(combo => new
+					{
+						MaGV = combo.MaGV,
+						NhaXeName = combo.TenNX ?? "",
+						LoaiXeName = combo.TenLX ?? "",
+						TuyenName = $"{combo.DiemDi} -> {combo.DiemDen}",
+						GiaVe = "Chưa có giá",
+						MaNX = combo.MaNX,
+						MaLX = combo.MaLX,
+						MaTuyen = combo.MaTuyen,
+						DiemDi = combo.DiemDi,
+						DiemDen = combo.DiemDen,
+						GiaVeValue = combo.GiaVe,
+						HasPrice = combo.HasPrice
+					})
+					.ToList<dynamic>();
+
+				LoadDataDaCo(_dataDaCo);
+				LoadDataChuaCo(_dataChuaCo);
 				InitCbb();
 				btnXem.Enabled = btnSua.Enabled = btnXoa.Enabled = false;
+				btnThemChuaCo.Enabled = false;
 			}
 			catch (Exception ex)
 			{
@@ -61,16 +96,25 @@ namespace QLBXMD.GUI.Admin
 
 		private void SetupGridHeaders()
 		{
-			dgv.Columns.Clear();
-			dgv.Columns.Add("MaGV", "Mã giá vé");
-			dgv.Columns.Add("NhaXe", "Nhà xe");
-			dgv.Columns.Add("LoaiXe", "Loại xe");
-			dgv.Columns.Add("Tuyen", "Tuyến đường");
-			dgv.Columns.Add("GiaVe", "Giá vé (₫)");
+			// Setup cho dgvDaCo
+			dgvDaCo.Columns.Clear();
+			dgvDaCo.Columns.Add("MaGV", "Mã giá vé");
+			dgvDaCo.Columns.Add("NhaXe", "Nhà xe");
+			dgvDaCo.Columns.Add("LoaiXe", "Loại xe");
+			dgvDaCo.Columns.Add("Tuyen", "Tuyến đường");
+			dgvDaCo.Columns.Add("GiaVe", "Giá vé (₫)");
+
+			// Setup cho dgvChuaCo
+			dgvChuaCo.Columns.Clear();
+			dgvChuaCo.Columns.Add("NhaXe", "Nhà xe");
+			dgvChuaCo.Columns.Add("LoaiXe", "Loại xe");
+			dgvChuaCo.Columns.Add("Tuyen", "Tuyến đường");
+			dgvChuaCo.Columns.Add("GiaVe", "Trạng thái");
 		}
 
 		private void InitCbb()
 		{
+			// ComboBox cho tab Đã có giá vé
 			cbbLoai.Items.Clear();
 			cbbLoai.Items.Add("Tất cả");
 			cbbLoai.Items.Add("Mã giá vé");
@@ -80,29 +124,64 @@ namespace QLBXMD.GUI.Admin
 			cbbLoai.Items.Add("Giá vé");
 			cbbLoai.SelectedIndex = 0;
 			cbbLoai.SelectedIndexChanged += cbbLoai_SelectedIndexChanged;
+
+			// ComboBox cho tab Chưa có giá vé
+			cbbLoaiChuaCo.Items.Clear();
+			cbbLoaiChuaCo.Items.Add("Tất cả");
+			cbbLoaiChuaCo.Items.Add("Nhà xe");
+			cbbLoaiChuaCo.Items.Add("Loại xe");
+			cbbLoaiChuaCo.Items.Add("Tuyến đường");
+			cbbLoaiChuaCo.SelectedIndex = 0;
+			cbbLoaiChuaCo.SelectedIndexChanged += cbbLoaiChuaCo_SelectedIndexChanged;
 		}
 
-		private void LoadData(List<dynamic> list)
+		private void LoadDataDaCo(List<dynamic> list)
 		{
-			dgv.Rows.Clear();
+			dgvDaCo.Rows.Clear();
 
 			foreach (var item in list)
 			{
-				dgv.Rows.Add(item.MaGV, item.NhaXeName, item.LoaiXeName, item.TuyenName, item.GiaVe);
+				dgvDaCo.Rows.Add(item.MaGV, item.NhaXeName, item.LoaiXeName, item.TuyenName, item.GiaVe);
 			}
 
-			dgv.ClearSelection();
+			dgvDaCo.ClearSelection();
+		}
+
+		private void LoadDataChuaCo(List<dynamic> list)
+		{
+			dgvChuaCo.Rows.Clear();
+
+			foreach (var item in list)
+			{
+				int rowIndex = dgvChuaCo.Rows.Add(item.NhaXeName, item.LoaiXeName, item.TuyenName, item.GiaVe);
+				// Đánh dấu màu xám nhạt
+				dgvChuaCo.Rows[rowIndex].DefaultCellStyle.BackColor = Color.FromArgb(255, 248, 220);
+				dgvChuaCo.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.DarkOrange;
+			}
+
+			dgvChuaCo.ClearSelection();
 		}
 
 		private void txtSearch_TextChanged(object sender, EventArgs e)
 		{
-			Filter();
+			FilterDaCo();
+		}
+
+		private void txtSearchChuaCo_TextChanged(object sender, EventArgs e)
+		{
+			FilterChuaCo();
 		}
 
 		private void cbbLoai_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			LoadData(_data);
+			LoadDataDaCo(_dataDaCo);
 			txtSearch.Clear();
+		}
+
+		private void cbbLoaiChuaCo_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			LoadDataChuaCo(_dataChuaCo);
+			txtSearchChuaCo.Clear();
 		}
 
 		private IEnumerable<KeyValuePair<int, string>> GetNhaXeItems()
@@ -170,11 +249,68 @@ namespace QLBXMD.GUI.Admin
 			}
 		}
 
+		private void btnThemChuaCo_Click(object sender, EventArgs e)
+		{
+			if (dgvChuaCo.SelectedRows.Count == 0)
+			{
+				MessageBox.Show("Vui lòng chọn tổ hợp cần thêm giá vé.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+				return;
+			}
+
+			var r = dgvChuaCo.SelectedRows[0];
+			int rowIndex = r.Index;
+			
+			if (rowIndex < 0 || rowIndex >= _dataChuaCo.Count)
+			{
+				MessageBox.Show("Không thể lấy thông tin dòng được chọn.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				return;
+			}
+
+			// Lấy dữ liệu từ list theo index
+			var selectedItem = _dataChuaCo[rowIndex];
+
+			using (var dialog = new GiaVeDialog())
+			{
+				dialog.BindNhaXe(GetNhaXeItems());
+				dialog.BindLoaiXe(GetLoaiXeItems());
+				dialog.BindTuyen(GetTuyenItems());
+				dialog.SetMode(GiaVeDialogMode.Add);
+				
+				// Tự động điền thông tin từ dòng được chọn
+				dialog.SelectedMaNX = selectedItem.MaNX;
+				dialog.SelectedMaLX = selectedItem.MaLX;
+				dialog.SelectedMaTuyen = selectedItem.MaTuyen;
+				
+				if (dialog.ShowDialog() == DialogResult.OK)
+				{
+					var gv = new GiaVe
+					{
+						MaNX = dialog.SelectedMaNX.GetValueOrDefault(),
+						MaLX = dialog.SelectedMaLX.GetValueOrDefault(),
+						MaTuyen = dialog.SelectedMaTuyen.GetValueOrDefault(),
+						GiaVe1 = dialog.GiaVeValue
+					};
+					
+					string result = _bus.Add(gv);
+					MessageBox.Show(result, "Thông báo", MessageBoxButtons.OK,
+						result.Contains("thành công") ? MessageBoxIcon.Information : MessageBoxIcon.Error);
+					
+					if (result.Contains("thành công")) 
+						UCGiaVe_Load(null, null);
+				}
+			}
+		}
+
 		private void btnXem_Click(object sender, EventArgs e)
 		{
-			if (dgv.SelectedRows.Count == 0) return;
-			var r = dgv.SelectedRows[0];
-			if (r.Cells[0].Value == null) return;
+			if (dgvDaCo.SelectedRows.Count == 0) return;
+			var r = dgvDaCo.SelectedRows[0];
+			if (r.Cells[0].Value == null)
+			{
+				MessageBox.Show("Dòng này chưa có giá vé. Vui lòng chọn 'Thêm' để thiết lập giá vé.", 
+					"Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+				return;
+			}
 			
 			int maGV = int.Parse(r.Cells[0].Value.ToString());
 			var existing = _bus.GetById(maGV);
@@ -197,9 +333,14 @@ namespace QLBXMD.GUI.Admin
 
 		private void btnSua_Click(object sender, EventArgs e)
 		{
-			if (dgv.SelectedRows.Count == 0) return;
-			var r = dgv.SelectedRows[0];
-			if (r.Cells[0].Value == null) return;
+			if (dgvDaCo.SelectedRows.Count == 0) return;
+			var r = dgvDaCo.SelectedRows[0];
+			if (r.Cells[0].Value == null)
+			{
+				MessageBox.Show("Dòng này chưa có giá vé. Vui lòng chọn 'Thêm' để thiết lập giá vé.", 
+					"Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+				return;
+			}
 			
 			int maGV = int.Parse(r.Cells[0].Value.ToString());
 			var existing = _bus.GetById(maGV);
@@ -244,16 +385,16 @@ namespace QLBXMD.GUI.Admin
 
 		private void btnXoa_Click(object sender, EventArgs e)
 		{
-			if (dgv.SelectedRows.Count == 0)
+			if (dgvDaCo.SelectedRows.Count == 0)
 			{
 				MessageBox.Show("Vui lòng chọn giá vé cần xóa.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				return;
 			}
 			
-			var r = dgv.SelectedRows[0];
+			var r = dgvDaCo.SelectedRows[0];
 			if (r.Cells[0].Value == null)
 			{
-				MessageBox.Show("Vui lòng chọn giá vé cần xóa.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				MessageBox.Show("Dòng này chưa có giá vé nên không thể xóa.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
 				return;
 			}
 			
@@ -290,41 +431,41 @@ namespace QLBXMD.GUI.Admin
 			}
 		}
 
-		private void Filter()
+		private void FilterDaCo()
 		{
-			if (_data == null) return;
+			if (_dataDaCo == null) return;
 			
 			string keyword = (txtSearch.Text ?? string.Empty).Trim().ToLowerInvariant();
 			if (keyword.Length == 0) 
 			{ 
-				LoadData(_data); 
+				LoadDataDaCo(_dataDaCo); 
 				return; 
 			}
 			
 			int selected = cbbLoai.SelectedIndex;
-			List<dynamic> filtered = _data;
+			List<dynamic> filtered = _dataDaCo;
 			
 			switch (selected)
 			{
 				case 1: // Mã giá vé
-					filtered = _data.Where(x => x.MaGV.ToString().ToLowerInvariant().Contains(keyword)).ToList(); 
+					filtered = _dataDaCo.Where(x => x.MaGV != null && x.MaGV.ToString().ToLowerInvariant().Contains(keyword)).ToList(); 
 					break;
 				case 2: // Nhà xe
-					filtered = _data.Where(x => (x.NhaXeName ?? "").ToLowerInvariant().Contains(keyword)).ToList(); 
+					filtered = _dataDaCo.Where(x => (x.NhaXeName ?? "").ToLowerInvariant().Contains(keyword)).ToList(); 
 					break;
 				case 3: // Loại xe
-					filtered = _data.Where(x => (x.LoaiXeName ?? "").ToLowerInvariant().Contains(keyword)).ToList(); 
+					filtered = _dataDaCo.Where(x => (x.LoaiXeName ?? "").ToLowerInvariant().Contains(keyword)).ToList(); 
 					break;
 				case 4: // Tuyến đường
-					filtered = _data.Where(x => (x.TuyenName ?? "").ToLowerInvariant().Contains(keyword)).ToList(); 
+					filtered = _dataDaCo.Where(x => (x.TuyenName ?? "").ToLowerInvariant().Contains(keyword)).ToList(); 
 					break;
 				case 5: // Giá vé
-					filtered = _data.Where(x => (x.GiaVe ?? "").ToLowerInvariant().Contains(keyword)).ToList(); 
+					filtered = _dataDaCo.Where(x => (x.GiaVe ?? "").ToLowerInvariant().Contains(keyword)).ToList(); 
 					break;
 				default: // Tất cả
-					filtered = _data.Where(x => new[] 
+					filtered = _dataDaCo.Where(x => new[] 
 					{ 
-						x.MaGV.ToString(), 
+						x.MaGV?.ToString() ?? "", 
 						x.NhaXeName, 
 						x.LoaiXeName, 
 						x.TuyenName, 
@@ -334,32 +475,83 @@ namespace QLBXMD.GUI.Admin
 					break;
 			}
 			
-			LoadData(filtered);
+			LoadDataDaCo(filtered);
 		}
 
-		private void dgv_CellClick(object sender, DataGridViewCellEventArgs e)
+		private void FilterChuaCo()
+		{
+			if (_dataChuaCo == null) return;
+			
+			string keyword = (txtSearchChuaCo.Text ?? string.Empty).Trim().ToLowerInvariant();
+			if (keyword.Length == 0) 
+			{ 
+				LoadDataChuaCo(_dataChuaCo); 
+				return; 
+			}
+			
+			int selected = cbbLoaiChuaCo.SelectedIndex;
+			List<dynamic> filtered = _dataChuaCo;
+			
+			switch (selected)
+			{
+				case 1: // Nhà xe
+					filtered = _dataChuaCo.Where(x => (x.NhaXeName ?? "").ToLowerInvariant().Contains(keyword)).ToList(); 
+					break;
+				case 2: // Loại xe
+					filtered = _dataChuaCo.Where(x => (x.LoaiXeName ?? "").ToLowerInvariant().Contains(keyword)).ToList(); 
+					break;
+				case 3: // Tuyến đường
+					filtered = _dataChuaCo.Where(x => (x.TuyenName ?? "").ToLowerInvariant().Contains(keyword)).ToList(); 
+					break;
+				default: // Tất cả
+					filtered = _dataChuaCo.Where(x => new[] 
+					{ 
+						x.NhaXeName, 
+						x.LoaiXeName, 
+						x.TuyenName
+					}
+					.Any(v => (v ?? string.Empty).ToLowerInvariant().Contains(keyword))).ToList();
+					break;
+			}
+			
+			LoadDataChuaCo(filtered);
+		}
+
+		private void dgvDaCo_CellClick(object sender, DataGridViewCellEventArgs e)
 		{
 			if (e.RowIndex < 0)
 			{
-				EnableBtn(false);
+				EnableBtnDaCo(false);
 				return;
 			}
 			
-			if (dgv.Rows[e.RowIndex].Cells[0].Value == null)
+			if (dgvDaCo.Rows[e.RowIndex].Cells[0].Value == null)
 			{
-				EnableBtn(false);
+				EnableBtnDaCo(false);
 				return;
 			}
 			
-			dgv.Rows[e.RowIndex].Selected = true;
+			dgvDaCo.Rows[e.RowIndex].Selected = true;
 			
-			if (dgv.Rows[e.RowIndex].Selected && btnSua.Enabled == false)
+			if (dgvDaCo.Rows[e.RowIndex].Selected && btnSua.Enabled == false)
 			{
-				EnableBtn(true);
+				EnableBtnDaCo(true);
 			}
 		}
 
-		private void EnableBtn(bool enabled)
+		private void dgvChuaCo_CellClick(object sender, DataGridViewCellEventArgs e)
+		{
+			if (e.RowIndex < 0)
+			{
+				btnThemChuaCo.Enabled = false;
+				return;
+			}
+			
+			dgvChuaCo.Rows[e.RowIndex].Selected = true;
+			btnThemChuaCo.Enabled = true;
+		}
+
+		private void EnableBtnDaCo(bool enabled)
 		{
 			btnXem.Enabled = enabled;
 			btnSua.Enabled = enabled;

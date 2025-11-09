@@ -77,6 +77,14 @@ namespace QLBXMD.BUS
 			return giaVeDAO.GetAll();
 		}
 
+		/// <summary>
+		/// Lấy tất cả các tổ hợp NhaXe x LoaiXe x TuyenDuong, bao gồm cả những tổ hợp chưa có giá vé
+		/// </summary>
+		public List<dynamic> GetAllCombinations()
+		{
+			return giaVeDAO.GetAllCombinations();
+		}
+
 		public GiaVe GetById(int id)
 		{
 			return giaVeDAO.GetById(id);

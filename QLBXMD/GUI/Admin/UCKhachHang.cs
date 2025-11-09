@@ -23,7 +23,7 @@ namespace QLBXMD.GUI.Admin
 		private void Dgv_SelectionChanged(object sender, EventArgs e)
 		{
 			bool has = dgv.SelectedRows.Count > 0 && dgv.SelectedRows[0].Cells[0].Value != null;
-			btnXem.Enabled = has;
+			btnThem.Enabled = has;
 			btnSua.Enabled = has;
 			btnXoa.Enabled = has;
 			btnGanTaiKhoan.Enabled = has;
@@ -36,7 +36,7 @@ namespace QLBXMD.GUI.Admin
 				SetupGridHeaders();
 				LoadData();
 				InitCbb();
-				btnXem.Enabled = btnSua.Enabled = btnXoa.Enabled = btnGanTaiKhoan.Enabled = false;
+				btnThem.Enabled = btnSua.Enabled = btnXoa.Enabled = btnGanTaiKhoan.Enabled = false;
 			}
 			catch (Exception ex)
 			{
@@ -405,7 +405,7 @@ namespace QLBXMD.GUI.Admin
 
 		private void EnableBtn(bool enabled)
 		{
-			btnXem.Enabled = enabled;
+			btnThem.Enabled = enabled;
 			btnSua.Enabled = enabled;
 			btnXoa.Enabled = enabled;
 			btnGanTaiKhoan.Enabled = enabled;

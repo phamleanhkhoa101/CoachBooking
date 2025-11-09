@@ -14,6 +14,59 @@ namespace QLBXMD.DAO
 		{
 			return db.GiaVes.ToList();
 		}
+
+		/// <summary>
+		/// Lấy tất cả các tổ hợp NhaXe x LoaiXe x TuyenDuong, bao gồm cả những tổ hợp chưa có giá vé
+		/// </summary>
+		public List<dynamic> GetAllCombinations()
+		{
+			// Lấy tất cả các tổ hợp có thể
+			var allCombinations = (from nx in db.NhaXes
+								   from lx in db.LoaiXes
+								   from td in db.TuyenDuongs
+								   select new
+								   {
+									   MaNX = nx.MaNX,
+									   TenNX = nx.TenNX,
+									   MaLX = lx.MaLX,
+									   TenLX = lx.TenLX,
+									   MaTuyen = td.MaTuyen,
+									   DiemDi = td.DiemDi,
+									   DiemDen = td.DiemDen
+								   }).ToList();
+
+			// Lấy tất cả giá vé hiện có
+			var existingPrices = db.GiaVes.ToList();
+
+			// Kết hợp dữ liệu
+			var result = allCombinations.Select(combo =>
+			{
+				var price = existingPrices.FirstOrDefault(gv =>
+					gv.MaNX == combo.MaNX &&
+					gv.MaLX == combo.MaLX &&
+					gv.MaTuyen == combo.MaTuyen);
+
+				return new
+				{
+					MaGV = price?.MaGV,
+					MaNX = combo.MaNX,
+					TenNX = combo.TenNX,
+					MaLX = combo.MaLX,
+					TenLX = combo.TenLX,
+					MaTuyen = combo.MaTuyen,
+					DiemDi = combo.DiemDi,
+					DiemDen = combo.DiemDen,
+					GiaVe = price?.GiaVe1,
+					HasPrice = price != null
+				};
+			}).OrderBy(x => x.TenNX)
+			  .ThenBy(x => x.TenLX)
+			  .ThenBy(x => x.DiemDi)
+			  .ToList<dynamic>();
+
+			return result;
+		}
+
 		public EF.GiaVe GetById(int id)
 		{
 			return db.GiaVes.Find(id);

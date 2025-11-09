@@ -332,35 +332,35 @@ INSERT INTO TaiKhoan (TenDangNhap, MatKhau, Email, MaQuyen) VALUES
 ('kh1', 'jZae727K08KaOmKSgOaGzww/XVqGr/PKEgIMkjrcbJI=','4@gmail.com', 3),
 ('kh2', 'jZae727K08KaOmKSgOaGzww/XVqGr/PKEgIMkjrcbJI=','5@gmail.com', 3);
 -- 1. NhanVien
-INSERT INTO NhanVien (TenNV, NamSinh, DiaChi, SDT, MaTK) VALUES
-(N'Nguyễn Văn An', '1980-01-15', N'TP Hồ Chí Minh', '0912345678', 1),
-(N'Trần Thị Bình', '1982-03-20', N'Long An', '0912345679', 2),
-(N'Lê Văn Cường', '1978-07-10', N'Bình Định', '0912345680', 3),
-(N'Nguyễn Thị Dung', '1985-05-05', N'Cần Thơ', '0912345681', null),
-(N'Hoàng Văn Em', '1983-11-25', N'An Giang', '0912345682', null);
+INSERT INTO NhanVien (TenNV, NamSinh, GioiTinh, DiaChi, SDT, MaTK) VALUES
+(N'Nguyễn Văn An', '1980-01-15',1, N'TP Hồ Chí Minh', '0912345678', 1),
+(N'Trần Thị Bình', '1982-03-20',0,  N'Long An', '0912345679', 2),
+(N'Lê Văn Cường', '1978-07-10',1,  N'Bình Định', '0912345680', 3),
+(N'Nguyễn Thị Dung', '1985-05-05',0,  N'Cần Thơ', '0912345681', null),
+(N'Hoàng Văn Em', '1983-11-25',1,  N'An Giang', '0912345682', null);
 
 -- 2. KhachHang
-INSERT INTO KhachHang (TenKH, NamSinh, SDT) VALUES
-(N'Lê Văn Trung', '1990-02-15', '0981111111'),
-(N'Phạm Thị Hoa', '1988-04-20', '0981111112'),
-(N'Nguyễn Văn Nam', '1992-06-25', '0981111113'),
-(N'Trần Thị Linh', '1995-03-30', '0981111114'),
-(N'Vũ Văn Minh', '1987-09-10', '0981111115'),
-(N'Đỗ Thị Mỹ', '1991-12-05', '0981111116'),
-(N'Nguyễn Thị Nga', '1993-07-07', '0981111117'),
-(N'Lê Văn Phong', '1989-08-08', '0981111118'),
-(N'Hoàng Thị Quyên', '1990-10-10', '0981111119'),
-(N'Trần Văn Sơn', '1985-11-11', '0981111120'),
-(N'Phạm Thị Uyên', '1992-01-01', '0981111121'),
-(N'Nguyễn Văn Vinh', '1988-02-02', '0981111122'),
-(N'Lê Thị Xuân', '1994-03-03', '0981111123'),
-(N'Đỗ Văn Ý', '1996-04-04', '0981111124'),
-(N'Trần Thị Diễm', '1993-05-05', '0981111125'),
-(N'Vũ Văn Anh', '1991-06-06', '0981111126'),
-(N'Nguyễn Thị Bảo', '1990-07-07', '0981111127'),
-(N'Lê Văn Cẩn', '1987-08-08', '0981111128'),
-(N'Phạm Thị Đào', '1994-09-09', '0981111129'),
-(N'Trần Văn Lợi', '1992-10-10', '0981111130');
+INSERT INTO KhachHang (TenKH, NamSinh, SDT, GioiTinh) VALUES
+(N'Lê Văn Trung', '1990-02-15', '0981111111',1),
+(N'Phạm Thị Hoa', '1988-04-20', '0981111112', 0),
+(N'Nguyễn Văn Nam', '1992-06-25', '0981111113',1),
+(N'Trần Thị Linh', '1995-03-30', '0981111114',0),
+(N'Vũ Văn Minh', '1987-09-10', '0981111115',1),
+(N'Đỗ Thị Mỹ', '1991-12-05', '0981111116',0),
+(N'Nguyễn Thị Nga', '1993-07-07', '0981111117',0),
+(N'Lê Văn Phong', '1989-08-08', '0981111118',1),
+(N'Hoàng Thị Quyên', '1990-10-10', '0981111119',0),
+(N'Trần Văn Sơn', '1985-11-11', '0981111120',1),
+(N'Phạm Thị Uyên', '1992-01-01', '0981111121',0),
+(N'Nguyễn Văn Vinh', '1988-02-02', '0981111122',1),
+(N'Lê Thị Xuân', '1994-03-03', '0981111123',0),
+(N'Đỗ Văn Ý', '1996-04-04', '0981111124',0),
+(N'Trần Thị Diễm', '1993-05-05', '0981111125',0),
+(N'Vũ Văn Anh', '1991-06-06', '0981111126',1),
+(N'Nguyễn Thị Bảo', '1990-07-07', '0981111127',0),
+(N'Lê Văn Cẩn', '1987-08-08', '0981111128',1),
+(N'Phạm Thị Đào', '1994-09-09', '0981111129',0),
+(N'Trần Văn Lợi', '1992-10-10', '0981111130',1);
 UPDATE KhachHang SET MaTK = 1 WHERE MaKH = 1; 
 UPDATE KhachHang SET MaTK = 1 WHERE MaKH = 2; 
 -- 3. NhaXe
@@ -401,11 +401,11 @@ INSERT INTO TuyenDuong (DiemDi, DiemDen, QuangDuong, ThoiGianDuKien) VALUES
 
 
 --7. TAIXE
-INSERT INTO TaiXe (TenTX, NamSinh, CCCD, SDT, DiaChi, BangLai, NgayCap) VALUES
-(N'Nguyễn Văn Hậu', '1985-04-15', '123456789012', '0909123456', N'TP.HCM', 'D', '2010-05-20'),
-(N'Lê Văn Sơn', '1982-02-20', '123456789013', '0909234567', N'TP.HCM', 'E', '2009-06-10'),
-(N'Phạm Minh Tâm', '1988-08-08', '123456789014', '0909345678', N'TP.HCM', 'D', '2011-09-12'),
-(N'Trần Hữu Phát', '1990-05-10', '123456789015', '0909456789', N'TP.HCM', 'E', '2012-12-01');
+INSERT INTO TaiXe (TenTX, NamSinh, CCCD, SDT, GioiTinh, DiaChi, BangLai, NgayCap) VALUES
+(N'Nguyễn Văn Hậu', '1985-04-15', '123456789012',1, '0909123456', N'TP.HCM', 'D', '2010-05-20'),
+(N'Lê Văn Sơn', '1982-02-20', '123456789013', 1,'0909234567', N'TP.HCM', 'E', '2009-06-10'),
+(N'Phạm Minh Tâm', '1988-08-08', '123456789014',1, '0909345678', N'TP.HCM', 'D', '2011-09-12'),
+(N'Trần Hữu Phát', '1990-05-10', '123456789015',1, '0909456789', N'TP.HCM', 'E', '2012-12-01');
 
 -- 8. GiaVe 
 INSERT INTO GiaVe (MaNX, MaLX, MaTuyen, GiaVe) VALUES
@@ -483,3 +483,5 @@ INSERT INTO ThanhToan (MaHD, NgayTT, PhuongThuc) VALUES
 
 
 
+select * from KhachHang
+select * from tuyenDuong

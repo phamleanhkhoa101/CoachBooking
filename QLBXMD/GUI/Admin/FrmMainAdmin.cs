@@ -74,6 +74,7 @@ namespace QLBXMD.GUI.Admin
 			btnHoaDon.Click += btnHoaDon_Click; // Hóa đơn
 			btnKhachHang.Click += btnKhachHang_Click; // Khách hàng
 
+			btnTrangChu_Click(this, EventArgs.Empty); // Show home by default
 			ApplyPermissions();
 		}
 

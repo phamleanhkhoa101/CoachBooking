@@ -21,6 +21,7 @@ namespace QLBXMD.GUI.Admin
 		private string selectedDiemDi;
 		private string selectedDiemDen;
 		private DateTime selectedNgayDi;
+		private NhanVien currentNhanVien; // ✅ Thêm field nhân viên
 		#endregion
 
 		#region Constructor
@@ -28,6 +29,14 @@ namespace QLBXMD.GUI.Admin
 		{
 			InitializeComponent();
 			this.Load += UCDatVe_Load;
+		}
+
+		/// <summary>
+		/// Constructor nhận nhân viên để lưu vào hóa đơn
+		/// </summary>
+		public void SetNhanVien(NhanVien nhanVien)
+		{
+			this.currentNhanVien = nhanVien;
 		}
 		#endregion
 
@@ -649,6 +658,7 @@ namespace QLBXMD.GUI.Admin
 				int maHD = 0;
 				int soLuongVe = 0;
 				decimal tongTien = 0;
+				string tenNguoiTaoVe = "Khách hàng"; // ✅ Khai báo ở ngoài using block
 
 				using (var db = new BXMDEntities())
 				{
@@ -755,7 +765,7 @@ namespace QLBXMD.GUI.Admin
 					var hoaDon = new HoaDon
 					{
 						MaKH = khachHang.MaKH,
-						MANV = null, // ✅ Có thể để null khi khách tự đặt
+						MANV = currentNhanVien?.MaNV, // ✅ Lưu nhân viên thực hiện (nếu có)
 						NgayLap = DateTime.Now,
 						TongTien = 0, // ✅ Để trigger tự động tính
 						TrangThai = false // ✅ Chưa thanh toán
@@ -815,18 +825,54 @@ namespace QLBXMD.GUI.Admin
 					// ✅ Refresh để lấy TongTien đã được trigger tính
 					db.Entry(hoaDon).Reload();
 
+					// ✅ 6. Tạo thanh toán và cập nhật trạng thái hóa đơn
+					var thanhToan = new ThanhToan
+					{
+						MaHD = hoaDon.MaHD,
+						TongTien = hoaDon.TongTien ?? 0,
+						NgayTT = DateTime.Now,
+						PhuongThuc = phuongThucThanhToan
+					};
+					db.ThanhToans.Add(thanhToan);
+
+					// ✅ Đánh dấu hóa đơn đã thanh toán
+					hoaDon.TrangThai = true;
+
+					try
+					{
+						db.SaveChanges(); // ✅ Save thanh toán và cập nhật trạng thái
+						Console.WriteLine($"✅ Đã tạo thanh toán: MaTT = {thanhToan.MaTT}");
+					}
+					catch (Exception exTT)
+					{
+						var innerMsg = exTT.InnerException?.InnerException?.Message ?? exTT.InnerException?.Message ?? "";
+						MessageBox.Show(
+							$"Lỗi tạo thanh toán:\n{exTT.Message}\n\nChi tiết:\n{innerMsg}",
+							"Lỗi",
+							MessageBoxButtons.OK,
+							MessageBoxIcon.Error
+						);
+						Console.WriteLine($"❌ Lỗi ThanhToan: {exTT.ToString()}");
+						return;
+					}
+
 					// ✅ Lưu thông tin để hiển thị
 					maHD = hoaDon.MaHD;
 					soLuongVe = selectedSeats.Count;
 					tongTien = hoaDon.TongTien ?? 0;
+					
+					// ✅ Lấy tên nhân viên để hiển thị
+					tenNguoiTaoVe = currentNhanVien != null ? currentNhanVien.TenNV : "Khách hàng";
 				}
 
 				MessageBox.Show(
-					$"Đặt vé thành công!\n" +
+					$"Đặt vé thành công!\n\n" +
 					$"Mã hóa đơn: {maHD}\n" +
 					$"Số lượng vé: {soLuongVe}\n" +
 					$"Tổng tiền: {tongTien:#,##0} VNĐ\n" +
-					$"Phương thức thanh toán: {phuongThucThanhToan}",
+					$"Phương thức thanh toán: {phuongThucThanhToan}\n" +
+					$"Người tạo vé: {tenNguoiTaoVe}\n" +
+					$"Trạng thái: Đã thanh toán",
 					"Thông báo",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Information
@@ -865,7 +911,8 @@ namespace QLBXMD.GUI.Admin
 				
 				// Tạo orderId unique
 				string orderId = $"HD{DateTime.Now:yyyyMMddHHmmss}";
-				string orderInfo = $"Thanh toan ve xe - {selectedDiemDi} den {selectedDiemDen}";
+				//string orderInfo = $"Thanh toan ve xe - {selectedDiemDi} den {selectedDiemDen}";
+				string orderInfo = $"Thanh toan ve xe";
 				
 				// Tạo request thanh toán MoMo
 				var momoService = new Services.MoMoPaymentService();

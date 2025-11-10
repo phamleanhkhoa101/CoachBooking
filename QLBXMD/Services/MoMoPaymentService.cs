@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
@@ -8,22 +8,20 @@ using Newtonsoft.Json;
 namespace QLBXMD.Services
 {
 	/// <summary>
-	/// Service x? l� thanh to�n MoMo
+	/// Service xử lý thanh toán MoMo chuẩn V2.1
 	/// </summary>
 	public class MoMoPaymentService
 	{
-		// ?? TEST Credentials - Thay ??i khi chuy?n sang Production
 		private const string PartnerCode = "MOMO4LG620250601_TEST";
 		private const string AccessKey = "e6g7W44vmy1rgT7K";
 		private const string SecretKey = "XAAT9fHRPeJD8zhjKsZnTTUSnyEHFISa";
 		private const string ApiEndpoint = "https://test-payment.momo.vn/v2/gateway/api/create";
-		
-		// ?? C?n thay ??i th�nh URL th?c t? c?a b?n
+
 		private const string ReturnUrl = "http://localhost:5000/payment/return";
 		private const string NotifyUrl = "http://localhost:5000/payment/notify";
 
 		/// <summary>
-		/// T?o y�u c?u thanh to�n MoMo
+		/// Tạo yêu cầu thanh toán MoMo
 		/// </summary>
 		public async Task<MoMoPaymentResponse> CreatePaymentRequest(
 			string orderId,
@@ -33,24 +31,32 @@ namespace QLBXMD.Services
 		{
 			try
 			{
+				if (extraData == null)
+					extraData = "";
+
 				var requestId = Guid.NewGuid().ToString();
 				var requestType = "captureWallet";
 
-				// T?o ch? k� (signature) theo th? t? alphabet
-				var rawHash = $"accessKey={AccessKey}" +
-							  $"&amount={amount}" +
-							  $"&extraData={extraData}" +
-							  $"&ipnUrl={NotifyUrl}" +
-							  $"&orderId={orderId}" +
-							  $"&orderInfo={orderInfo}" +
-							  $"&partnerCode={PartnerCode}" +
-							  $"&redirectUrl={ReturnUrl}" +
-							  $"&requestId={requestId}" +
-							  $"&requestType={requestType}";
+				// ✅ KHÔNG ENCODE rawSignature!
+				var rawSignature =
+					"accessKey=" + AccessKey +
+					"&amount=" + amount +
+					"&extraData=" + extraData +
+					"&ipnUrl=" + NotifyUrl +                // không encode
+					"&orderId=" + orderId +
+					"&orderInfo=" + orderInfo +             // không encode
+					"&partnerCode=" + PartnerCode +
+					"&redirectUrl=" + ReturnUrl +           // không encode
+					"&requestId=" + requestId +
+					"&requestType=" + requestType;
 
-				var signature = ComputeHmacSha256(rawHash, SecretKey);
+				Console.WriteLine("=== MOMO SIGNATURE DEBUG ===");
+				Console.WriteLine($"Raw Signature: {rawSignature}");
 
-				// T?o request body
+				var signature = ComputeHmacSha256(rawSignature, SecretKey);
+				Console.WriteLine($"Computed Signature: {signature}");
+
+				// ✅ BODY cũng KHÔNG encode (MoMo docs yêu cầu raw string)
 				var requestBody = new
 				{
 					partnerCode = PartnerCode,
@@ -67,42 +73,38 @@ namespace QLBXMD.Services
 					lang = "vi"
 				};
 
-				// G?i request ??n MoMo
 				using (var httpClient = new HttpClient())
 				{
 					httpClient.Timeout = TimeSpan.FromSeconds(30);
-					
+
 					var json = JsonConvert.SerializeObject(requestBody);
+					Console.WriteLine("=== MOMO REQUEST BODY ===");
+					Console.WriteLine(json);
+
 					var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-					Console.WriteLine($"=== MOMO REQUEST ===");
-					Console.WriteLine($"Endpoint: {ApiEndpoint}");
-					Console.WriteLine($"Body: {json}");
-
 					var response = await httpClient.PostAsync(ApiEndpoint, content);
 					var responseContent = await response.Content.ReadAsStringAsync();
 
-					Console.WriteLine($"=== MOMO RESPONSE ===");
-					Console.WriteLine($"Status: {response.StatusCode}");
-					Console.WriteLine($"Content: {responseContent}");
+					Console.WriteLine("=== MOMO RESPONSE ===");
+					Console.WriteLine(responseContent);
 
-					var momoResponse = JsonConvert.DeserializeObject<MoMoPaymentResponse>(responseContent);
-					return momoResponse;
+					return JsonConvert.DeserializeObject<MoMoPaymentResponse>(responseContent)
+						   ?? new MoMoPaymentResponse();
 				}
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"? MoMo Error: {ex.ToString()}");
+				Console.WriteLine("❌ MoMo Error: " + ex.Message);
 				return new MoMoPaymentResponse
 				{
 					ResultCode = -1,
-					Message = $"L?i k?t n?i MoMo: {ex.Message}"
+					Message = "Lỗi kết nối MoMo: " + ex.Message
 				};
 			}
 		}
 
 		/// <summary>
-		/// T�nh HMAC SHA256 signature
+		/// Tính chữ ký HMAC SHA256
 		/// </summary>
 		private string ComputeHmacSha256(string message, string secretKey)
 		{
@@ -117,32 +119,38 @@ namespace QLBXMD.Services
 		}
 
 		/// <summary>
-		/// Verify signature t? MoMo callback
+		/// Verify chữ ký callback từ MoMo
 		/// </summary>
 		public bool VerifySignature(MoMoCallbackRequest request, string receivedSignature)
 		{
 			try
 			{
-				var rawHash = $"accessKey={AccessKey}" +
-							  $"&amount={request.Amount}" +
-							  $"&extraData={request.ExtraData}" +
-							  $"&message={request.Message}" +
-							  $"&orderId={request.OrderId}" +
-							  $"&orderInfo={request.OrderInfo}" +
-							  $"&orderType={request.OrderType}" +
-							  $"&partnerCode={request.PartnerCode}" +
-							  $"&payType={request.PayType}" +
-							  $"&requestId={request.RequestId}" +
-							  $"&responseTime={request.ResponseTime}" +
-							  $"&resultCode={request.ResultCode}" +
-							  $"&transId={request.TransId}";
+				// ✅ Callback cũng theo format raw (không encode)
+				var rawSignature =
+					"accessKey=" + AccessKey +
+					"&amount=" + request.Amount +
+					"&extraData=" + request.ExtraData +
+					"&message=" + request.Message +
+					"&orderId=" + request.OrderId +
+					"&orderInfo=" + request.OrderInfo +
+					"&orderType=" + request.OrderType +
+					"&partnerCode=" + request.PartnerCode +
+					"&payType=" + request.PayType +
+					"&requestId=" + request.RequestId +
+					"&responseTime=" + request.ResponseTime +
+					"&resultCode=" + request.ResultCode +
+					"&transId=" + request.TransId;
 
-				var signature = ComputeHmacSha256(rawHash, SecretKey);
-				return signature == receivedSignature;
+				var computedSignature = ComputeHmacSha256(rawSignature, SecretKey);
+
+				Console.WriteLine("=== VERIFY SIGNATURE ===");
+				Console.WriteLine("Received: " + receivedSignature);
+				Console.WriteLine("Computed: " + computedSignature);
+
+				return computedSignature == receivedSignature;
 			}
-			catch (Exception ex)
+			catch
 			{
-				Console.WriteLine($"? Verify Signature Error: {ex.Message}");
 				return false;
 			}
 		}
@@ -150,85 +158,35 @@ namespace QLBXMD.Services
 
 	#region Response Models
 
-	/// <summary>
-	/// Response t? MoMo khi t?o payment request
-	/// </summary>
 	public class MoMoPaymentResponse
 	{
-		[JsonProperty("partnerCode")]
-		public string PartnerCode { get; set; }
-
-		[JsonProperty("orderId")]
-		public string OrderId { get; set; }
-
-		[JsonProperty("requestId")]
-		public string RequestId { get; set; }
-
-		[JsonProperty("amount")]
-		public long Amount { get; set; }
-
-		[JsonProperty("responseTime")]
-		public long ResponseTime { get; set; }
-
-		[JsonProperty("message")]
-		public string Message { get; set; }
-
-		[JsonProperty("resultCode")]
-		public int ResultCode { get; set; }
-
-		[JsonProperty("payUrl")]
-		public string PayUrl { get; set; }
-
-		[JsonProperty("deeplink")]
-		public string Deeplink { get; set; }
-
-		[JsonProperty("qrCodeUrl")]
-		public string QrCodeUrl { get; set; }
+		[JsonProperty("partnerCode")] public string PartnerCode { get; set; }
+		[JsonProperty("orderId")] public string OrderId { get; set; }
+		[JsonProperty("requestId")] public string RequestId { get; set; }
+		[JsonProperty("amount")] public long Amount { get; set; }
+		[JsonProperty("responseTime")] public long ResponseTime { get; set; }
+		[JsonProperty("message")] public string Message { get; set; }
+		[JsonProperty("resultCode")] public int ResultCode { get; set; }
+		[JsonProperty("payUrl")] public string PayUrl { get; set; }
+		[JsonProperty("deeplink")] public string Deeplink { get; set; }
+		[JsonProperty("qrCodeUrl")] public string QrCodeUrl { get; set; }
 	}
 
-	/// <summary>
-	/// Callback request t? MoMo (IPN)
-	/// </summary>
 	public class MoMoCallbackRequest
 	{
-		[JsonProperty("partnerCode")]
-		public string PartnerCode { get; set; }
-
-		[JsonProperty("orderId")]
-		public string OrderId { get; set; }
-
-		[JsonProperty("requestId")]
-		public string RequestId { get; set; }
-
-		[JsonProperty("amount")]
-		public long Amount { get; set; }
-
-		[JsonProperty("orderInfo")]
-		public string OrderInfo { get; set; }
-
-		[JsonProperty("orderType")]
-		public string OrderType { get; set; }
-
-		[JsonProperty("transId")]
-		public long TransId { get; set; }
-
-		[JsonProperty("resultCode")]
-		public int ResultCode { get; set; }
-
-		[JsonProperty("message")]
-		public string Message { get; set; }
-
-		[JsonProperty("payType")]
-		public string PayType { get; set; }
-
-		[JsonProperty("responseTime")]
-		public long ResponseTime { get; set; }
-
-		[JsonProperty("extraData")]
-		public string ExtraData { get; set; }
-
-		[JsonProperty("signature")]
-		public string Signature { get; set; }
+		[JsonProperty("partnerCode")] public string PartnerCode { get; set; }
+		[JsonProperty("orderId")] public string OrderId { get; set; }
+		[JsonProperty("requestId")] public string RequestId { get; set; }
+		[JsonProperty("amount")] public long Amount { get; set; }
+		[JsonProperty("orderInfo")] public string OrderInfo { get; set; }
+		[JsonProperty("orderType")] public string OrderType { get; set; }
+		[JsonProperty("transId")] public long TransId { get; set; }
+		[JsonProperty("resultCode")] public int ResultCode { get; set; }
+		[JsonProperty("message")] public string Message { get; set; }
+		[JsonProperty("payType")] public string PayType { get; set; }
+		[JsonProperty("responseTime")] public long ResponseTime { get; set; }
+		[JsonProperty("extraData")] public string ExtraData { get; set; }
+		[JsonProperty("signature")] public string Signature { get; set; }
 	}
 
 	#endregion

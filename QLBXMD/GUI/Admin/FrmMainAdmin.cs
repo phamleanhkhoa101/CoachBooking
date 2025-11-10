@@ -311,7 +311,9 @@ namespace QLBXMD.GUI.Admin
 
 		private void btnDatVe_Click(object sender, EventArgs e)
 		{
-			ShowControl(new UCDatVe());
+			var ucDatVe = new UCDatVe();
+			ucDatVe.SetNhanVien(nhanVien); // ✅ Truyền thông tin nhân viên vào UCDatVe
+			ShowControl(ucDatVe);
 			HightlightButton(btnDatVe);
 		}
 

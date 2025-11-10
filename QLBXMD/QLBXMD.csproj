@@ -344,6 +344,12 @@
     <Compile Include="GUI\DN_DK_QMK\FrmQuenMatKhau.Designer.cs">
       <DependentUpon>FrmQuenMatKhau.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\User\DoiMatKhauDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\User\DoiMatKhauDialog.Designer.cs">
+      <DependentUpon>DoiMatKhauDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\User\FrmMainUser.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -356,11 +362,23 @@
     <Compile Include="GUI\User\UCDatVeUser.Designer.cs">
       <DependentUpon>UCDatVeUser.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\User\UCLichSuMuaVe.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\User\UCLichSuMuaVe.Designer.cs">
+      <DependentUpon>UCLichSuMuaVe.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\User\UCThongTinUser.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="GUI\User\UCThongTinUser.Designer.cs">
       <DependentUpon>UCThongTinUser.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\User\XacNhanDatVeUserDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\User\XacNhanDatVeUserDialog.Designer.cs">
+      <DependentUpon>XacNhanDatVeUserDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -466,11 +484,21 @@
     <EmbeddedResource Include="GUI\DN_DK_QMK\FrmQuenMatKhau.resx">
       <DependentUpon>FrmQuenMatKhau.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="GUI\User\DoiMatKhauDialog.resx">
+      <DependentUpon>DoiMatKhauDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GUI\User\FrmMainUser.resx">
       <DependentUpon>FrmMainUser.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="GUI\User\UCDatVeUser.resx">
       <DependentUpon>UCDatVeUser.cs</DependentUpon>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\User\UCLichSuMuaVe.resx">
+      <DependentUpon>UCLichSuMuaVe.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GUI\User\XacNhanDatVeUserDialog.resx">
+      <DependentUpon>XacNhanDatVeUserDialog.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -482,13 +510,10 @@
       <Generator>EntityModelCodeGenerator</Generator>
       <LastGenOutput>BXMDModel.Designer.cs</LastGenOutput>
     </EntityDeploy>
+    <None Include="Docs\HOANTHANH_THANHTOAN_TRACKING.md" />
     <None Include="EF\BXMDModel.edmx.diagram">
       <DependentUpon>BXMDModel.edmx</DependentUpon>
     </None>
-    <None Include="GUI\User\DEMO_VISUALIZATION.md" />
-    <None Include="GUI\User\IMPLEMENTATION_SUMMARY.md" />
-    <None Include="GUI\User\README_DAT_VE.md" />
-    <None Include="GUI\User\UPDATE_SEARCH_PANEL.md" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -499,6 +524,7 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <None Include="Services\MOMO_FIX_GUIDE.md" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -508,6 +534,7 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="resource\wallet.png" />
     <None Include="resource\search.png" />
     <None Include="resource\view.png" />
     <None Include="resource\setting.png" />

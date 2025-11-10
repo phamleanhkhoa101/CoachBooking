@@ -74,12 +74,12 @@
 			// pnlLeft
 			// 
 			this.pnlLeft.Controls.Add(this.gbThongTin);
-			this.pnlLeft.Dock = System.Windows.Forms.DockStyle.Left;
+			this.pnlLeft.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.pnlLeft.Location = new System.Drawing.Point(0, 0);
 			this.pnlLeft.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 			this.pnlLeft.Name = "pnlLeft";
 			this.pnlLeft.Padding = new System.Windows.Forms.Padding(17, 75, 8, 88);
-			this.pnlLeft.Size = new System.Drawing.Size(506, 750);
+			this.pnlLeft.Size = new System.Drawing.Size(1012, 750);
 			this.pnlLeft.TabIndex = 0;
 			// 
 			// gbThongTin
@@ -111,7 +111,7 @@
 			this.gbThongTin.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 			this.gbThongTin.Name = "gbThongTin";
 			this.gbThongTin.Padding = new System.Windows.Forms.Padding(17, 12, 17, 12);
-			this.gbThongTin.Size = new System.Drawing.Size(481, 587);
+			this.gbThongTin.Size = new System.Drawing.Size(987, 587);
 			this.gbThongTin.TabIndex = 0;
 			this.gbThongTin.TabStop = false;
 			this.gbThongTin.Text = "XÁC NHẬN THÔNG TIN";
@@ -339,7 +339,6 @@
 			// pnlRight
 			// 
 			this.pnlRight.Controls.Add(this.gbThanhToan);
-			this.pnlRight.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.pnlRight.Location = new System.Drawing.Point(506, 0);
 			this.pnlRight.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 			this.pnlRight.Name = "pnlRight";
@@ -448,11 +447,11 @@
 			this.pnlButtons.Controls.Add(this.btnXacNhan);
 			this.pnlButtons.Controls.Add(this.btnHuy);
 			this.pnlButtons.Dock = System.Windows.Forms.DockStyle.Bottom;
-			this.pnlButtons.Location = new System.Drawing.Point(506, 662);
+			this.pnlButtons.Location = new System.Drawing.Point(0, 662);
 			this.pnlButtons.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 			this.pnlButtons.Name = "pnlButtons";
 			this.pnlButtons.Padding = new System.Windows.Forms.Padding(17, 12, 17, 12);
-			this.pnlButtons.Size = new System.Drawing.Size(506, 88);
+			this.pnlButtons.Size = new System.Drawing.Size(1012, 88);
 			this.pnlButtons.TabIndex = 2;
 			// 
 			// btnXacNhan
@@ -463,7 +462,7 @@
 			this.btnXacNhan.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.btnXacNhan.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
 			this.btnXacNhan.ForeColor = System.Drawing.Color.White;
-			this.btnXacNhan.Location = new System.Drawing.Point(157, 16);
+			this.btnXacNhan.Location = new System.Drawing.Point(663, 16);
 			this.btnXacNhan.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 			this.btnXacNhan.Name = "btnXacNhan";
 			this.btnXacNhan.Size = new System.Drawing.Size(158, 55);
@@ -480,7 +479,7 @@
 			this.btnHuy.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.btnHuy.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
 			this.btnHuy.ForeColor = System.Drawing.Color.White;
-			this.btnHuy.Location = new System.Drawing.Point(332, 16);
+			this.btnHuy.Location = new System.Drawing.Point(838, 16);
 			this.btnHuy.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
 			this.btnHuy.Name = "btnHuy";
 			this.btnHuy.Size = new System.Drawing.Size(158, 55);
@@ -495,9 +494,9 @@
 			this.lblTitle.Dock = System.Windows.Forms.DockStyle.Top;
 			this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 14F, System.Drawing.FontStyle.Bold);
 			this.lblTitle.ForeColor = System.Drawing.Color.White;
-			this.lblTitle.Location = new System.Drawing.Point(506, 0);
+			this.lblTitle.Location = new System.Drawing.Point(0, 0);
 			this.lblTitle.Name = "lblTitle";
-			this.lblTitle.Size = new System.Drawing.Size(506, 62);
+			this.lblTitle.Size = new System.Drawing.Size(1012, 62);
 			this.lblTitle.TabIndex = 3;
 			this.lblTitle.Text = "XÁC NHẬN ĐẶT VÉ";
 			this.lblTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;

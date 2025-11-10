@@ -46,10 +46,10 @@
 			this.flpChuyenXe = new System.Windows.Forms.FlowLayoutPanel();
 			this.lblKetQua = new System.Windows.Forms.Label();
 			this.pnlSeatMap = new System.Windows.Forms.Panel();
-			this.gbTangTren = new System.Windows.Forms.GroupBox();
-			this.flpTangTren = new System.Windows.Forms.FlowLayoutPanel();
 			this.gbTangDuoi = new System.Windows.Forms.GroupBox();
 			this.flpTangDuoi = new System.Windows.Forms.FlowLayoutPanel();
+			this.gbTangTren = new System.Windows.Forms.GroupBox();
+			this.flpTangTren = new System.Windows.Forms.FlowLayoutPanel();
 			this.pnlLegend = new System.Windows.Forms.Panel();
 			this.lblDaChon = new System.Windows.Forms.Label();
 			this.btnLegendDaChon = new System.Windows.Forms.Button();
@@ -67,8 +67,8 @@
 			this.pnlSearch.SuspendLayout();
 			this.pnlResults.SuspendLayout();
 			this.pnlSeatMap.SuspendLayout();
-			this.gbTangTren.SuspendLayout();
 			this.gbTangDuoi.SuspendLayout();
+			this.gbTangTren.SuspendLayout();
 			this.pnlLegend.SuspendLayout();
 			this.pnlSeatInfo.SuspendLayout();
 			this.SuspendLayout();
@@ -85,10 +85,9 @@
 			this.flowMain.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.flowMain.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
 			this.flowMain.Location = new System.Drawing.Point(0, 0);
-			this.flowMain.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+			this.flowMain.Margin = new System.Windows.Forms.Padding(0);
 			this.flowMain.Name = "flowMain";
-			this.flowMain.Padding = new System.Windows.Forms.Padding(15, 20, 15, 20);
-			this.flowMain.Size = new System.Drawing.Size(1550, 1538);
+			this.flowMain.Size = new System.Drawing.Size(1650, 1538);
 			this.flowMain.TabIndex = 0;
 			this.flowMain.WrapContents = false;
 			// 
@@ -98,21 +97,22 @@
             | System.Windows.Forms.AnchorStyles.Right)));
 			this.pnlHeader.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(150)))), ((int)(((byte)(136)))));
 			this.pnlHeader.Controls.Add(this.lblTitle);
-			this.pnlHeader.Location = new System.Drawing.Point(19, 25);
+			this.pnlHeader.Location = new System.Drawing.Point(4, 5);
 			this.pnlHeader.Margin = new System.Windows.Forms.Padding(4, 5, 4, 20);
 			this.pnlHeader.Name = "pnlHeader";
-			this.pnlHeader.Size = new System.Drawing.Size(1527, 100);
+			this.pnlHeader.Size = new System.Drawing.Size(1686, 100);
 			this.pnlHeader.TabIndex = 0;
 			// 
 			// lblTitle
 			// 
-			this.lblTitle.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.lblTitle.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
 			this.lblTitle.Font = new System.Drawing.Font("Segoe UI", 20F, System.Drawing.FontStyle.Bold);
 			this.lblTitle.ForeColor = System.Drawing.Color.White;
 			this.lblTitle.Location = new System.Drawing.Point(0, 0);
 			this.lblTitle.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
 			this.lblTitle.Name = "lblTitle";
-			this.lblTitle.Size = new System.Drawing.Size(1527, 100);
+			this.lblTitle.Size = new System.Drawing.Size(1550, 100);
 			this.lblTitle.TabIndex = 0;
 			this.lblTitle.Text = "ĐẶT VÉ XE TRỰC TUYẾN";
 			this.lblTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -130,12 +130,12 @@
 			this.pnlSearch.Controls.Add(this.lblNgayDi);
 			this.pnlSearch.Controls.Add(this.lblDiemDen);
 			this.pnlSearch.Controls.Add(this.lblDiemDi);
-			this.pnlSearch.Location = new System.Drawing.Point(19, 150);
+			this.pnlSearch.Location = new System.Drawing.Point(4, 130);
 			this.pnlSearch.Margin = new System.Windows.Forms.Padding(4, 5, 4, 20);
 			this.pnlSearch.MinimumSize = new System.Drawing.Size(1080, 240);
 			this.pnlSearch.Name = "pnlSearch";
 			this.pnlSearch.Padding = new System.Windows.Forms.Padding(30, 25, 30, 25);
-			this.pnlSearch.Size = new System.Drawing.Size(1527, 255);
+			this.pnlSearch.Size = new System.Drawing.Size(1686, 255);
 			this.pnlSearch.TabIndex = 1;
 			// 
 			// cboGioDi
@@ -149,7 +149,7 @@
             "06:00 - 12:00",
             "12:00 - 18:00",
             "18:00 - 24:00"});
-			this.cboGioDi.Location = new System.Drawing.Point(1132, 105);
+			this.cboGioDi.Location = new System.Drawing.Point(1258, 105);
 			this.cboGioDi.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.cboGioDi.Name = "cboGioDi";
 			this.cboGioDi.Size = new System.Drawing.Size(298, 38);
@@ -159,7 +159,7 @@
 			// 
 			this.lblGioDi.AutoSize = true;
 			this.lblGioDi.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-			this.lblGioDi.Location = new System.Drawing.Point(1132, 67);
+			this.lblGioDi.Location = new System.Drawing.Point(1258, 67);
 			this.lblGioDi.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
 			this.lblGioDi.Name = "lblGioDi";
 			this.lblGioDi.Size = new System.Drawing.Size(70, 28);
@@ -174,7 +174,7 @@
 			this.btnTimChuyen.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.btnTimChuyen.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
 			this.btnTimChuyen.ForeColor = System.Drawing.Color.White;
-			this.btnTimChuyen.Location = new System.Drawing.Point(1132, 169);
+			this.btnTimChuyen.Location = new System.Drawing.Point(1258, 169);
 			this.btnTimChuyen.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.btnTimChuyen.Name = "btnTimChuyen";
 			this.btnTimChuyen.Size = new System.Drawing.Size(300, 77);
@@ -188,7 +188,7 @@
 			this.dtpNgayDi.CustomFormat = "dd/MM/yyyy";
 			this.dtpNgayDi.Font = new System.Drawing.Font("Segoe UI", 11F);
 			this.dtpNgayDi.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
-			this.dtpNgayDi.Location = new System.Drawing.Point(814, 102);
+			this.dtpNgayDi.Location = new System.Drawing.Point(905, 103);
 			this.dtpNgayDi.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.dtpNgayDi.Name = "dtpNgayDi";
 			this.dtpNgayDi.Size = new System.Drawing.Size(268, 37);
@@ -201,7 +201,7 @@
 			this.btnSwap.FlatAppearance.BorderSize = 0;
 			this.btnSwap.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.btnSwap.Font = new System.Drawing.Font("Segoe UI", 12F, System.Drawing.FontStyle.Bold);
-			this.btnSwap.Location = new System.Drawing.Point(382, 95);
+			this.btnSwap.Location = new System.Drawing.Point(412, 95);
 			this.btnSwap.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.btnSwap.Name = "btnSwap";
 			this.btnSwap.Size = new System.Drawing.Size(60, 54);
@@ -215,7 +215,7 @@
 			this.cboDiemDen.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.cboDiemDen.Font = new System.Drawing.Font("Segoe UI", 11F);
 			this.cboDiemDen.FormattingEnabled = true;
-			this.cboDiemDen.Location = new System.Drawing.Point(465, 102);
+			this.cboDiemDen.Location = new System.Drawing.Point(536, 102);
 			this.cboDiemDen.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.cboDiemDen.Name = "cboDiemDen";
 			this.cboDiemDen.Size = new System.Drawing.Size(298, 38);
@@ -236,7 +236,7 @@
 			// 
 			this.lblNgayDi.AutoSize = true;
 			this.lblNgayDi.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-			this.lblNgayDi.Location = new System.Drawing.Point(814, 67);
+			this.lblNgayDi.Location = new System.Drawing.Point(905, 68);
 			this.lblNgayDi.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
 			this.lblNgayDi.Name = "lblNgayDi";
 			this.lblNgayDi.Size = new System.Drawing.Size(87, 28);
@@ -247,7 +247,7 @@
 			// 
 			this.lblDiemDen.AutoSize = true;
 			this.lblDiemDen.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Bold);
-			this.lblDiemDen.Location = new System.Drawing.Point(465, 67);
+			this.lblDiemDen.Location = new System.Drawing.Point(536, 67);
 			this.lblDiemDen.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
 			this.lblDiemDen.Name = "lblDiemDen";
 			this.lblDiemDen.Size = new System.Drawing.Size(104, 28);
@@ -272,12 +272,12 @@
 			this.pnlResults.BackColor = System.Drawing.Color.White;
 			this.pnlResults.Controls.Add(this.flpChuyenXe);
 			this.pnlResults.Controls.Add(this.lblKetQua);
-			this.pnlResults.Location = new System.Drawing.Point(19, 430);
+			this.pnlResults.Location = new System.Drawing.Point(4, 410);
 			this.pnlResults.Margin = new System.Windows.Forms.Padding(4, 5, 4, 20);
 			this.pnlResults.MinimumSize = new System.Drawing.Size(1080, 350);
 			this.pnlResults.Name = "pnlResults";
 			this.pnlResults.Padding = new System.Windows.Forms.Padding(30, 25, 30, 25);
-			this.pnlResults.Size = new System.Drawing.Size(1527, 350);
+			this.pnlResults.Size = new System.Drawing.Size(1686, 456);
 			this.pnlResults.TabIndex = 2;
 			this.pnlResults.Visible = false;
 			// 
@@ -287,10 +287,10 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
 			this.flpChuyenXe.AutoScroll = true;
-			this.flpChuyenXe.Location = new System.Drawing.Point(30, 75);
+			this.flpChuyenXe.Location = new System.Drawing.Point(38, 88);
 			this.flpChuyenXe.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.flpChuyenXe.Name = "flpChuyenXe";
-			this.flpChuyenXe.Size = new System.Drawing.Size(1497, 250);
+			this.flpChuyenXe.Size = new System.Drawing.Size(1560, 356);
 			this.flpChuyenXe.TabIndex = 1;
 			// 
 			// lblKetQua
@@ -306,8 +306,6 @@
 			// 
 			// pnlSeatMap
 			// 
-			this.pnlSeatMap.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
 			this.pnlSeatMap.AutoSize = true;
 			this.pnlSeatMap.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
 			this.pnlSeatMap.BackColor = System.Drawing.Color.White;
@@ -315,42 +313,14 @@
 			this.pnlSeatMap.Controls.Add(this.gbTangTren);
 			this.pnlSeatMap.Controls.Add(this.pnlLegend);
 			this.pnlSeatMap.Controls.Add(this.lblLoaiGhe);
-			this.pnlSeatMap.Location = new System.Drawing.Point(19, 805);
+			this.pnlSeatMap.Location = new System.Drawing.Point(4, 891);
 			this.pnlSeatMap.Margin = new System.Windows.Forms.Padding(4, 5, 4, 20);
 			this.pnlSeatMap.MinimumSize = new System.Drawing.Size(1080, 500);
 			this.pnlSeatMap.Name = "pnlSeatMap";
 			this.pnlSeatMap.Padding = new System.Windows.Forms.Padding(30, 25, 30, 25);
-			this.pnlSeatMap.Size = new System.Drawing.Size(1527, 500);
+			this.pnlSeatMap.Size = new System.Drawing.Size(1080, 500);
 			this.pnlSeatMap.TabIndex = 3;
 			this.pnlSeatMap.Visible = false;
-			// 
-			// gbTangTren
-			// 
-			this.gbTangTren.AutoSize = true;
-			this.gbTangTren.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this.gbTangTren.Controls.Add(this.flpTangTren);
-			this.gbTangTren.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.gbTangTren.Location = new System.Drawing.Point(641, 160);
-			this.gbTangTren.MaximumSize = new System.Drawing.Size(600, 0);
-			this.gbTangTren.Name = "gbTangTren";
-			this.gbTangTren.Padding = new System.Windows.Forms.Padding(10);
-			this.gbTangTren.Size = new System.Drawing.Size(40, 67);
-			this.gbTangTren.TabIndex = 5;
-			this.gbTangTren.TabStop = false;
-			this.gbTangTren.Text = "Tầng trên";
-			this.gbTangTren.Visible = false;
-			// 
-			// flpTangTren
-			// 
-			this.flpTangTren.AutoSize = true;
-			this.flpTangTren.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
-			this.flpTangTren.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.flpTangTren.Location = new System.Drawing.Point(10, 37);
-			this.flpTangTren.MaximumSize = new System.Drawing.Size(580, 0);
-			this.flpTangTren.Name = "flpTangTren";
-			this.flpTangTren.Padding = new System.Windows.Forms.Padding(10);
-			this.flpTangTren.Size = new System.Drawing.Size(20, 20);
-			this.flpTangTren.TabIndex = 0;
 			// 
 			// gbTangDuoi
 			// 
@@ -379,6 +349,34 @@
 			this.flpTangDuoi.Padding = new System.Windows.Forms.Padding(10);
 			this.flpTangDuoi.Size = new System.Drawing.Size(20, 20);
 			this.flpTangDuoi.TabIndex = 0;
+			// 
+			// gbTangTren
+			// 
+			this.gbTangTren.AutoSize = true;
+			this.gbTangTren.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+			this.gbTangTren.Controls.Add(this.flpTangTren);
+			this.gbTangTren.Font = new System.Drawing.Font("Segoe UI", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.gbTangTren.Location = new System.Drawing.Point(641, 160);
+			this.gbTangTren.MaximumSize = new System.Drawing.Size(600, 0);
+			this.gbTangTren.Name = "gbTangTren";
+			this.gbTangTren.Padding = new System.Windows.Forms.Padding(10);
+			this.gbTangTren.Size = new System.Drawing.Size(40, 67);
+			this.gbTangTren.TabIndex = 5;
+			this.gbTangTren.TabStop = false;
+			this.gbTangTren.Text = "Tầng trên";
+			this.gbTangTren.Visible = false;
+			// 
+			// flpTangTren
+			// 
+			this.flpTangTren.AutoSize = true;
+			this.flpTangTren.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+			this.flpTangTren.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.flpTangTren.Location = new System.Drawing.Point(10, 37);
+			this.flpTangTren.MaximumSize = new System.Drawing.Size(580, 0);
+			this.flpTangTren.Name = "flpTangTren";
+			this.flpTangTren.Padding = new System.Windows.Forms.Padding(10);
+			this.flpTangTren.Size = new System.Drawing.Size(20, 20);
+			this.flpTangTren.TabIndex = 0;
 			// 
 			// pnlLegend
 			// 
@@ -485,12 +483,13 @@
 			this.pnlSeatInfo.Controls.Add(this.btnDatVe);
 			this.pnlSeatInfo.Controls.Add(this.lblTongTien);
 			this.pnlSeatInfo.Controls.Add(this.lblGheDaChon);
-			this.pnlSeatInfo.Location = new System.Drawing.Point(19, 1330);
+			this.pnlSeatInfo.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.pnlSeatInfo.Location = new System.Drawing.Point(4, 1416);
 			this.pnlSeatInfo.Margin = new System.Windows.Forms.Padding(4, 5, 4, 20);
 			this.pnlSeatInfo.MinimumSize = new System.Drawing.Size(1080, 150);
 			this.pnlSeatInfo.Name = "pnlSeatInfo";
 			this.pnlSeatInfo.Padding = new System.Windows.Forms.Padding(30, 25, 30, 25);
-			this.pnlSeatInfo.Size = new System.Drawing.Size(1264, 198);
+			this.pnlSeatInfo.Size = new System.Drawing.Size(1686, 198);
 			this.pnlSeatInfo.TabIndex = 4;
 			this.pnlSeatInfo.Visible = false;
 			// 
@@ -540,7 +539,7 @@
 			this.Controls.Add(this.flowMain);
 			this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
 			this.Name = "UCDatVeUser";
-			this.Size = new System.Drawing.Size(1550, 1538);
+			this.Size = new System.Drawing.Size(1650, 1538);
 			this.flowMain.ResumeLayout(false);
 			this.flowMain.PerformLayout();
 			this.pnlHeader.ResumeLayout(false);
@@ -550,10 +549,10 @@
 			this.pnlResults.PerformLayout();
 			this.pnlSeatMap.ResumeLayout(false);
 			this.pnlSeatMap.PerformLayout();
-			this.gbTangTren.ResumeLayout(false);
-			this.gbTangTren.PerformLayout();
 			this.gbTangDuoi.ResumeLayout(false);
 			this.gbTangDuoi.PerformLayout();
+			this.gbTangTren.ResumeLayout(false);
+			this.gbTangTren.PerformLayout();
 			this.pnlLegend.ResumeLayout(false);
 			this.pnlLegend.PerformLayout();
 			this.pnlSeatInfo.ResumeLayout(false);

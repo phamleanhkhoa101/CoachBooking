@@ -15,6 +15,8 @@ namespace QLBXMD.GUI.User
 	{
 		private TaiKhoan taiKhoan;
 		private UCDatVeUser ucDatVe;
+		private UCLichSuMuaVe ucLichSu;
+		private UCThongTinUser ucThongTin;
 
 		public FrmMainUser()
 		{
@@ -29,30 +31,52 @@ namespace QLBXMD.GUI.User
 
 		private void FrmMainUser_Load(object sender, EventArgs e)
 		{
-			// Load booking interface
-			ucDatVe = new UCDatVeUser(taiKhoan);
-			ucDatVe.Dock = DockStyle.Fill;
-			pnlContent.Controls.Add(ucDatVe);
+			// Load booking interface by default
+			LoadDatVe();
 		}
 
 		private void btnDatVe_Click(object sender, EventArgs e)
 		{
-			pnlContent.Controls.Clear();
-			ucDatVe = new UCDatVeUser(taiKhoan);
-			ucDatVe.Dock = DockStyle.Fill;
-			pnlContent.Controls.Add(ucDatVe);
+			LoadDatVe();
 		}
 
 		private void btnLichSu_Click(object sender, EventArgs e)
 		{
-			MessageBox.Show("Chức năng lịch sử đặt vé đang được phát triển.", "Thông báo", 
-				MessageBoxButtons.OK, MessageBoxIcon.Information);
+			LoadLichSu();
 		}
 
 		private void btnThongTin_Click(object sender, EventArgs e)
 		{
-			MessageBox.Show("Chức năng thông tin cá nhân đang được phát triển.", "Thông báo", 
-				MessageBoxButtons.OK, MessageBoxIcon.Information);
+			LoadThongTin();
+		}
+
+		private void LoadDatVe()
+		{
+			pnlContent.Controls.Clear();
+			if (ucDatVe == null)
+			{
+				ucDatVe = new UCDatVeUser(taiKhoan);
+				ucDatVe.Dock = DockStyle.Fill;
+			}
+			pnlContent.Controls.Add(ucDatVe);
+		}
+
+		private void LoadLichSu()
+		{
+			pnlContent.Controls.Clear();
+			// Always create new instance to refresh data
+			ucLichSu = new UCLichSuMuaVe(taiKhoan);
+			ucLichSu.Dock = DockStyle.Fill;
+			pnlContent.Controls.Add(ucLichSu);
+		}
+
+		private void LoadThongTin()
+		{
+			pnlContent.Controls.Clear();
+			// Always create new instance to refresh data
+			ucThongTin = new UCThongTinUser(taiKhoan);
+			ucThongTin.Dock = DockStyle.Fill;
+			pnlContent.Controls.Add(ucThongTin);
 		}
 
 		private void btnDangXuat_Click(object sender, EventArgs e)

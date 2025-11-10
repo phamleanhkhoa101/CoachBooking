@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
@@ -32,7 +32,7 @@ namespace QLBXMD.GUI.User
 		{
 			if (currentUser == null)
 			{
-				MessageBox.Show("Vui lòng ??ng nh?p ?? xem l?ch s?.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				MessageBox.Show("Vui lÃ²ng Ä‘Äƒng nháº­p Ä‘á»ƒ xem lá»‹ch sá»­.", "ThÃ´ng bÃ¡o", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				return;
 			}
 
@@ -40,16 +40,16 @@ namespace QLBXMD.GUI.User
 			{
 				using (var db = new BXMDEntities())
 				{
-					// L?y thông tin khách hàng
+					// Láº¥y thÃ´ng tin khÃ¡ch hÃ ng
 					var khachHang = db.KhachHangs.FirstOrDefault(kh => kh.MaTK == currentUser.MaTK);
 					if (khachHang == null)
 					{
 						lblThongBao.Visible = true;
-						lblThongBao.Text = "Không tìm th?y thông tin khách hàng.";
+						lblThongBao.Text = "KhÃ´ng tÃ¬m tháº¥y thÃ´ng tin khÃ¡ch hÃ ng.";
 						return;
 					}
 
-					// L?y danh sách hóa ??n
+					// Láº¥y danh sÃ¡ch hÃ³a Ä‘Æ¡n
 					var hoaDons = (from hd in db.HoaDons
 								   where hd.MaKH == khachHang.MaKH
 								   orderby hd.NgayLap descending
@@ -58,13 +58,13 @@ namespace QLBXMD.GUI.User
 					if (!hoaDons.Any())
 					{
 						lblThongBao.Visible = true;
-						lblThongBao.Text = "B?n ch?a có l?ch s? mua vé nào.";
+						lblThongBao.Text = "Báº¡n chÆ°a cÃ³ lá»‹ch sá»­ mua vÃ© nÃ o.";
 						return;
 					}
 
 					lblThongBao.Visible = false;
 
-					// Clear và thêm hóa ??n cards
+					// Clear vÃ  thÃªm hÃ³a Ä‘Æ¡n cards
 					flpHoaDon.Controls.Clear();
 					
 					foreach (var hoaDon in hoaDons)
@@ -76,7 +76,7 @@ namespace QLBXMD.GUI.User
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show($"L?i t?i l?ch s?: {ex.Message}", "L?i", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show($"Lá»—i táº£i lá»‹ch sá»­: {ex.Message}", "Lá»—i", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
 
@@ -95,7 +95,7 @@ namespace QLBXMD.GUI.User
 				Padding = new Padding(20)
 			};
 
-			// L?y thông tin chi ti?t
+			// Láº¥y thÃ´ng tin chi tiáº¿t
 			using (var db = new BXMDEntities())
 			{
 				var veXes = db.VeXes.Where(v => v.MaHD == hoaDon.MaHD).ToList();
@@ -103,7 +103,7 @@ namespace QLBXMD.GUI.User
 				{
 					Label lblEmpty = new Label
 					{
-						Text = "Không có thông tin vé",
+						Text = "KhÃ´ng cÃ³ thÃ´ng tin vÃ©",
 						Location = new Point(20, 20),
 						AutoSize = true,
 						Font = new Font("Segoe UI", 10F),
@@ -119,7 +119,7 @@ namespace QLBXMD.GUI.User
 				{
 					Label lblEmpty = new Label
 					{
-						Text = "Không tìm th?y thông tin chuy?n xe",
+						Text = "KhÃ´ng tÃ¬m tháº¥y thÃ´ng tin chuyáº¿n xe",
 						Location = new Point(20, 20),
 						AutoSize = true,
 						Font = new Font("Segoe UI", 10F),
@@ -133,91 +133,91 @@ namespace QLBXMD.GUI.User
 				var xe = db.Xes.FirstOrDefault(x => x.MaXe == chuyenXe.MaXe);
 				var nhaXe = xe != null ? db.NhaXes.FirstOrDefault(nx => nx.MaNX == xe.MaNX) : null;
 
-				// Mã hóa ??n
+				// MÃ£ hÃ³a Ä‘Æ¡n
 				Label lblMaHD = new Label
 				{
-					Text = $"Mã H?: #{hoaDon.MaHD}",
+					Text = $"MÃ£ HÄ: #{hoaDon.MaHD}",
 					Location = new Point(20, 15),
 					AutoSize = true,
 					Font = new Font("Segoe UI", 11F, FontStyle.Bold),
 					ForeColor = Color.FromArgb(0, 150, 136)
 				};
 
-				// Ngày l?p
+				// NgÃ y láº­p
 				Label lblNgayLap = new Label
 				{
-					Text = $"Ngày ??t: {hoaDon.NgayLap:dd/MM/yyyy HH:mm}",
+					Text = $"NgÃ y Ä‘áº·t: {hoaDon.NgayLap:dd/MM/yyyy HH:mm}",
 					Location = new Point(20, 45),
 					AutoSize = true,
 					Font = new Font("Segoe UI", 9F),
 					ForeColor = Color.Gray
 				};
 
-				// Tr?ng thái
+				// Tráº¡ng thÃ¡i
 				Label lblTrangThai = new Label
 				{
-					Text = hoaDon.TrangThai == true ? "? ?ã thanh toán" : "? Ch?a thanh toán",
+					Text = hoaDon.TrangThai == true ? "âœ“ ÄÃ£ thanh toÃ¡n" : "â³ ChÆ°a thanh toÃ¡n",
 					Location = new Point(cardWidth - 200, 15),
 					AutoSize = true,
 					Font = new Font("Segoe UI", 10F, FontStyle.Bold),
 					ForeColor = hoaDon.TrangThai == true ? Color.Green : Color.Orange
 				};
 
-				// Tuy?n ???ng
+				// Tuyáº¿n Ä‘Æ°á»ng
 				Label lblTuyen = new Label
 				{
-					Text = tuyenDuong != null ? $"?? {tuyenDuong.DiemDi} ? {tuyenDuong.DiemDen}" : "Không rõ tuy?n",
+					Text = tuyenDuong != null ? $"ðŸšŒ {tuyenDuong.DiemDi} â†’ {tuyenDuong.DiemDen}" : "KhÃ´ng rÃµ tuyáº¿n",
 					Location = new Point(20, 75),
 					AutoSize = true,
 					Font = new Font("Segoe UI", 12F, FontStyle.Bold),
 					ForeColor = Color.FromArgb(51, 51, 51)
 				};
 
-				// Nhà xe
+				// NhÃ  xe
 				Label lblNhaXe = new Label
 				{
-					Text = nhaXe != null ? $"Nhà xe: {nhaXe.TenNX}" : "Không rõ nhà xe",
+					Text = nhaXe != null ? $"NhÃ  xe: {nhaXe.TenNX}" : "KhÃ´ng rÃµ nhÃ  xe",
 					Location = new Point(20, 105),
 					AutoSize = true,
 					Font = new Font("Segoe UI", 9F),
 					ForeColor = Color.Gray
 				};
 
-				// Ngày kh?i hành
+				// NgÃ y khá»Ÿi hÃ nh
 				Label lblKhoiHanh = new Label
 				{
-					Text = $"Kh?i hành: {chuyenXe.NgayGioKhoiHanh:dd/MM/yyyy HH:mm}",
+					Text = $"Khá»Ÿi hÃ nh: {chuyenXe.NgayGioKhoiHanh:dd/MM/yyyy HH:mm}",
 					Location = new Point(20, 130),
 					AutoSize = true,
 					Font = new Font("Segoe UI", 10F, FontStyle.Bold),
 					ForeColor = Color.FromArgb(244, 67, 54)
 				};
 
-				// Gh? ?ã ??t
+				// Gháº¿ Ä‘Ã£ Ä‘áº·t
 				var gheNumbers = veXes.Select(v => v.ChoNgoi).OrderBy(g => g).ToList();
 				Label lblGhe = new Label
 				{
-					Text = $"Gh?: {string.Join(", ", gheNumbers)}",
+					Text = $"Gháº¿: {string.Join(", ", gheNumbers)}",
 					Location = new Point(20, 160),
 					AutoSize = true,
 					Font = new Font("Segoe UI", 9F),
 					ForeColor = Color.Gray
 				};
 
-				// T?ng ti?n
+				// Tá»•ng tiá»n
 				Label lblTongTien = new Label
 				{
-					Text = $"{hoaDon.TongTien:#,##0} VN?",
+					Text = $"{hoaDon.TongTien:#,##0} VNÄ",
 					Location = new Point(cardWidth - 200, 150),
 					AutoSize = true,
 					Font = new Font("Segoe UI", 16F, FontStyle.Bold),
 					ForeColor = Color.FromArgb(244, 67, 54)
 				};
 
-				// Button xem chi ti?t
+				// Button xem chi tiáº¿t
 				Button btnChiTiet = new Button
 				{
-					Text = "Xem chi ti?t",
+					Text = "Xem chi tiáº¿t",
 					Location = new Point(cardWidth - 150, 50),
 					Size = new Size(120, 35),
 					BackColor = Color.FromArgb(0, 150, 136),
@@ -253,83 +253,21 @@ namespace QLBXMD.GUI.User
 		{
 			try
 			{
-				using (var db = new BXMDEntities())
+				// Má»Ÿ dialog xem chi tiáº¿t vá»›i tÃ­nh nÄƒng thanh toÃ¡n vÃ  há»§y vÃ©
+				using (var dialog = new XemChiTietDialog(maHD, currentUser))
 				{
-					var hoaDon = db.HoaDons.FirstOrDefault(hd => hd.MaHD == maHD);
-					if (hoaDon == null)
+					var result = dialog.ShowDialog();
+					
+					// Náº¿u user há»§y vÃ© hoáº·c thanh toÃ¡n thÃ nh cÃ´ng, reload láº¡i danh sÃ¡ch
+					if (result == DialogResult.OK)
 					{
-						MessageBox.Show("Không tìm th?y hóa ??n.", "L?i", MessageBoxButtons.OK, MessageBoxIcon.Error);
-						return;
+						LoadLichSuMuaVe();
 					}
-
-					var veXes = db.VeXes.Where(v => v.MaHD == maHD).ToList();
-					if (!veXes.Any())
-					{
-						MessageBox.Show("Không có vé nào trong hóa ??n này.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-						return;
-					}
-
-					var veXeFirst = veXes.First();
-					var chuyenXe = db.ChuyenXes.FirstOrDefault(cx => cx.MaChuyen == veXeFirst.MaChuyen);
-					var tuyenDuong = chuyenXe != null ? db.TuyenDuongs.FirstOrDefault(td => td.MaTuyen == chuyenXe.MaTuyen) : null;
-					var xe = chuyenXe != null ? db.Xes.FirstOrDefault(x => x.MaXe == chuyenXe.MaXe) : null;
-					var nhaXe = xe != null ? db.NhaXes.FirstOrDefault(nx => nx.MaNX == xe.MaNX) : null;
-					var loaiXe = xe != null ? db.LoaiXes.FirstOrDefault(lx => lx.MaLX == xe.MaLX) : null;
-
-					// T?o thông tin chi ti?t
-					string chiTiet = "????????????????????????????????????????????????????????????\n";
-					chiTiet += $"                    HÓA ??N #{hoaDon.MaHD}\n";
-					chiTiet += "????????????????????????????????????????????????????????????\n\n";
-					
-					chiTiet += $"?? Ngày ??t: {hoaDon.NgayLap:dd/MM/yyyy HH:mm}\n";
-					chiTiet += $"?? Tr?ng thái: {(hoaDon.TrangThai == true ? "?ã thanh toán" : "Ch?a thanh toán")}\n\n";
-					
-					chiTiet += "??????????????????????????????????????????????????????????\n";
-					chiTiet += "  THÔNG TIN CHUY?N XE\n";
-					chiTiet += "??????????????????????????????????????????????????????????\n\n";
-					
-					if (tuyenDuong != null)
-					{
-						chiTiet += $"?? Tuy?n: {tuyenDuong.DiemDi} ? {tuyenDuong.DiemDen}\n";
-					}
-					
-					if (nhaXe != null)
-					{
-						chiTiet += $"?? Nhà xe: {nhaXe.TenNX}\n";
-					}
-					
-					if (loaiXe != null)
-					{
-						chiTiet += $"?? Lo?i xe: {loaiXe.TenLX}\n";
-					}
-					
-					if (chuyenXe != null)
-					{
-						chiTiet += $"? Kh?i hành: {chuyenXe.NgayGioKhoiHanh:dd/MM/yyyy HH:mm}\n";
-						if (chuyenXe.NgayGioDenDuKien.HasValue)
-						{
-							chiTiet += $"?? ??n d? ki?n: {chuyenXe.NgayGioDenDuKien:dd/MM/yyyy HH:mm}\n";
-						}
-					}
-					
-					chiTiet += "\n??????????????????????????????????????????????????????????\n";
-					chiTiet += "  THÔNG TIN VÉ\n";
-					chiTiet += "??????????????????????????????????????????????????????????\n\n";
-					
-					chiTiet += $"?? S? l??ng vé: {veXes.Count}\n";
-					chiTiet += $"?? Gh?: {string.Join(", ", veXes.Select(v => v.ChoNgoi).OrderBy(g => g))}\n";
-					chiTiet += $"?? Giá m?i vé: {veXes.First().GiaVe:#,##0} VN?\n\n";
-					
-					chiTiet += "??????????????????????????????????????????????????????????\n";
-					chiTiet += $"?? T?NG TI?N: {hoaDon.TongTien:#,##0} VN?\n";
-					chiTiet += "??????????????????????????????????????????????????????????\n";
-
-					MessageBox.Show(chiTiet, "Chi ti?t hóa ??n", MessageBoxButtons.OK, MessageBoxIcon.Information);
 				}
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show($"L?i xem chi ti?t: {ex.Message}", "L?i", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show($"Lá»—i xem chi tiáº¿t: {ex.Message}", "Lá»—i", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
 

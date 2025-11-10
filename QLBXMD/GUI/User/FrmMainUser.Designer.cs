@@ -135,12 +135,12 @@
 			// 
 			this.lblAppName.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.lblAppName.Font = new System.Drawing.Font("Segoe UI", 18F, System.Drawing.FontStyle.Bold);
-			this.lblAppName.ForeColor = System.Drawing.Color.White;
+			this.lblAppName.ForeColor = System.Drawing.Color.Transparent;
 			this.lblAppName.Location = new System.Drawing.Point(0, 0);
 			this.lblAppName.Name = "lblAppName";
 			this.lblAppName.Size = new System.Drawing.Size(250, 120);
 			this.lblAppName.TabIndex = 0;
-			this.lblAppName.Text = "🚌 MY BUS";
+			this.lblAppName.Text = "🚌 BXMD";
 			this.lblAppName.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 			// 
 			// pnlContent

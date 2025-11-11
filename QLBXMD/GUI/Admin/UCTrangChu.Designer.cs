@@ -29,7 +29,6 @@
 		private void InitializeComponent()
 		{
 			this.pnlCard4 = new System.Windows.Forms.Panel();
-			this.pnlIcon4 = new System.Windows.Forms.Panel();
 			this.lblIcon4 = new System.Windows.Forms.Label();
 			this.lblSoVe = new System.Windows.Forms.Label();
 			this.lblSoVeValue = new System.Windows.Forms.Label();
@@ -39,33 +38,28 @@
 			this.lblTongDoanhThu = new System.Windows.Forms.Label();
 			this.lblTongDoanhThuValue = new System.Windows.Forms.Label();
 			this.pnlCard2 = new System.Windows.Forms.Panel();
-			this.pnlIcon2 = new System.Windows.Forms.Panel();
 			this.lblIcon2 = new System.Windows.Forms.Label();
 			this.lblSoChuyenXe = new System.Windows.Forms.Label();
 			this.lblSoChuyenXeValue = new System.Windows.Forms.Label();
 			this.pnlCard1 = new System.Windows.Forms.Panel();
-			this.pnlIcon1 = new System.Windows.Forms.Panel();
 			this.lblIcon1 = new System.Windows.Forms.Label();
 			this.lblKhachHang = new System.Windows.Forms.Label();
 			this.lblKhachHangValue = new System.Windows.Forms.Label();
 			this.lblWelcome = new System.Windows.Forms.Label();
 			this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
 			this.pnlCard4.SuspendLayout();
-			this.pnlIcon4.SuspendLayout();
 			this.pnlCard3.SuspendLayout();
 			this.pnlIcon3.SuspendLayout();
 			this.pnlCard2.SuspendLayout();
-			this.pnlIcon2.SuspendLayout();
 			this.pnlCard1.SuspendLayout();
-			this.pnlIcon1.SuspendLayout();
 			this.flowLayoutPanel1.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// pnlCard4
 			// 
-			this.pnlCard4.BackColor = System.Drawing.Color.White;
+			this.pnlCard4.BackColor = System.Drawing.Color.PaleTurquoise;
 			this.pnlCard4.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.pnlCard4.Controls.Add(this.pnlIcon4);
+			this.pnlCard4.Controls.Add(this.lblIcon4);
 			this.pnlCard4.Controls.Add(this.lblSoVe);
 			this.pnlCard4.Controls.Add(this.lblSoVeValue);
 			this.pnlCard4.Location = new System.Drawing.Point(935, 10);
@@ -74,19 +68,10 @@
 			this.pnlCard4.Size = new System.Drawing.Size(269, 140);
 			this.pnlCard4.TabIndex = 9;
 			// 
-			// pnlIcon4
-			// 
-			this.pnlIcon4.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(248)))), ((int)(((byte)(215)))), ((int)(((byte)(218)))));
-			this.pnlIcon4.Controls.Add(this.lblIcon4);
-			this.pnlIcon4.Location = new System.Drawing.Point(20, 25);
-			this.pnlIcon4.Name = "pnlIcon4";
-			this.pnlIcon4.Size = new System.Drawing.Size(60, 60);
-			this.pnlIcon4.TabIndex = 0;
-			// 
 			// lblIcon4
 			// 
 			this.lblIcon4.Font = new System.Drawing.Font("Segoe UI", 24F);
-			this.lblIcon4.Location = new System.Drawing.Point(0, 0);
+			this.lblIcon4.Location = new System.Drawing.Point(19, 23);
 			this.lblIcon4.Name = "lblIcon4";
 			this.lblIcon4.Size = new System.Drawing.Size(60, 60);
 			this.lblIcon4.TabIndex = 0;
@@ -96,8 +81,8 @@
 			// lblSoVe
 			// 
 			this.lblSoVe.Font = new System.Drawing.Font("Segoe UI", 10F);
-			this.lblSoVe.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(108)))), ((int)(((byte)(117)))), ((int)(((byte)(125)))));
-			this.lblSoVe.Location = new System.Drawing.Point(100, 80);
+			this.lblSoVe.ForeColor = System.Drawing.Color.Black;
+			this.lblSoVe.Location = new System.Drawing.Point(100, 85);
 			this.lblSoVe.Name = "lblSoVe";
 			this.lblSoVe.Size = new System.Drawing.Size(160, 40);
 			this.lblSoVe.TabIndex = 2;
@@ -107,16 +92,16 @@
 			// 
 			this.lblSoVeValue.Font = new System.Drawing.Font("Segoe UI", 26F, System.Drawing.FontStyle.Bold);
 			this.lblSoVeValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(58)))), ((int)(((byte)(64)))));
-			this.lblSoVeValue.Location = new System.Drawing.Point(100, 20);
+			this.lblSoVeValue.Location = new System.Drawing.Point(100, 18);
 			this.lblSoVeValue.Name = "lblSoVeValue";
-			this.lblSoVeValue.Size = new System.Drawing.Size(160, 50);
+			this.lblSoVeValue.Size = new System.Drawing.Size(160, 70);
 			this.lblSoVeValue.TabIndex = 1;
 			this.lblSoVeValue.Text = "0";
 			this.lblSoVeValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			// 
 			// pnlCard3
 			// 
-			this.pnlCard3.BackColor = System.Drawing.Color.White;
+			this.pnlCard3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(252)))), ((int)(((byte)(231)))));
 			this.pnlCard3.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
 			this.pnlCard3.Controls.Add(this.pnlIcon3);
 			this.pnlCard3.Controls.Add(this.lblTongDoanhThu);
@@ -149,7 +134,7 @@
 			// lblTongDoanhThu
 			// 
 			this.lblTongDoanhThu.Font = new System.Drawing.Font("Segoe UI", 9F);
-			this.lblTongDoanhThu.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(108)))), ((int)(((byte)(117)))), ((int)(((byte)(125)))));
+			this.lblTongDoanhThu.ForeColor = System.Drawing.Color.Black;
 			this.lblTongDoanhThu.Location = new System.Drawing.Point(100, 75);
 			this.lblTongDoanhThu.Name = "lblTongDoanhThu";
 			this.lblTongDoanhThu.Size = new System.Drawing.Size(160, 50);
@@ -169,9 +154,9 @@
 			// 
 			// pnlCard2
 			// 
-			this.pnlCard2.BackColor = System.Drawing.Color.White;
+			this.pnlCard2.BackColor = System.Drawing.Color.LightCoral;
 			this.pnlCard2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.pnlCard2.Controls.Add(this.pnlIcon2);
+			this.pnlCard2.Controls.Add(this.lblIcon2);
 			this.pnlCard2.Controls.Add(this.lblSoChuyenXe);
 			this.pnlCard2.Controls.Add(this.lblSoChuyenXeValue);
 			this.pnlCard2.Location = new System.Drawing.Point(323, 10);
@@ -180,19 +165,10 @@
 			this.pnlCard2.Size = new System.Drawing.Size(266, 140);
 			this.pnlCard2.TabIndex = 7;
 			// 
-			// pnlIcon2
-			// 
-			this.pnlIcon2.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(243)))), ((int)(((byte)(224)))));
-			this.pnlIcon2.Controls.Add(this.lblIcon2);
-			this.pnlIcon2.Location = new System.Drawing.Point(20, 25);
-			this.pnlIcon2.Name = "pnlIcon2";
-			this.pnlIcon2.Size = new System.Drawing.Size(60, 60);
-			this.pnlIcon2.TabIndex = 0;
-			// 
 			// lblIcon2
 			// 
 			this.lblIcon2.Font = new System.Drawing.Font("Segoe UI", 24F);
-			this.lblIcon2.Location = new System.Drawing.Point(0, 0);
+			this.lblIcon2.Location = new System.Drawing.Point(27, 25);
 			this.lblIcon2.Name = "lblIcon2";
 			this.lblIcon2.Size = new System.Drawing.Size(60, 60);
 			this.lblIcon2.TabIndex = 0;
@@ -202,8 +178,8 @@
 			// lblSoChuyenXe
 			// 
 			this.lblSoChuyenXe.Font = new System.Drawing.Font("Segoe UI", 10F);
-			this.lblSoChuyenXe.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(108)))), ((int)(((byte)(117)))), ((int)(((byte)(125)))));
-			this.lblSoChuyenXe.Location = new System.Drawing.Point(100, 80);
+			this.lblSoChuyenXe.ForeColor = System.Drawing.Color.Black;
+			this.lblSoChuyenXe.Location = new System.Drawing.Point(100, 85);
 			this.lblSoChuyenXe.Name = "lblSoChuyenXe";
 			this.lblSoChuyenXe.Size = new System.Drawing.Size(160, 40);
 			this.lblSoChuyenXe.TabIndex = 2;
@@ -213,18 +189,18 @@
 			// 
 			this.lblSoChuyenXeValue.Font = new System.Drawing.Font("Segoe UI", 26F, System.Drawing.FontStyle.Bold);
 			this.lblSoChuyenXeValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(58)))), ((int)(((byte)(64)))));
-			this.lblSoChuyenXeValue.Location = new System.Drawing.Point(100, 20);
+			this.lblSoChuyenXeValue.Location = new System.Drawing.Point(93, 20);
 			this.lblSoChuyenXeValue.Name = "lblSoChuyenXeValue";
-			this.lblSoChuyenXeValue.Size = new System.Drawing.Size(160, 50);
+			this.lblSoChuyenXeValue.Size = new System.Drawing.Size(160, 68);
 			this.lblSoChuyenXeValue.TabIndex = 1;
 			this.lblSoChuyenXeValue.Text = "0";
 			this.lblSoChuyenXeValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			// 
 			// pnlCard1
 			// 
-			this.pnlCard1.BackColor = System.Drawing.Color.White;
+			this.pnlCard1.BackColor = System.Drawing.Color.AntiqueWhite;
 			this.pnlCard1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-			this.pnlCard1.Controls.Add(this.pnlIcon1);
+			this.pnlCard1.Controls.Add(this.lblIcon1);
 			this.pnlCard1.Controls.Add(this.lblKhachHang);
 			this.pnlCard1.Controls.Add(this.lblKhachHangValue);
 			this.pnlCard1.Location = new System.Drawing.Point(20, 10);
@@ -233,19 +209,11 @@
 			this.pnlCard1.Size = new System.Drawing.Size(263, 140);
 			this.pnlCard1.TabIndex = 6;
 			// 
-			// pnlIcon1
-			// 
-			this.pnlIcon1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(214)))), ((int)(((byte)(231)))), ((int)(((byte)(255)))));
-			this.pnlIcon1.Controls.Add(this.lblIcon1);
-			this.pnlIcon1.Location = new System.Drawing.Point(20, 25);
-			this.pnlIcon1.Name = "pnlIcon1";
-			this.pnlIcon1.Size = new System.Drawing.Size(60, 60);
-			this.pnlIcon1.TabIndex = 3;
-			// 
 			// lblIcon1
 			// 
 			this.lblIcon1.Font = new System.Drawing.Font("Segoe UI", 24F);
-			this.lblIcon1.Location = new System.Drawing.Point(0, 0);
+			this.lblIcon1.ForeColor = System.Drawing.SystemColors.ActiveCaptionText;
+			this.lblIcon1.Location = new System.Drawing.Point(15, 23);
 			this.lblIcon1.Name = "lblIcon1";
 			this.lblIcon1.Size = new System.Drawing.Size(60, 60);
 			this.lblIcon1.TabIndex = 0;
@@ -255,8 +223,8 @@
 			// lblKhachHang
 			// 
 			this.lblKhachHang.Font = new System.Drawing.Font("Segoe UI", 10F);
-			this.lblKhachHang.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(108)))), ((int)(((byte)(117)))), ((int)(((byte)(125)))));
-			this.lblKhachHang.Location = new System.Drawing.Point(100, 80);
+			this.lblKhachHang.ForeColor = System.Drawing.Color.Black;
+			this.lblKhachHang.Location = new System.Drawing.Point(81, 85);
 			this.lblKhachHang.Name = "lblKhachHang";
 			this.lblKhachHang.Size = new System.Drawing.Size(160, 40);
 			this.lblKhachHang.TabIndex = 2;
@@ -266,9 +234,9 @@
 			// 
 			this.lblKhachHangValue.Font = new System.Drawing.Font("Segoe UI", 26F, System.Drawing.FontStyle.Bold);
 			this.lblKhachHangValue.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(52)))), ((int)(((byte)(58)))), ((int)(((byte)(64)))));
-			this.lblKhachHangValue.Location = new System.Drawing.Point(100, 20);
+			this.lblKhachHangValue.Location = new System.Drawing.Point(81, 20);
 			this.lblKhachHangValue.Name = "lblKhachHangValue";
-			this.lblKhachHangValue.Size = new System.Drawing.Size(160, 50);
+			this.lblKhachHangValue.Size = new System.Drawing.Size(160, 65);
 			this.lblKhachHangValue.TabIndex = 1;
 			this.lblKhachHangValue.Text = "0";
 			this.lblKhachHangValue.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
@@ -277,8 +245,8 @@
 			// 
 			this.lblWelcome.AutoSize = true;
 			this.lblWelcome.Font = new System.Drawing.Font("Segoe UI", 22F, System.Drawing.FontStyle.Bold);
-			this.lblWelcome.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(108)))), ((int)(((byte)(117)))), ((int)(((byte)(125)))));
-			this.lblWelcome.Location = new System.Drawing.Point(61, 81);
+			this.lblWelcome.ForeColor = System.Drawing.Color.Firebrick;
+			this.lblWelcome.Location = new System.Drawing.Point(31, 39);
 			this.lblWelcome.Name = "lblWelcome";
 			this.lblWelcome.Size = new System.Drawing.Size(576, 60);
 			this.lblWelcome.TabIndex = 5;
@@ -294,7 +262,7 @@
 			this.flowLayoutPanel1.Controls.Add(this.pnlCard2);
 			this.flowLayoutPanel1.Controls.Add(this.pnlCard3);
 			this.flowLayoutPanel1.Controls.Add(this.pnlCard4);
-			this.flowLayoutPanel1.Location = new System.Drawing.Point(50, 169);
+			this.flowLayoutPanel1.Location = new System.Drawing.Point(30, 148);
 			this.flowLayoutPanel1.MinimumSize = new System.Drawing.Size(1000, 160);
 			this.flowLayoutPanel1.Name = "flowLayoutPanel1";
 			this.flowLayoutPanel1.Size = new System.Drawing.Size(1224, 160);
@@ -304,19 +272,17 @@
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+			this.BackColor = System.Drawing.Color.White;
 			this.Controls.Add(this.flowLayoutPanel1);
 			this.Controls.Add(this.lblWelcome);
 			this.Name = "UCTrangChu";
 			this.Size = new System.Drawing.Size(1349, 728);
 			this.Load += new System.EventHandler(this.UCTrangChu_Load);
 			this.pnlCard4.ResumeLayout(false);
-			this.pnlIcon4.ResumeLayout(false);
 			this.pnlCard3.ResumeLayout(false);
 			this.pnlIcon3.ResumeLayout(false);
 			this.pnlCard2.ResumeLayout(false);
-			this.pnlIcon2.ResumeLayout(false);
 			this.pnlCard1.ResumeLayout(false);
-			this.pnlIcon1.ResumeLayout(false);
 			this.flowLayoutPanel1.ResumeLayout(false);
 			this.ResumeLayout(false);
 			this.PerformLayout();
@@ -326,7 +292,6 @@
 		#endregion
 
 		private System.Windows.Forms.Panel pnlCard4;
-		private System.Windows.Forms.Panel pnlIcon4;
 		private System.Windows.Forms.Label lblIcon4;
 		private System.Windows.Forms.Label lblSoVe;
 		private System.Windows.Forms.Label lblSoVeValue;
@@ -336,11 +301,9 @@
 		private System.Windows.Forms.Label lblTongDoanhThu;
 		private System.Windows.Forms.Label lblTongDoanhThuValue;
 		private System.Windows.Forms.Panel pnlCard2;
-		private System.Windows.Forms.Panel pnlIcon2;
 		private System.Windows.Forms.Label lblSoChuyenXe;
 		private System.Windows.Forms.Label lblSoChuyenXeValue;
 		private System.Windows.Forms.Panel pnlCard1;
-		private System.Windows.Forms.Panel pnlIcon1;
 		private System.Windows.Forms.Label lblIcon1;
 		private System.Windows.Forms.Label lblKhachHang;
 		private System.Windows.Forms.Label lblKhachHangValue;

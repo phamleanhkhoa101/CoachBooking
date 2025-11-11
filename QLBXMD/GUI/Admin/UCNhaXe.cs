@@ -123,60 +123,69 @@ namespace QLBXMD.GUI.Admin
 		}
 		private void btnXem_Click(object sender, EventArgs e)
 		{
+			if (dgvNhaXe.SelectedRows.Count == 0) return;
+			var selectedRow = dgvNhaXe.SelectedRows[0];
+			if (selectedRow.Cells[0].Value == null) return;
+
+			int maNX = int.Parse(selectedRow.Cells[0].Value.ToString());
+			var existing = db.NhaXes.FirstOrDefault(nx => nx.MaNX == maNX);
+			if (existing == null) return;
+
 			using (var dialog = new NhaXeDialog())
 			{
-				if (dgvNhaXe.SelectedRows.Count == 0) return;
-				var selectedRow = dgvNhaXe.SelectedRows[0];
-				
-				// Kiểm tra dòng có dữ liệu không
-				if (selectedRow.Cells[0].Value == null) return;
-				
-				dialog.MaNhaXe = selectedRow.Cells[0].Value.ToString();
-				dialog.TenNhaXe = selectedRow.Cells[1].Value.ToString();
-				dialog.SDT = selectedRow.Cells[2].Value.ToString();
-				dialog.Email = selectedRow.Cells[3].Value.ToString();
-				dialog.TrangThai = selectedRow.Cells[4].Value.ToString();
-
-				dialog.Controls["btnThem"].Enabled = false;
+				dialog.SetMode(NhaXeDialogMode.View);
+				dialog.MaNhaXe = existing.MaNX.ToString();
+				dialog.TenNhaXe = existing.TenNX;
+				dialog.SDT = existing.SDT;
+				dialog.Email = existing.Email;
+				dialog.TrangThaiValue = existing.TrangThai;
 				dialog.ShowDialog();
 			}
 		}
 
 		private void btnSua_Click(object sender, EventArgs e)
 		{
+			if (dgvNhaXe.SelectedRows.Count == 0) return;
+			var selectedRow = dgvNhaXe.SelectedRows[0];
+			if (selectedRow.Cells[0].Value == null) return;
+
+			int maNX = int.Parse(selectedRow.Cells[0].Value.ToString());
+			var existing = db.NhaXes.FirstOrDefault(nx => nx.MaNX == maNX);
+			if (existing == null)
+			{
+				MessageBox.Show("Không tìm thấy nhà xe.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				return;
+			}
+
 			using (var dialog = new NhaXeDialog())
 			{
-				if (dgvNhaXe.SelectedRows.Count == 0) return;
-				var selectedRow = dgvNhaXe.SelectedRows[0];
-				
-				// Kiểm tra dòng có dữ liệu không
-				if (selectedRow.Cells[0].Value == null) return;
-				
-				dialog.MaNhaXe = selectedRow.Cells[0].Value.ToString();
-				dialog.TenNhaXe = selectedRow.Cells[1].Value.ToString();
-				dialog.SDT = selectedRow.Cells[2].Value.ToString();
-				dialog.Email = selectedRow.Cells[3].Value.ToString();
-				dialog.TrangThai = selectedRow.Cells[4].Value.ToString();
+				dialog.SetMode(NhaXeDialogMode.Edit);
+				dialog.MaNhaXe = existing.MaNX.ToString();
+				dialog.TenNhaXe = existing.TenNX;
+				dialog.SDT = existing.SDT;
+				dialog.Email = existing.Email;
+				dialog.TrangThaiValue = existing.TrangThai;
 
 				if (dialog.ShowDialog() == DialogResult.OK)
 				{
 					NhaXe nx = new NhaXe
 					{
-						MaNX = int.Parse(dialog.MaNhaXe),
+						MaNX = existing.MaNX,
 						TenNX = dialog.TenNhaXe,
 						SDT = dialog.SDT,
 						Email = dialog.Email,
-						TrangThai = dialog.TrangThai == "Hoạt động" ? true : false
+						TrangThai = dialog.TrangThaiValue
 					};
+
 					string result = _nhaXeBUS.Update(nx);
-					MessageBox.Show(result);
+					MessageBox.Show(result, "Thông báo", MessageBoxButtons.OK,
+						result.Contains("thành công") ? MessageBoxIcon.Information : MessageBoxIcon.Error);
+
 					if (result.Contains("thành công"))
 					{
-						// Refresh data
 						UCNhaXe_Load(null, null);
 					}
 				}
-				;
 			}
 		}
 		private void dgvNhaXe_SelectionChanged(object sender, EventArgs e)
@@ -230,8 +239,7 @@ namespace QLBXMD.GUI.Admin
 		{
 			using (var dialog = new NhaXeDialog())
 			{
-				dialog.Text = "Thêm Nhà Xe Mới";
-				dialog.Controls["txtMaNhaXe"].Enabled = false;
+				dialog.SetMode(NhaXeDialogMode.Add);
 
 				if (dialog.ShowDialog() == DialogResult.OK)
 				{
@@ -240,9 +248,9 @@ namespace QLBXMD.GUI.Admin
 						TenNX = dialog.TenNhaXe,
 						SDT = dialog.SDT,
 						Email = dialog.Email,
-						TrangThai = dialog.TrangThai == "Hoạt động" ? true : false
+						TrangThai = dialog.TrangThaiValue
 					};
-					
+
 					string result = _nhaXeBUS.Add(nx);
 					MessageBox.Show(result, "Thông báo", MessageBoxButtons.OK,
 						result.Contains("thành công") ? MessageBoxIcon.Information : MessageBoxIcon.Error);

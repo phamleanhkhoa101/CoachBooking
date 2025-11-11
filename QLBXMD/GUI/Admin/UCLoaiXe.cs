@@ -2,26 +2,23 @@
 using QLBXMD.EF;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace QLBXMD.GUI.Admin
 {
 	public partial class UCLoaiXe : UserControl
 	{
-
-		private BXMDEntities db =  new BXMDEntities();
+		private BXMDEntities db = new BXMDEntities();
 		private LoaiXeBUS _loaiXeBUS = new LoaiXeBUS();
 		private List<dynamic> data;
+
 		public UCLoaiXe()
 		{
 			InitializeComponent();
 		}
+
 		private void UCLoaiXe_Load(object sender, EventArgs e)
 		{
 			data = (from lx in db.LoaiXes
@@ -34,7 +31,6 @@ namespace QLBXMD.GUI.Admin
 					}).ToList<dynamic>();
 			LoadData(data);
 			initCbb();
-
 			EnableBtn(false);
 		}
 
@@ -47,6 +43,7 @@ namespace QLBXMD.GUI.Admin
 			cbbLoai.Items.Add("Trạng thái");
 			cbbLoai.SelectedIndex = 0;
 		}
+
 		private void LoadData(List<dynamic> list)
 		{
 			dgv.Rows.Clear();
@@ -159,22 +156,23 @@ namespace QLBXMD.GUI.Admin
 		{
 			using (var dialog = new LoaiXeDialog())
 			{
-				dialog.Text = "Thêm Loại Xe Mới";
-				dialog.Controls["txtMaLoaiXe"].Enabled = false;
+				dialog.SetMode(LoaiXeDialogMode.Add);
 
 				if (dialog.ShowDialog() == DialogResult.OK)
 				{
 					LoaiXe lx = new LoaiXe
 					{
 						TenLX = dialog.TenLoaiXe,
-						SoCho = int.Parse(dialog.SoCho),
-						TrangThai = dialog.TrangThai == "Hoạt động" ? true : false
+						SoCho = dialog.SoCho,
+						TrangThai = dialog.TrangThaiValue
 					};
+
 					if (lx == null)
 					{
 						MessageBox.Show("Dữ liệu không hợp lệ.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Error);
 						return;
 					}
+
 					string result = _loaiXeBUS.Add(lx);
 					MessageBox.Show(result, "Thông báo", MessageBoxButtons.OK,
 						result.Contains("thành công") ? MessageBoxIcon.Information : MessageBoxIcon.Error);
@@ -189,52 +187,63 @@ namespace QLBXMD.GUI.Admin
 
 		private void btnXem_Click(object sender, EventArgs e)
 		{
+			if (dgv.SelectedRows.Count == 0) return;
+			var selectedRow = dgv.SelectedRows[0];
+			if (selectedRow.Cells[0].Value == null) return;
+
+			int maLX = int.Parse(selectedRow.Cells[0].Value.ToString());
+			var existing = db.LoaiXes.FirstOrDefault(lx => lx.MaLX == maLX);
+			if (existing == null) return;
+
 			using (var dialog = new LoaiXeDialog())
 			{
-				if (dgv.SelectedRows.Count == 0) return;
-				var selectedRow = dgv.SelectedRows[0];
-
-				if (selectedRow.Cells[0].Value == null) return;
-
-				dialog.MaLoaiXe = selectedRow.Cells[0].Value.ToString();
-				dialog.TenLoaiXe = selectedRow.Cells[1].Value.ToString();
-				dialog.SoCho = selectedRow.Cells[2].Value.ToString();
-				dialog.TrangThai = selectedRow.Cells[3].Value.ToString();
-
-				dialog.Controls["btnThem"].Enabled = false;
+				dialog.SetMode(LoaiXeDialogMode.View);
+				dialog.MaLoaiXe = existing.MaLX.ToString();
+				dialog.TenLoaiXe = existing.TenLX;
+				dialog.SoCho = existing.SoCho;
+				dialog.TrangThaiValue = existing.TrangThai;
 				dialog.ShowDialog();
 			}
 		}
 
 		private void btnSua_Click(object sender, EventArgs e)
 		{
+			if (dgv.SelectedRows.Count == 0) return;
+			var selectedRow = dgv.SelectedRows[0];
+			if (selectedRow.Cells[0].Value == null) return;
+
+			int maLX = int.Parse(selectedRow.Cells[0].Value.ToString());
+			var existing = db.LoaiXes.FirstOrDefault(lx => lx.MaLX == maLX);
+			if (existing == null)
+			{
+				MessageBox.Show("Không tìm thấy loại xe.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				return;
+			}
+
 			using (var dialog = new LoaiXeDialog())
 			{
-				if (dgv.SelectedRows.Count == 0) return;
-				var selectedRow = dgv.SelectedRows[0];
-
-				if (selectedRow.Cells[0].Value == null) return;
-
-				dialog.MaLoaiXe = selectedRow.Cells[0].Value.ToString();
-				dialog.TenLoaiXe = selectedRow.Cells[1].Value.ToString();
-				dialog.SoCho = selectedRow.Cells[2].Value.ToString();
-				dialog.TrangThai = selectedRow.Cells[3].Value.ToString();
-				dialog.Controls["txtMaLoaiXe"].Enabled = false;
+				dialog.SetMode(LoaiXeDialogMode.Edit);
+				dialog.MaLoaiXe = existing.MaLX.ToString();
+				dialog.TenLoaiXe = existing.TenLX;
+				dialog.SoCho = existing.SoCho;
+				dialog.TrangThaiValue = existing.TrangThai;
 
 				if (dialog.ShowDialog() == DialogResult.OK)
 				{
 					LoaiXe lx = new LoaiXe
 					{
-						MaLX = int.Parse(dialog.MaLoaiXe),
+						MaLX = existing.MaLX,
 						TenLX = dialog.TenLoaiXe,
-						SoCho = int.Parse(dialog.SoCho),
-						TrangThai = dialog.TrangThai == "Hoạt động" ? true : false
+						SoCho = dialog.SoCho,
+						TrangThai = dialog.TrangThaiValue
 					};
+
 					if (lx == null)
 					{
 						MessageBox.Show("Dữ liệu không hợp lệ.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Error);
 						return;
 					}
+
 					string result = _loaiXeBUS.Update(lx);
 					MessageBox.Show(result, "Thông báo", MessageBoxButtons.OK,
 						result.Contains("thành công") ? MessageBoxIcon.Information : MessageBoxIcon.Error);

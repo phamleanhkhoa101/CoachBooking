@@ -118,17 +118,17 @@ namespace QLBXMD.GUI.Admin
 		{
 			using (var dialog = new TuyenDuongDialog())
 			{
+				dialog.SetMode(TuyenDuongDialogMode.Add);
+
 				if (dialog.ShowDialog() == DialogResult.OK)
 				{
 					var td = new TuyenDuong
 					{
 						DiemDi = dialog.DiemDi,
 						DiemDen = dialog.DiemDen,
-						QuangDuong = dialog.QuangDuongValue,
-						ThoiGianDuKien = dialog.ThoiGianDuKienValue.HasValue
-							? TimeSpan.FromMinutes(dialog.ThoiGianDuKienValue.Value)
-							: (TimeSpan?)null,
-						TrangThai = dialog.TrangThai == "Hoạt động"
+						QuangDuong = (int?)dialog.QuangDuongValue,
+						ThoiGianDuKien = TimeSpan.FromMinutes(dialog.ThoiGianDuKienValue),
+						TrangThai = dialog.TrangThaiValue
 					};
 
 					string result = _tuyenDuongBUS.Add(td);
@@ -147,30 +147,38 @@ namespace QLBXMD.GUI.Admin
 		{
 			if (dgv.SelectedRows.Count == 0) return;
 			var selectedRow = dgv.SelectedRows[0];
-
 			if (selectedRow.Cells[0].Value == null) return;
+
+			int maTuyen = int.Parse(selectedRow.Cells[0].Value.ToString());
+			var existing = _tuyenDuongBUS.GetById(maTuyen);
+			if (existing == null)
+			{
+				MessageBox.Show("Không tìm thấy tuyến đường.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				return;
+			}
 
 			using (var dialog = new TuyenDuongDialog())
 			{
-				dialog.MaTuyen = selectedRow.Cells[0].Value?.ToString();
-				dialog.DiemDi = selectedRow.Cells[1].Value?.ToString();
-				dialog.DiemDen = selectedRow.Cells[2].Value?.ToString();
-				dialog.QuangDuong = selectedRow.Cells[3].Value?.ToString();
-				dialog.ThoiGianDuKien = selectedRow.Cells[4].Value?.ToString();
-				dialog.TrangThai = selectedRow.Cells[5].Value?.ToString();
+				dialog.SetMode(TuyenDuongDialogMode.Edit);
+				dialog.MaTuyen = existing.MaTuyen.ToString();
+				dialog.DiemDi = existing.DiemDi;
+				dialog.DiemDen = existing.DiemDen;
+				dialog.QuangDuongValue = existing.QuangDuong ?? 0;
+				dialog.ThoiGianDuKienValue = existing.ThoiGianDuKien.HasValue 
+					? (int)existing.ThoiGianDuKien.Value.TotalMinutes 
+					: 60;
+				dialog.TrangThaiValue = existing.TrangThai;
 
 				if (dialog.ShowDialog() == DialogResult.OK)
 				{
 					var update = new TuyenDuong
 					{
-						MaTuyen = int.Parse(dialog.MaTuyen),
+						MaTuyen = existing.MaTuyen,
 						DiemDi = dialog.DiemDi,
 						DiemDen = dialog.DiemDen,
-						QuangDuong = dialog.QuangDuongValue,
-						ThoiGianDuKien = dialog.ThoiGianDuKienValue.HasValue
-							? TimeSpan.FromMinutes(dialog.ThoiGianDuKienValue.Value)
-							: (TimeSpan?)null,
-						TrangThai = dialog.TrangThai == "Hoạt động"
+						QuangDuong = (int?)dialog.QuangDuongValue,
+						ThoiGianDuKien = TimeSpan.FromMinutes(dialog.ThoiGianDuKienValue),
+						TrangThai = dialog.TrangThaiValue
 					};
 
 					string result = _tuyenDuongBUS.Update(update);
@@ -242,17 +250,21 @@ namespace QLBXMD.GUI.Admin
 			var selectedRow = dgv.SelectedRows[0];
 			if (selectedRow.Cells[0].Value == null) return;
 
+			int maTuyen = int.Parse(selectedRow.Cells[0].Value.ToString());
+			var existing = _tuyenDuongBUS.GetById(maTuyen);
+			if (existing == null) return;
+
 			using (var dialog = new TuyenDuongDialog())
 			{
-				dialog.MaTuyen = selectedRow.Cells[0].Value?.ToString();
-				dialog.DiemDi = selectedRow.Cells[1].Value?.ToString();
-				dialog.DiemDen = selectedRow.Cells[2].Value?.ToString();
-				dialog.QuangDuong = selectedRow.Cells[3].Value?.ToString();
-				dialog.ThoiGianDuKien = selectedRow.Cells[4].Value?.ToString();
-				dialog.TrangThai = selectedRow.Cells[5].Value?.ToString();
-
-				// view only
-				dialog.Controls["btnThem"].Enabled = false;
+				dialog.SetMode(TuyenDuongDialogMode.View);
+				dialog.MaTuyen = existing.MaTuyen.ToString();
+				dialog.DiemDi = existing.DiemDi;
+				dialog.DiemDen = existing.DiemDen;
+				dialog.QuangDuongValue = existing.QuangDuong ?? 0;
+				dialog.ThoiGianDuKienValue = existing.ThoiGianDuKien.HasValue 
+					? (int)existing.ThoiGianDuKien.Value.TotalMinutes 
+					: 60;
+				dialog.TrangThaiValue = existing.TrangThai;
 				dialog.ShowDialog();
 			}
 		}

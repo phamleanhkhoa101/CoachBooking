@@ -385,8 +385,8 @@ namespace QLBXMD.GUI.Admin
 
 		private void btnThongKe_Click(object sender, EventArgs e)
 		{
-			//ShowControl(new UCTaiXe());
-			//HightlightButton(btnTaiXe);
+			ShowControl(new UCThongKe());
+			HightlightButton(btnThongKe);
 		}
 
 		private void btnKhachHang_Click_1(object sender, EventArgs e)

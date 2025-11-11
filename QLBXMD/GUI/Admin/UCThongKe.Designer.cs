@@ -179,7 +179,7 @@
 			this.pnlStat4.Controls.Add(this.lblSoVeValue);
 			this.pnlStat4.Location = new System.Drawing.Point(1000, 15);
 			this.pnlStat4.Name = "pnlStat4";
-			this.pnlStat4.Size = new System.Drawing.Size(300, 90);
+			this.pnlStat4.Size = new System.Drawing.Size(300, 116);
 			this.pnlStat4.TabIndex = 3;
 			// 
 			// lblSoVe
@@ -206,12 +206,12 @@
 			// 
 			// pnlStat3
 			// 
-			this.pnlStat3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(156)))), ((int)(((byte)(39)))), ((int)(((byte)(176)))));
+			this.pnlStat3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(128)))), ((int)(((byte)(128)))));
 			this.pnlStat3.Controls.Add(this.lblSoKhachHang);
 			this.pnlStat3.Controls.Add(this.lblSoKhachHangValue);
 			this.pnlStat3.Location = new System.Drawing.Point(680, 15);
 			this.pnlStat3.Name = "pnlStat3";
-			this.pnlStat3.Size = new System.Drawing.Size(300, 90);
+			this.pnlStat3.Size = new System.Drawing.Size(300, 116);
 			this.pnlStat3.TabIndex = 2;
 			// 
 			// lblSoKhachHang
@@ -243,7 +243,7 @@
 			this.pnlStat2.Controls.Add(this.lblSoChuyenXeValue);
 			this.pnlStat2.Location = new System.Drawing.Point(360, 15);
 			this.pnlStat2.Name = "pnlStat2";
-			this.pnlStat2.Size = new System.Drawing.Size(300, 90);
+			this.pnlStat2.Size = new System.Drawing.Size(300, 116);
 			this.pnlStat2.TabIndex = 1;
 			// 
 			// lblSoChuyenXe
@@ -275,7 +275,7 @@
 			this.pnlStat1.Controls.Add(this.lblDoanhThuValue);
 			this.pnlStat1.Location = new System.Drawing.Point(40, 15);
 			this.pnlStat1.Name = "pnlStat1";
-			this.pnlStat1.Size = new System.Drawing.Size(300, 90);
+			this.pnlStat1.Size = new System.Drawing.Size(300, 116);
 			this.pnlStat1.TabIndex = 0;
 			// 
 			// lblDoanhThu

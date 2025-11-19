@@ -216,12 +216,13 @@ namespace QLBXMD.GUI.Admin
 				dialog.MaLoaiXe = xe.MaLX;
 				dialog.TrangThai = xe.TrangThai == true ? "Hoạt động" : "Ngừng hoạt động";
 
-				dialog.Controls["btnThem"].Enabled = false;
+				dialog.Controls["btnPrimary"].Enabled = false;
 				dialog.Controls["txtMaXe"].Enabled = false;
 				dialog.Controls["txtBienSoXe"].Enabled = false;
 				dialog.Controls["cbbNhaXe"].Enabled = false;
 				dialog.Controls["cbbLoaiXe"].Enabled = false;
 				dialog.Controls["cbbTrangThai"].Enabled = false;
+				dialog.SetReadOnlyMode();
 				dialog.ShowDialog();
 			}
 		}

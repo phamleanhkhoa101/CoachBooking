@@ -149,7 +149,7 @@ namespace QLBXMD.GUI.Admin
 					Text = "Xem chuyến xe";
 					btnPrimary.Visible = false;
 					btnCancel.Text = "Đóng";
-					SetReadOnly(true);
+					SetReadOnly(false);
 					lblGiaVeInfo.Visible = false;
 					break;
 				case ChuyenXeDialogMode.Delete:

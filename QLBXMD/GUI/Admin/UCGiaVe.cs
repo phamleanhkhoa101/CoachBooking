@@ -13,6 +13,8 @@ namespace QLBXMD.GUI.Admin
 		private readonly GiaVeBUS _bus = new GiaVeBUS();
 		private List<dynamic> _dataDaCo;
 		private List<dynamic> _dataChuaCo;
+		private List<dynamic> _allDataChuaCo; // Lưu tất cả dữ liệu chưa lọc theo nhà xe
+		private int? _selectedMaNX = null; // Nhà xe được chọn
 
 		public UCGiaVe()
 		{
@@ -63,7 +65,8 @@ namespace QLBXMD.GUI.Admin
 					})
 					.ToList<dynamic>();
 
-				_dataChuaCo = allCombos
+				// Lưu tất cả dữ liệu chưa có giá vé
+				_allDataChuaCo = allCombos
 					.Where(combo => !combo.HasPrice)
 					.Select(combo => new
 					{
@@ -83,8 +86,8 @@ namespace QLBXMD.GUI.Admin
 					.ToList<dynamic>();
 
 				LoadDataDaCo(_dataDaCo);
-				LoadDataChuaCo(_dataChuaCo);
 				InitCbb();
+				InitNhaXeComboBox();
 				btnXem.Enabled = btnSua.Enabled = btnXoa.Enabled = false;
 				btnThemChuaCo.Enabled = false;
 			}
@@ -104,12 +107,63 @@ namespace QLBXMD.GUI.Admin
 			dgvDaCo.Columns.Add("Tuyen", "Tuyến đường");
 			dgvDaCo.Columns.Add("GiaVe", "Giá vé (₫)");
 
-			// Setup cho dgvChuaCo
+			// Setup cho dgvChuaCo - hiển thị Nhà xe, Loại xe và Tuyến đường
 			dgvChuaCo.Columns.Clear();
 			dgvChuaCo.Columns.Add("NhaXe", "Nhà xe");
 			dgvChuaCo.Columns.Add("LoaiXe", "Loại xe");
 			dgvChuaCo.Columns.Add("Tuyen", "Tuyến đường");
-			dgvChuaCo.Columns.Add("GiaVe", "Trạng thái");
+		}
+
+		private void InitNhaXeComboBox()
+		{
+			cbbNhaXeChuaCo.Items.Clear();
+			
+			// ✅ Thêm tùy chọn "Tất cả" (thay vì "-- Chọn nhà xe --")
+			cbbNhaXeChuaCo.Items.Add(new { MaNX = (int?)null, TenNX = "Tất cả" });
+
+			// Lấy danh sách nhà xe
+			using (var db = new BXMDEntities())
+			{
+				var nhaXes = db.NhaXes.AsNoTracking()
+					.OrderBy(nx => nx.TenNX)
+					.Select(nx => new { MaNX = (int?)nx.MaNX, TenNX = nx.TenNX })
+					.ToList();
+
+				foreach (var nx in nhaXes)
+				{
+					cbbNhaXeChuaCo.Items.Add(nx);
+				}
+			}
+
+			cbbNhaXeChuaCo.DisplayMember = "TenNX";
+			cbbNhaXeChuaCo.ValueMember = "MaNX";
+			cbbNhaXeChuaCo.SelectedIndex = 0;
+			cbbNhaXeChuaCo.SelectedIndexChanged += CbbNhaXeChuaCo_SelectedIndexChanged;
+		}
+
+		private void CbbNhaXeChuaCo_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			if (cbbNhaXeChuaCo.SelectedItem == null) return;
+
+			dynamic selectedItem = cbbNhaXeChuaCo.SelectedItem;
+			_selectedMaNX = selectedItem.MaNX;
+
+			// ✅ Lọc dữ liệu theo nhà xe được chọn
+			if (_selectedMaNX.HasValue)
+			{
+				// Nếu chọn một nhà xe cụ thể
+				_dataChuaCo = _allDataChuaCo
+					.Where(x => x.MaNX == _selectedMaNX.Value)
+					.ToList<dynamic>();
+			}
+			else
+			{
+				// ✅ Nếu chọn "Tất cả" -> Hiển thị tất cả
+				_dataChuaCo = _allDataChuaCo.ToList<dynamic>();
+			}
+
+			LoadDataChuaCo(_dataChuaCo);
+			txtSearchChuaCo.Clear();
 		}
 
 		private void InitCbb()
@@ -125,7 +179,7 @@ namespace QLBXMD.GUI.Admin
 			cbbLoai.SelectedIndex = 0;
 			cbbLoai.SelectedIndexChanged += cbbLoai_SelectedIndexChanged;
 
-			// ComboBox cho tab Chưa có giá vé
+			// ComboBox cho tab Chưa có giá vé - Nhà xe, Loại xe và Tuyến đường
 			cbbLoaiChuaCo.Items.Clear();
 			cbbLoaiChuaCo.Items.Add("Tất cả");
 			cbbLoaiChuaCo.Items.Add("Nhà xe");
@@ -153,7 +207,8 @@ namespace QLBXMD.GUI.Admin
 
 			foreach (var item in list)
 			{
-				int rowIndex = dgvChuaCo.Rows.Add(item.NhaXeName, item.LoaiXeName, item.TuyenName, item.GiaVe);
+				// ✅ Hiển thị Nhà xe, Loại xe và Tuyến đường
+				int rowIndex = dgvChuaCo.Rows.Add(item.NhaXeName, item.LoaiXeName, item.TuyenName);
 				// Đánh dấu màu xám nhạt
 				dgvChuaCo.Rows[rowIndex].DefaultCellStyle.BackColor = Color.FromArgb(255, 248, 220);
 				dgvChuaCo.Rows[rowIndex].DefaultCellStyle.ForeColor = Color.DarkOrange;
@@ -180,7 +235,8 @@ namespace QLBXMD.GUI.Admin
 
 		private void cbbLoaiChuaCo_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			LoadDataChuaCo(_dataChuaCo);
+			if (_dataChuaCo != null)
+				LoadDataChuaCo(_dataChuaCo);
 			txtSearchChuaCo.Clear();
 		}
 
@@ -260,7 +316,7 @@ namespace QLBXMD.GUI.Admin
 			var r = dgvChuaCo.SelectedRows[0];
 			int rowIndex = r.Index;
 			
-			if (rowIndex < 0 || rowIndex >= _dataChuaCo.Count)
+			if (rowIndex < 0 || _dataChuaCo == null || rowIndex >= _dataChuaCo.Count)
 			{
 				MessageBox.Show("Không thể lấy thông tin dòng được chọn.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				return;
@@ -470,8 +526,7 @@ namespace QLBXMD.GUI.Admin
 						x.LoaiXeName, 
 						x.TuyenName, 
 						x.GiaVe 
-					}
-					.Any(v => (v ?? string.Empty).ToLowerInvariant().Contains(keyword))).ToList();
+					}.Any(v => (v ?? string.Empty).ToLowerInvariant().Contains(keyword))).ToList();
 					break;
 			}
 			
@@ -506,11 +561,10 @@ namespace QLBXMD.GUI.Admin
 				default: // Tất cả
 					filtered = _dataChuaCo.Where(x => new[] 
 					{ 
-						x.NhaXeName, 
+						x.NhaXeName,
 						x.LoaiXeName, 
 						x.TuyenName
-					}
-					.Any(v => (v ?? string.Empty).ToLowerInvariant().Contains(keyword))).ToList();
+					}.Any(v => (v ?? string.Empty).ToLowerInvariant().Contains(keyword))).ToList();
 					break;
 			}
 			

@@ -108,7 +108,7 @@
 			this.btnKhachHang.FlatAppearance.BorderColor = System.Drawing.Color.White;
 			this.btnKhachHang.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.btnKhachHang.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.btnKhachHang.Location = new System.Drawing.Point(14, 375);
+			this.btnKhachHang.Location = new System.Drawing.Point(12, 401);
 			this.btnKhachHang.Name = "btnKhachHang";
 			this.btnKhachHang.Padding = new System.Windows.Forms.Padding(40, 0, 0, 0);
 			this.btnKhachHang.Size = new System.Drawing.Size(240, 45);
@@ -122,7 +122,7 @@
 			// 
 			this.guna2PictureBox3.Image = ((System.Drawing.Image)(resources.GetObject("guna2PictureBox3.Image")));
 			this.guna2PictureBox3.ImageRotate = 0F;
-			this.guna2PictureBox3.Location = new System.Drawing.Point(26, 841);
+			this.guna2PictureBox3.Location = new System.Drawing.Point(24, 877);
 			this.guna2PictureBox3.Name = "guna2PictureBox3";
 			this.guna2PictureBox3.Size = new System.Drawing.Size(33, 33);
 			this.guna2PictureBox3.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
@@ -134,7 +134,7 @@
 			this.btnThongKe.FlatAppearance.BorderColor = System.Drawing.Color.White;
 			this.btnThongKe.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.btnThongKe.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.btnThongKe.Location = new System.Drawing.Point(14, 977);
+			this.btnThongKe.Location = new System.Drawing.Point(12, 1013);
 			this.btnThongKe.Name = "btnThongKe";
 			this.btnThongKe.Padding = new System.Windows.Forms.Padding(40, 0, 0, 0);
 			this.btnThongKe.Size = new System.Drawing.Size(240, 45);
@@ -149,7 +149,7 @@
 			this.label5.AutoSize = true;
 			this.label5.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.label5.ForeColor = System.Drawing.Color.IndianRed;
-			this.label5.Location = new System.Drawing.Point(62, 852);
+			this.label5.Location = new System.Drawing.Point(60, 888);
 			this.label5.Name = "label5";
 			this.label5.Size = new System.Drawing.Size(99, 25);
 			this.label5.TabIndex = 34;
@@ -160,7 +160,7 @@
 			this.btnPhanQuyen.FlatAppearance.BorderColor = System.Drawing.Color.White;
 			this.btnPhanQuyen.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.btnPhanQuyen.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.btnPhanQuyen.Location = new System.Drawing.Point(14, 929);
+			this.btnPhanQuyen.Location = new System.Drawing.Point(12, 965);
 			this.btnPhanQuyen.Name = "btnPhanQuyen";
 			this.btnPhanQuyen.Padding = new System.Windows.Forms.Padding(40, 0, 0, 0);
 			this.btnPhanQuyen.Size = new System.Drawing.Size(240, 45);
@@ -175,7 +175,7 @@
 			this.btnTaiKhoan.FlatAppearance.BorderColor = System.Drawing.Color.White;
 			this.btnTaiKhoan.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.btnTaiKhoan.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.btnTaiKhoan.Location = new System.Drawing.Point(14, 880);
+			this.btnTaiKhoan.Location = new System.Drawing.Point(12, 916);
 			this.btnTaiKhoan.Name = "btnTaiKhoan";
 			this.btnTaiKhoan.Padding = new System.Windows.Forms.Padding(40, 0, 0, 0);
 			this.btnTaiKhoan.Size = new System.Drawing.Size(240, 45);
@@ -190,7 +190,7 @@
 			this.btnTaiXe.FlatAppearance.BorderColor = System.Drawing.Color.White;
 			this.btnTaiXe.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.btnTaiXe.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.btnTaiXe.Location = new System.Drawing.Point(14, 775);
+			this.btnTaiXe.Location = new System.Drawing.Point(12, 811);
 			this.btnTaiXe.Name = "btnTaiXe";
 			this.btnTaiXe.Padding = new System.Windows.Forms.Padding(40, 0, 0, 0);
 			this.btnTaiXe.Size = new System.Drawing.Size(240, 45);
@@ -205,7 +205,7 @@
 			this.btnGiaVe.FlatAppearance.BorderColor = System.Drawing.Color.White;
 			this.btnGiaVe.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.btnGiaVe.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.btnGiaVe.Location = new System.Drawing.Point(14, 726);
+			this.btnGiaVe.Location = new System.Drawing.Point(12, 762);
 			this.btnGiaVe.Name = "btnGiaVe";
 			this.btnGiaVe.Padding = new System.Windows.Forms.Padding(40, 0, 0, 0);
 			this.btnGiaVe.Size = new System.Drawing.Size(240, 45);
@@ -220,7 +220,7 @@
 			this.btnChuyenXe.FlatAppearance.BorderColor = System.Drawing.Color.White;
 			this.btnChuyenXe.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.btnChuyenXe.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.btnChuyenXe.Location = new System.Drawing.Point(14, 677);
+			this.btnChuyenXe.Location = new System.Drawing.Point(12, 713);
 			this.btnChuyenXe.Name = "btnChuyenXe";
 			this.btnChuyenXe.Padding = new System.Windows.Forms.Padding(40, 0, 0, 0);
 			this.btnChuyenXe.Size = new System.Drawing.Size(240, 45);
@@ -235,7 +235,7 @@
 			this.btnTuyenDuong.FlatAppearance.BorderColor = System.Drawing.Color.White;
 			this.btnTuyenDuong.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.btnTuyenDuong.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.btnTuyenDuong.Location = new System.Drawing.Point(14, 626);
+			this.btnTuyenDuong.Location = new System.Drawing.Point(12, 662);
 			this.btnTuyenDuong.Name = "btnTuyenDuong";
 			this.btnTuyenDuong.Padding = new System.Windows.Forms.Padding(40, 0, 0, 0);
 			this.btnTuyenDuong.Size = new System.Drawing.Size(240, 45);
@@ -250,7 +250,7 @@
 			this.btnHoaDon.FlatAppearance.BorderColor = System.Drawing.Color.White;
 			this.btnHoaDon.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.btnHoaDon.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.btnHoaDon.Location = new System.Drawing.Point(14, 326);
+			this.btnHoaDon.Location = new System.Drawing.Point(12, 352);
 			this.btnHoaDon.Name = "btnHoaDon";
 			this.btnHoaDon.Padding = new System.Windows.Forms.Padding(40, 0, 0, 0);
 			this.btnHoaDon.Size = new System.Drawing.Size(240, 45);
@@ -264,7 +264,7 @@
 			// 
 			this.guna2PictureBox2.Image = ((System.Drawing.Image)(resources.GetObject("guna2PictureBox2.Image")));
 			this.guna2PictureBox2.ImageRotate = 0F;
-			this.guna2PictureBox2.Location = new System.Drawing.Point(24, 445);
+			this.guna2PictureBox2.Location = new System.Drawing.Point(22, 481);
 			this.guna2PictureBox2.Name = "guna2PictureBox2";
 			this.guna2PictureBox2.Size = new System.Drawing.Size(30, 30);
 			this.guna2PictureBox2.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
@@ -275,7 +275,7 @@
 			// 
 			this.guna2PictureBox1.Image = ((System.Drawing.Image)(resources.GetObject("guna2PictureBox1.Image")));
 			this.guna2PictureBox1.ImageRotate = 0F;
-			this.guna2PictureBox1.Location = new System.Drawing.Point(24, 191);
+			this.guna2PictureBox1.Location = new System.Drawing.Point(22, 217);
 			this.guna2PictureBox1.Name = "guna2PictureBox1";
 			this.guna2PictureBox1.Size = new System.Drawing.Size(30, 30);
 			this.guna2PictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
@@ -288,7 +288,7 @@
 			this.panel1.BackgroundImage = global::QLBXMD.Properties.Resources.Bus_icon;
 			this.panel1.BackgroundImageLayout = System.Windows.Forms.ImageLayout.Zoom;
 			this.panel1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-			this.panel1.Location = new System.Drawing.Point(22, 13);
+			this.panel1.Location = new System.Drawing.Point(22, 25);
 			this.panel1.Name = "panel1";
 			this.panel1.Padding = new System.Windows.Forms.Padding(20);
 			this.panel1.Size = new System.Drawing.Size(227, 150);
@@ -299,7 +299,7 @@
 			this.label3.AutoSize = true;
 			this.label3.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.label3.ForeColor = System.Drawing.Color.IndianRed;
-			this.label3.Location = new System.Drawing.Point(60, 450);
+			this.label3.Location = new System.Drawing.Point(58, 486);
 			this.label3.Name = "label3";
 			this.label3.Size = new System.Drawing.Size(109, 25);
 			this.label3.TabIndex = 7;
@@ -311,7 +311,7 @@
 			this.btnXe.FlatAppearance.BorderColor = System.Drawing.Color.White;
 			this.btnXe.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.btnXe.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.btnXe.Location = new System.Drawing.Point(14, 575);
+			this.btnXe.Location = new System.Drawing.Point(12, 611);
 			this.btnXe.Name = "btnXe";
 			this.btnXe.Padding = new System.Windows.Forms.Padding(40, 0, 0, 0);
 			this.btnXe.Size = new System.Drawing.Size(240, 45);
@@ -326,7 +326,7 @@
 			this.btnLoaiXe.FlatAppearance.BorderColor = System.Drawing.Color.White;
 			this.btnLoaiXe.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.btnLoaiXe.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.btnLoaiXe.Location = new System.Drawing.Point(14, 526);
+			this.btnLoaiXe.Location = new System.Drawing.Point(12, 562);
 			this.btnLoaiXe.Name = "btnLoaiXe";
 			this.btnLoaiXe.Padding = new System.Windows.Forms.Padding(40, 0, 0, 0);
 			this.btnLoaiXe.Size = new System.Drawing.Size(240, 45);
@@ -341,7 +341,7 @@
 			this.label1.AutoSize = true;
 			this.label1.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.label1.ForeColor = System.Drawing.Color.IndianRed;
-			this.label1.Location = new System.Drawing.Point(60, 192);
+			this.label1.Location = new System.Drawing.Point(58, 218);
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(88, 29);
 			this.label1.TabIndex = 3;
@@ -352,7 +352,7 @@
 			this.btnNhaXe.FlatAppearance.BorderColor = System.Drawing.Color.White;
 			this.btnNhaXe.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.btnNhaXe.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.btnNhaXe.Location = new System.Drawing.Point(14, 475);
+			this.btnNhaXe.Location = new System.Drawing.Point(12, 511);
 			this.btnNhaXe.Name = "btnNhaXe";
 			this.btnNhaXe.Padding = new System.Windows.Forms.Padding(40, 0, 0, 0);
 			this.btnNhaXe.Size = new System.Drawing.Size(240, 45);
@@ -367,7 +367,7 @@
 			this.btnDatVe.FlatAppearance.BorderColor = System.Drawing.Color.White;
 			this.btnDatVe.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.btnDatVe.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.btnDatVe.Location = new System.Drawing.Point(14, 277);
+			this.btnDatVe.Location = new System.Drawing.Point(12, 303);
 			this.btnDatVe.Name = "btnDatVe";
 			this.btnDatVe.Padding = new System.Windows.Forms.Padding(40, 0, 0, 0);
 			this.btnDatVe.Size = new System.Drawing.Size(240, 45);
@@ -382,7 +382,7 @@
 			this.btnTrangChu.FlatAppearance.BorderColor = System.Drawing.Color.White;
 			this.btnTrangChu.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
 			this.btnTrangChu.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.btnTrangChu.Location = new System.Drawing.Point(14, 228);
+			this.btnTrangChu.Location = new System.Drawing.Point(12, 254);
 			this.btnTrangChu.Name = "btnTrangChu";
 			this.btnTrangChu.Padding = new System.Windows.Forms.Padding(40, 0, 0, 0);
 			this.btnTrangChu.Size = new System.Drawing.Size(240, 45);

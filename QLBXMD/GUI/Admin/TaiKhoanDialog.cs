@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -29,8 +29,8 @@ namespace QLBXMD.GUI.Admin
 		{
 			get
 			{
-				if (cbbTrangThai.SelectedIndex == 0) return true; // Ho?t ??ng
-				if (cbbTrangThai.SelectedIndex == 1) return false; // Kh�a
+				if (cbbTrangThai.SelectedIndex == 0) return true; // Hoạt động
+				if (cbbTrangThai.SelectedIndex == 1) return false; // Khóa
 				return null;
 			}
 			set
@@ -44,15 +44,15 @@ namespace QLBXMD.GUI.Admin
 		public TaiKhoanDialog()
 		{
 			InitializeComponent();
-			cbbTrangThai.Items.Add("Ho?t ??ng");
-			cbbTrangThai.Items.Add("Kh�a");
-			cbbTrangThai.SelectedIndex = 0; // M?c ??nh ho?t ??ng
+			cbbTrangThai.Items.Add("Hoạt động");
+			cbbTrangThai.Items.Add("Khóa");
+			cbbTrangThai.SelectedIndex = 0; // Mặc định hoạt động
 			SetupButtonEffects();
 		}
 
 		private void SetupButtonEffects()
 		{
-			// Hi?u ?ng cho n�t Primary (L?u/Th�m)
+			// Hiệu ứng cho nút Primary (Lưu/Thêm)
 			btnPrimary.MouseEnter += (s, e) => {
 				if (Mode == TaiKhoanDialogMode.Edit)
 					btnPrimary.BackColor = Color.FromArgb(53, 170, 255);
@@ -78,7 +78,7 @@ namespace QLBXMD.GUI.Admin
 					btnPrimary.BackColor = Color.FromArgb(96, 195, 100);
 			};
 
-			// Hi?u ?ng cho n�t Cancel (H?y)
+			// Hiệu ứng cho nút Cancel (Hủy)
 			btnCancel.MouseEnter += (s, e) => {
 				btnCancel.BackColor = Color.FromArgb(255, 87, 74);
 			};
@@ -107,25 +107,25 @@ namespace QLBXMD.GUI.Admin
 			switch (mode)
 			{
 				case TaiKhoanDialogMode.Add:
-					Text = "Th�m t�i kho?n";
-					lblHeader.Text = "?? TH�M T�I KHO?N M?I";
-					btnPrimary.Text = "Th�m";
+					Text = "Thêm tài khoản";
+					lblHeader.Text = "THÊM TÀI KHOẢN MỚI";
+					btnPrimary.Text = "Thêm";
 					btnPrimary.BackColor = Color.FromArgb(76, 175, 80);
 					pnlHeader.BackColor = Color.FromArgb(76, 175, 80);
 					txtTenDangNhap.Enabled = true;
-					lblMatKhau.Text = "M?t kh?u:";
+					lblMatKhau.Text = "Mật khẩu:";
 					lblMatKhau.Visible = true;
 					txtMatKhau.Visible = true;
 					lblXacNhanMatKhau.Visible = true;
 					txtXacNhanMatKhau.Visible = true;
-					lblXacNhanMatKhau.Text = "X�c nh?n m?t kh?u:";
+					lblXacNhanMatKhau.Text = "Xác nhận mật khẩu:";
 					chkHienMatKhau.Visible = true;
 					SetReadOnly(false);
 					break;
 				case TaiKhoanDialogMode.Edit:
-					Text = "S?a t�i kho?n";
-					lblHeader.Text = "?? C?P NH?T T�I KHO?N";
-					btnPrimary.Text = "L?u";
+					Text = "Sửa tài khoản";
+					lblHeader.Text = "CẬP NHẬT TÀI KHOẢN";
+					btnPrimary.Text = "Lưu";
 					btnPrimary.BackColor = Color.FromArgb(33, 150, 243);
 					pnlHeader.BackColor = Color.FromArgb(33, 150, 243);
 					txtTenDangNhap.Enabled = false;
@@ -138,10 +138,10 @@ namespace QLBXMD.GUI.Admin
 					SetReadOnly(false);
 					break;
 				case TaiKhoanDialogMode.View:
-					Text = "Xem t�i kho?n";
-					lblHeader.Text = "?? TH�NG TIN T�I KHO?N";
+					Text = "Xem tài khoản";
+					lblHeader.Text = "THÔNG TIN TÀI KHOẢN";
 					btnPrimary.Visible = false;
-					btnCancel.Text = "?�ng";
+					btnCancel.Text = "Đóng";
 					btnCancel.BackColor = Color.FromArgb(158, 158, 158);
 					btnCancel.Location = new Point(460, 485);
 					pnlHeader.BackColor = Color.FromArgb(158, 158, 158);
@@ -150,7 +150,7 @@ namespace QLBXMD.GUI.Admin
 					lblXacNhanMatKhau.Visible = false;
 					txtXacNhanMatKhau.Visible = false;
 					chkHienMatKhau.Visible = false;
-					SetReadOnly(true);
+					SetReadOnly(false);
 					break;
 			}
 		}
@@ -170,7 +170,7 @@ namespace QLBXMD.GUI.Admin
 			txtMatKhau.TabStop = !ro;
 			txtXacNhanMatKhau.TabStop = !ro;
 
-			// Thay ??i m�u n?n khi readonly
+			// Thay đổi màu nền khi readonly
 			if (ro)
 			{
 				txtTenDangNhap.BackColor = Color.WhiteSmoke;
@@ -217,12 +217,12 @@ namespace QLBXMD.GUI.Admin
 
 			if (Mode == TaiKhoanDialogMode.Add)
 			{
-				// Ki?m tra t�n ??ng nh?p
+				// Kiểm tra tên đăng nhập
 				if (string.IsNullOrWhiteSpace(txtTenDangNhap.Text))
 				{
 					MessageBox.Show(
-						"Vui l�ng nh?p t�n ??ng nh?p.\n\nT�n ??ng nh?p l� th�ng tin b?t bu?c.",
-						"Th�ng b�o",
+						"Vui lòng nhập tên đăng nhập.\n\nTên đăng nhập là thông tin bắt buộc.",
+						"Thông báo",
 						MessageBoxButtons.OK,
 						MessageBoxIcon.Warning
 					);
@@ -230,14 +230,14 @@ namespace QLBXMD.GUI.Admin
 					return false;
 				}
 
-				// Ki?m tra ?? d�i t�n ??ng nh?p
+				// Kiểm tra độ dài tên đăng nhập
 				if (txtTenDangNhap.Text.Trim().Length < 6)
 				{
 					MessageBox.Show(
-						$"T�n ??ng nh?p qu� ng?n.\n\n" +
-						$"?? d�i hi?n t?i: {txtTenDangNhap.Text.Trim().Length} k� t?\n" +
-						$"Y�u c?u: �t nh?t 6 k� t?",
-						"Th�ng b�o",
+						$"Tên đăng nhập quá ngắn.\n\n" +
+						$"Độ dài hiện tại: {txtTenDangNhap.Text.Trim().Length} ký tự\n" +
+						$"Yêu cầu: Ít nhất 6 ký tự",
+						"Thông báo",
 						MessageBoxButtons.OK,
 						MessageBoxIcon.Warning
 					);
@@ -245,13 +245,13 @@ namespace QLBXMD.GUI.Admin
 					return false;
 				}
 
-				// Ki?m tra t�n ??ng nh?p ch? ch?a ch?, s? v� _
+				// Kiểm tra tên đăng nhập chỉ chứa chữ, số và _
 				if (!Regex.IsMatch(txtTenDangNhap.Text, @"^[a-zA-Z0-9_]+$"))
 				{
 					MessageBox.Show(
-						"T�n ??ng nh?p ch? ???c ch?a ch? c�i, s? v� d?u g?ch d??i (_).\n\n" +
-						"Kh�ng ???c ch?a kho?ng tr?ng ho?c k� t? ??c bi?t kh�c.",
-						"Th�ng b�o",
+						"Tên đăng nhập chỉ được chứa chữ cái, số và dấu gạch dưới (_).\n\n" +
+						"Không được chứa khoảng trắng hoặc ký tự đặc biệt khác.",
+						"Thông báo",
 						MessageBoxButtons.OK,
 						MessageBoxIcon.Warning
 					);
@@ -259,12 +259,12 @@ namespace QLBXMD.GUI.Admin
 					return false;
 				}
 
-				// Ki?m tra m?t kh?u
+				// Kiểm tra mật khẩu
 				if (string.IsNullOrWhiteSpace(txtMatKhau.Text))
 				{
 					MessageBox.Show(
-						"Vui l�ng nh?p m?t kh?u.\n\nM?t kh?u l� th�ng tin b?t bu?c.",
-						"Th�ng b�o",
+						"Vui lòng nhập mật khẩu.\n\nMật khẩu là thông tin bắt buộc.",
+						"Thông báo",
 						MessageBoxButtons.OK,
 						MessageBoxIcon.Warning
 					);
@@ -272,15 +272,15 @@ namespace QLBXMD.GUI.Admin
 					return false;
 				}
 
-				// Ki?m tra ?? d�i m?t kh?u
+				// Kiểm tra độ dài mật khẩu
 				if (txtMatKhau.Text.Length < 8)
 				{
 					MessageBox.Show(
-						$"M?t kh?u qu� ng?n.\n\n" +
-						$"?? d�i hi?n t?i: {txtMatKhau.Text.Length} k� t?\n" +
-						$"Y�u c?u: �t nh?t 8 k� t?\n\n" +
-						$"M?t kh?u m?nh gi�p b?o v? t�i kho?n t?t h?n.",
-						"Th�ng b�o",
+						$"Mật khẩu quá ngắn.\n\n" +
+						$"Độ dài hiện tại: {txtMatKhau.Text.Length} ký tự\n" +
+						$"Yêu cầu: Ít nhất 8 ký tự\n\n" +
+						$"Mật khẩu mạnh giúp bảo vệ tài khoản tốt hơn.",
+						"Thông báo",
 						MessageBoxButtons.OK,
 						MessageBoxIcon.Warning
 					);
@@ -288,26 +288,26 @@ namespace QLBXMD.GUI.Admin
 					return false;
 				}
 
-				// Ki?m tra ?? m?nh m?t kh?u
+				// Kiểm tra độ mạnh mật khẩu
 				bool hasUpper = Regex.IsMatch(txtMatKhau.Text, @"[A-Z]");
 				bool hasLower = Regex.IsMatch(txtMatKhau.Text, @"[a-z]");
 				bool hasDigit = Regex.IsMatch(txtMatKhau.Text, @"\d");
-				bool hasSpecial = Regex.IsMatch(txtMatKhau.Text, @"[!@#$%^&*()_+=\[{\]};:<>|./?,-]");
+				bool hasSpecial = Regex.IsMatch(txtMatKhau.Text, @"[!@#$%^&*()_+=\[{}\];:<>|./?,-]");
 
 				if (!hasUpper || !hasLower || !hasDigit)
 				{
 					var result = MessageBox.Show(
-						"M?t kh?u y?u!\n\n" +
-						"M?t kh?u m?nh n�n c�:\n" +
-						$"? Ch? hoa (A-Z): {(hasUpper ? "C�" : "Kh�ng")}\n" +
-						$"? Ch? th??ng (a-z): {(hasLower ? "C�" : "Kh�ng")}\n" +
-						$"? S? (0-9): {(hasDigit ? "C�" : "Kh�ng")}\n" +
-						$"? K� t? ??c bi?t: {(hasSpecial ? "C�" : "Kh�ng")} (khuy?n ngh?)\n\n" +
-						"B?n c� mu?n ti?p t?c v?i m?t kh?u n�y?",
-						"C?nh b�o m?t kh?u",
+						"Mật khẩu yếu!\n\n" +
+						"Mật khẩu mạnh nên có:\n" +
+						$"- Chữ hoa (A-Z): {(hasUpper ? "Có" : "Không")}\n" +
+						$"- Chữ thường (a-z): {(hasLower ? "Có" : "Không")}\n" +
+						$"- Số (0-9): {(hasDigit ? "Có" : "Không")}\n" +
+						$"- Ký tự đặc biệt: {(hasSpecial ? "Có" : "Không")} (khuyến nghị)\n\n" +
+						"Bạn có muốn tiếp tục với mật khẩu này?",
+						"Cảnh báo mật khẩu",
 						MessageBoxButtons.YesNo,
 						MessageBoxIcon.Warning
-					);
+						);
 
 					if (result != DialogResult.Yes)
 					{
@@ -316,13 +316,13 @@ namespace QLBXMD.GUI.Admin
 					}
 				}
 
-				// Ki?m tra x�c nh?n m?t kh?u
+				// Kiểm tra xác nhận mật khẩu
 				if (txtMatKhau.Text != txtXacNhanMatKhau.Text)
 				{
 					MessageBox.Show(
-						"M?t kh?u x�c nh?n kh�ng kh?p.\n\n" +
-						"Vui l�ng nh?p l?i m?t kh?u x�c nh?n cho gi?ng v?i m?t kh?u.",
-						"Th�ng b�o",
+						"Mật khẩu xác nhận không khớp.\n\n" +
+						"Vui lòng nhập lại mật khẩu xác nhận cho giống với mật khẩu.",
+						"Thông báo",
 						MessageBoxButtons.OK,
 						MessageBoxIcon.Warning
 					);
@@ -331,12 +331,12 @@ namespace QLBXMD.GUI.Admin
 				}
 			}
 
-			// Ki?m tra email
+			// Kiểm tra email
 			if (string.IsNullOrWhiteSpace(txtEmail.Text))
 			{
 				MessageBox.Show(
-					"Vui l�ng nh?p email.\n\nEmail l� th�ng tin b?t bu?c.",
-					"Th�ng b�o",
+					"Vui lòng nhập email.\n\nEmail là thông tin bắt buộc.",
+					"Thông báo",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Warning
 				);
@@ -348,9 +348,9 @@ namespace QLBXMD.GUI.Admin
 			if (!Regex.IsMatch(txtEmail.Text, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
 			{
 				MessageBox.Show(
-					$"Email '{txtEmail.Text}' kh�ng ?�ng ??nh d?ng.\n\n" +
-					"??nh d?ng h?p l?: example@domain.com",
-					"L?i email",
+					$"Email '{txtEmail.Text}' không đúng định dạng.\n\n" +
+					"Định dạng hợp lệ: example@domain.com",
+					"Lỗi email",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Warning
 				);
@@ -358,12 +358,12 @@ namespace QLBXMD.GUI.Admin
 				return false;
 			}
 
-			// Ki?m tra quy?n
+			// Kiểm tra quyền
 			if (SelectedMaQuyen == null || SelectedMaQuyen == 0)
 			{
 				MessageBox.Show(
-					"Vui l�ng ch?n quy?n cho t�i kho?n.\n\nQuy?n x�c ??nh nh?ng t�nh n?ng t�i kho?n c� th? truy c?p.",
-					"Th�ng b�o",
+					"Vui lòng chọn quyền cho tài khoản.\n\nQuyền xác định những tính năng tài khoản có thể truy cập.",
+					"Thông báo",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Warning
 				);
@@ -371,12 +371,12 @@ namespace QLBXMD.GUI.Admin
 				return false;
 			}
 
-			// Ki?m tra tr?ng th�i
+			// Kiểm tra trạng thái
 			if (TrangThaiValue == null)
 			{
 				MessageBox.Show(
-					"Vui l�ng ch?n tr?ng th�i.",
-					"Th�ng b�o",
+					"Vui lòng chọn trạng thái.",
+					"Thông báo",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Warning
 				);

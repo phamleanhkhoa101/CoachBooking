@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Linq;
 using System.Windows.Forms;
 using QLBXMD.EF;
@@ -19,37 +19,30 @@ namespace QLBXMD.GUI.User
 		private void btnXacNhan_Click(object sender, EventArgs e)
 		{
 			// Validate
-			if (string.IsNullOrWhiteSpace(txtMatKhauCu.Text))
-			{
-				MessageBox.Show("Vui lòng nh?p m?t kh?u c?.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-				txtMatKhauCu.Focus();
-				return;
-			}
-
 			if (string.IsNullOrWhiteSpace(txtMatKhauMoi.Text))
 			{
-				MessageBox.Show("Vui lòng nh?p m?t kh?u m?i.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				MessageBox.Show("Vui lÃ²ng nháº­p máº­t kháº©u má»›i.", "ThÃ´ng bÃ¡o", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				txtMatKhauMoi.Focus();
 				return;
 			}
 
 			if (txtMatKhauMoi.Text.Length < 6)
 			{
-				MessageBox.Show("M?t kh?u m?i ph?i có ít nh?t 6 ký t?.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				MessageBox.Show("Máº­t kháº©u má»›i pháº£i cÃ³ Ã­t nháº¥t 6 kÃ½ tá»±.", "ThÃ´ng bÃ¡o", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				txtMatKhauMoi.Focus();
 				return;
 			}
 
 			if (string.IsNullOrWhiteSpace(txtXacNhanMatKhau.Text))
 			{
-				MessageBox.Show("Vui lòng xác nh?n m?t kh?u m?i.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				MessageBox.Show("Vui lÃ²ng xÃ¡c nháº­n máº­t kháº©u má»›i.", "ThÃ´ng bÃ¡o", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				txtXacNhanMatKhau.Focus();
 				return;
 			}
 
 			if (txtMatKhauMoi.Text != txtXacNhanMatKhau.Text)
 			{
-				MessageBox.Show("M?t kh?u xác nh?n không kh?p.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				MessageBox.Show("Máº­t kháº©u xÃ¡c nháº­n khÃ´ng khá»›p.", "ThÃ´ng bÃ¡o", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				txtXacNhanMatKhau.Focus();
 				return;
 			}
@@ -61,20 +54,11 @@ namespace QLBXMD.GUI.User
 					var taiKhoan = db.TaiKhoans.FirstOrDefault(tk => tk.MaTK == currentUser.MaTK);
 					if (taiKhoan == null)
 					{
-						MessageBox.Show("Không tìm th?y tài kho?n.", "L?i", MessageBoxButtons.OK, MessageBoxIcon.Error);
+						MessageBox.Show("KhÃ´ng tÃ¬m tháº¥y tÃ i khoáº£n.", "Lá»—i", MessageBoxButtons.OK, MessageBoxIcon.Error);
 						return;
 					}
 
-					// Ki?m tra m?t kh?u c?
-					string matKhauCuHash = HashHelper.ComputeHash(txtMatKhauCu.Text);
-					if (taiKhoan.MatKhau != matKhauCuHash)
-					{
-						MessageBox.Show("M?t kh?u c? không chính xác.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-						txtMatKhauCu.Focus();
-						return;
-					}
-
-					// C?p nh?t m?t kh?u m?i
+					// Cáº­p nháº­t máº­t kháº©u má»›i
 					string matKhauMoiHash = HashHelper.ComputeHash(txtMatKhauMoi.Text);
 					taiKhoan.MatKhau = matKhauMoiHash;
 
@@ -86,7 +70,7 @@ namespace QLBXMD.GUI.User
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show($"L?i ??i m?t kh?u: {ex.Message}", "L?i", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show($"Lá»—i Ä‘á»•i máº­t kháº©u: {ex.Message}", "Lá»—i", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
 

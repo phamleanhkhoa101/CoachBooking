@@ -166,7 +166,7 @@ namespace QLBXMD.GUI.Admin
 					btnCancel.Text = "Đóng";
 					btnCancel.BackColor = Color.FromArgb(158, 158, 158);
 					btnCancel.Location = new Point(460, 385);
-					SetReadOnly(true);
+					SetReadOnly(false);
 					break;
 			}
 		}

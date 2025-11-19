@@ -67,12 +67,16 @@
 			// btnGanTaiKhoan
 			// 
 			this.btnGanTaiKhoan.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.btnGanTaiKhoan.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(33)))), ((int)(((byte)(150)))), ((int)(((byte)(243)))));
+			this.btnGanTaiKhoan.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.btnGanTaiKhoan.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.btnGanTaiKhoan.ForeColor = System.Drawing.Color.White;
 			this.btnGanTaiKhoan.Location = new System.Drawing.Point(628, 107);
 			this.btnGanTaiKhoan.Name = "btnGanTaiKhoan";
 			this.btnGanTaiKhoan.Size = new System.Drawing.Size(120, 50);
 			this.btnGanTaiKhoan.TabIndex = 9;
-			this.btnGanTaiKhoan.Text = "Gắn TK";
-			this.btnGanTaiKhoan.UseVisualStyleBackColor = true;
+			this.btnGanTaiKhoan.Text = "👤 Cấp TK";
+			this.btnGanTaiKhoan.UseVisualStyleBackColor = false;
 			this.btnGanTaiKhoan.Click += new System.EventHandler(this.btnGanTaiKhoan_Click);
 			// 
 			// cbbLoai

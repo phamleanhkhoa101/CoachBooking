@@ -143,7 +143,7 @@ namespace QLBXMD.GUI.Admin
 					pnlHeader.BackColor = Color.FromArgb(158, 158, 158);
 					label1.Visible = true;
 					txtMaLoaiXe.Visible = true;
-					SetReadOnly(true);
+					SetReadOnly(false);
 					break;
 			}
 		}

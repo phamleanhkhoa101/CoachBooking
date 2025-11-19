@@ -204,7 +204,7 @@ namespace QLBXMD.GUI.Admin
 
 			AddGroup(
 				"Chung",
-				new[] { "btnTrangChu", "btnDatVe", "btnHoaDon", "btnKhachHang" }
+				new[] { "btnTrangChu", "btnDatVe", "btnHoaDon", "btnKhachHang", "btnThanhToan" }
 			);
 
 			AddGroup(
@@ -399,6 +399,12 @@ namespace QLBXMD.GUI.Admin
 		{
 			ShowControl(new UCHoaDon());
 			HightlightButton(btnHoaDon);
+		}
+
+		private void btnThanhToan_Click(object sender, EventArgs e)
+		{
+			//ShowControl(new UCThanhToan());
+			//HightlightButton(btnThanhToan);
 		}
 	}
 }

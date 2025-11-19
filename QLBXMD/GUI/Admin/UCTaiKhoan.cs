@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows.Forms;
 using QLBXMD.BUS;
 using QLBXMD.EF;
+using QLBXMD.GUI.User;
 
 namespace QLBXMD.GUI.Admin
 {
@@ -298,21 +299,21 @@ namespace QLBXMD.GUI.Admin
 			string tenDangNhap = r.Cells[1].Value?.ToString() ?? "N/A";
 			string email = r.Cells[2].Value?.ToString() ?? "N/A";
 
-			var confirmResult = MessageBox.Show(
-				$"Bạn có chắc chắn muốn đặt lại mật khẩu cho tài khoản?\n\n" +
-				$"Tên đăng nhập: {tenDangNhap}\n" +
-				$"Email: {email}\n\n" +
-				$"Mật khẩu mới sẽ được gửi qua email.",
-				"Xác nhận đặt lại mật khẩu",
-				MessageBoxButtons.YesNo,
-				MessageBoxIcon.Question
-			);
-
-			if (confirmResult == DialogResult.Yes)
+			// Open change password dialog so admin can set a new password interactively
+			var existing = _bus.GetById(maTK);
+			if (existing == null)
 			{
-				string result = _bus.ResetPassword(maTK);
-				MessageBox.Show(result, "Thông báo", MessageBoxButtons.OK,
-					result.Contains("thành công") ? MessageBoxIcon.Information : MessageBoxIcon.Error);
+				MessageBox.Show("Không tìm thấy tài khoản.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				return;
+			}
+
+			using (var dialog = new DoiMatKhauDialog(existing))
+			{
+				if (dialog.ShowDialog() == DialogResult.OK)
+				{
+					MessageBox.Show("Đặt lại mật khẩu thành công.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+					UCTaiKhoan_Load(null, null);
+				}
 			}
 		}
 

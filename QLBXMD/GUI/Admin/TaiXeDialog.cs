@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Drawing;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
@@ -25,7 +25,7 @@ namespace QLBXMD.GUI.Admin
 			get
 			{
 				if (cbbGioiTinh.SelectedIndex == 0) return true; // Nam
-				if (cbbGioiTinh.SelectedIndex == 1) return false; // N?
+				if (cbbGioiTinh.SelectedIndex == 1) return false; // Nữ
 				return null;
 			}
 			set
@@ -40,8 +40,8 @@ namespace QLBXMD.GUI.Admin
 		{
 			get
 			{
-				if (cbbTrangThai.SelectedIndex == 0) return true; // Ho?t ??ng
-				if (cbbTrangThai.SelectedIndex == 1) return false; // Ng?ng ho?t ??ng
+				if (cbbTrangThai.SelectedIndex == 0) return true; // Hoạt động
+				if (cbbTrangThai.SelectedIndex == 1) return false; // Ngừng hoạt động
 				return null;
 			}
 			set
@@ -65,7 +65,7 @@ namespace QLBXMD.GUI.Admin
 
 		private void SetupButtonEffects()
 		{
-			// Hi?u ?ng cho n�t Primary (L?u/Th�m)
+			// Hiệu ứng cho nút Primary (Lưu/Thêm)
 			btnPrimary.MouseEnter += (s, e) => {
 				if (Mode == TaiXeDialogMode.Edit)
 					btnPrimary.BackColor = Color.FromArgb(53, 170, 255);
@@ -91,7 +91,7 @@ namespace QLBXMD.GUI.Admin
 					btnPrimary.BackColor = Color.FromArgb(96, 195, 100);
 			};
 
-			// Hi?u ?ng cho n�t Cancel (H?y)
+			// Hiệu ứng cho nút Cancel (Hủy)
 			btnCancel.MouseEnter += (s, e) => {
 				btnCancel.BackColor = Color.FromArgb(255, 87, 74);
 			};
@@ -108,7 +108,7 @@ namespace QLBXMD.GUI.Admin
 
 		private void SetupNumericValidation()
 		{
-			// Ch? cho ph�p nh?p s? cho CCCD
+			// Chỉ cho phép nhập số cho CCCD
 			txtCCCD.KeyPress += (s, e) => {
 				if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
 				{
@@ -116,7 +116,7 @@ namespace QLBXMD.GUI.Admin
 				}
 			};
 
-			// Ch? cho ph�p nh?p s? cho SDT
+			// Chỉ cho phép nhập số cho SDT
 			txtSDT.KeyPress += (s, e) => {
 				if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
 				{
@@ -124,7 +124,7 @@ namespace QLBXMD.GUI.Admin
 				}
 			};
 
-			// Gi?i h?n ?? d�i
+			// Giới hạn độ dài
 			txtSDT.TextChanged += (s, e) => {
 				if (txtSDT.Text.Length > 11)
 				{
@@ -140,9 +140,9 @@ namespace QLBXMD.GUI.Admin
 			switch (mode)
 			{
 				case TaiXeDialogMode.Add:
-					Text = "Th�m t�i x?";
-					lblHeader.Text = "?? TH�M T�I X? M?I";
-					btnPrimary.Text = "Th�m";
+					Text = "Thêm tài xế";
+					lblHeader.Text = "THÊM TÀI XẾ MỚI";
+					btnPrimary.Text = "Thêm";
 					btnPrimary.BackColor = Color.FromArgb(76, 175, 80);
 					pnlHeader.BackColor = Color.FromArgb(76, 175, 80);
 					lblMaTX.Visible = false;
@@ -150,9 +150,9 @@ namespace QLBXMD.GUI.Admin
 					SetReadOnly(false);
 					break;
 				case TaiXeDialogMode.Edit:
-					Text = "S?a t�i x?";
-					lblHeader.Text = "?? C?P NH?T T�I X?";
-					btnPrimary.Text = "L?u";
+					Text = "Sửa tài xế";
+					lblHeader.Text = "CẬP NHẬT TÀI XẾ";
+					btnPrimary.Text = "Lưu";
 					btnPrimary.BackColor = Color.FromArgb(33, 150, 243);
 					pnlHeader.BackColor = Color.FromArgb(33, 150, 243);
 					lblMaTX.Visible = true;
@@ -161,10 +161,10 @@ namespace QLBXMD.GUI.Admin
 					SetReadOnly(false);
 					break;
 				case TaiXeDialogMode.View:
-					Text = "Xem t�i x?";
-					lblHeader.Text = "?? TH�NG TIN T�I X?";
+					Text = "Xem tài xế";
+					lblHeader.Text = "THÔNG TIN TÀI XẾ";
 					btnPrimary.Visible = false;
-					btnCancel.Text = "?�ng";
+					btnCancel.Text = "Đóng";
 					btnCancel.BackColor = Color.FromArgb(158, 158, 158);
 					btnCancel.Location = new Point(460, 685);
 					pnlHeader.BackColor = Color.FromArgb(158, 158, 158);
@@ -198,7 +198,7 @@ namespace QLBXMD.GUI.Admin
 			dtpNgayCap.TabStop = !ro;
 			cbbTrangThai.TabStop = !ro;
 
-			// Thay ??i m�u n?n khi readonly
+			// Thay đổi màu nền khi readonly
 			if (ro)
 			{
 				txtMaTX.BackColor = Color.WhiteSmoke;
@@ -214,7 +214,7 @@ namespace QLBXMD.GUI.Admin
 			}
 			else
 			{
-				txtMaTX.BackColor = Color.WhiteSmoke; // Lu�n readonly
+				txtMaTX.BackColor = Color.WhiteSmoke; // Luôn readonly
 				txtTenTX.BackColor = Color.White;
 				dtpNamSinh.BackColor = Color.White;
 				txtCCCD.BackColor = Color.White;
@@ -247,12 +247,12 @@ namespace QLBXMD.GUI.Admin
 			if (Mode == TaiXeDialogMode.View)
 				return true;
 
-			// Ki?m tra t�n t�i x?
+			// Kiểm tra tên tài xế
 			if (string.IsNullOrWhiteSpace(txtTenTX.Text))
 			{
 				MessageBox.Show(
-					"Vui l�ng nh?p t�n t�i x?.\n\nT�n t�i x? l� th�ng tin b?t bu?c.",
-					"Th�ng b�o",
+					"Vui lòng nhập tên tài xế.\n\nTên tài xế là thông tin bắt buộc.",
+					"Thông báo",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Warning
 				);
@@ -260,12 +260,12 @@ namespace QLBXMD.GUI.Admin
 				return false;
 			}
 
-			// Ki?m tra ?? d�i t�n
+			// Kiểm tra độ dài tên
 			if (txtTenTX.Text.Trim().Length < 2)
 			{
 				MessageBox.Show(
-					"T�n t�i x? qu� ng?n.\n\nVui l�ng nh?p t�n ??y ?? (�t nh?t 2 k� t?).",
-					"Th�ng b�o",
+					"Tên tài xế quá ngắn.\n\nVui lòng nhập tên đầy đủ (ít nhất 2 ký tự).",
+					"Thông báo",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Warning
 				);
@@ -273,12 +273,12 @@ namespace QLBXMD.GUI.Admin
 				return false;
 			}
 
-			// Ki?m tra t�n c� ch?a s? kh�ng
+			// Kiểm tra tên có chứa số không
 			if (Regex.IsMatch(txtTenTX.Text, @"\d"))
 			{
 				MessageBox.Show(
-					"T�n t�i x? kh�ng ???c ch?a s?.\n\nVui l�ng nh?p t�n h?p l?.",
-					"Th�ng b�o",
+					"Tên tài xế không được chứa số.\n\nVui lòng nhập tên hợp lệ.",
+					"Thông báo",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Warning
 				);
@@ -286,16 +286,16 @@ namespace QLBXMD.GUI.Admin
 				return false;
 			}
 
-			// Ki?m tra tu?i t�i x? (ph?i t? 21 tu?i tr? l�n)
+			// Kiểm tra tuổi tài xế (phải từ 21 tuổi trở lên)
 			int age = DateTime.Now.Year - dtpNamSinh.Value.Year;
 			if (dtpNamSinh.Value > DateTime.Now.AddYears(-21))
 			{
 				MessageBox.Show(
-					$"T�i x? ph?i t? 21 tu?i tr? l�n.\n\n" +
-					$"Tu?i hi?n t?i: {age} tu?i\n" +
-					$"Y�u c?u: �t nh?t 21 tu?i\n\n" +
-					"Theo quy ??nh ph�p lu?t, t�i x? ph?i ?? 21 tu?i.",
-					"L?i tu?i",
+					$"Tài xế phải từ 21 tuổi trở lên.\n\n" +
+					$"Tuổi hiện tại: {age} tuổi\n" +
+					$"Yêu cầu: Ít nhất 21 tuổi\n\n" +
+					"Theo quy định pháp luật, tài xế phải đủ 21 tuổi.",
+					"Lỗi tuổi",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Warning
 				);
@@ -303,14 +303,14 @@ namespace QLBXMD.GUI.Admin
 				return false;
 			}
 
-			// Ki?m tra tu?i qu� cao
+			// Kiểm tra tuổi quá cao
 			if (age > 65)
 			{
 				var result = MessageBox.Show(
-					$"T�i x? ?� {age} tu?i (v??t tu?i ngh? h?u).\n\n" +
-					"Tu?i ngh? h?u th�ng th??ng l� 60-65 tu?i.\n" +
-					"B?n c� ch?c ch?n mu?n ti?p t?c?",
-					"X�c nh?n tu?i",
+					$"Tài xế đã {age} tuổi (vượt tuổi nghỉ hưu).\n\n" +
+					"Tuổi nghỉ hưu thông thường là 60-65 tuổi.\n" +
+					"Bạn có chắc chắn muốn tiếp tục?",
+					"Xác nhận tuổi",
 					MessageBoxButtons.YesNo,
 					MessageBoxIcon.Question
 				);
@@ -322,12 +322,12 @@ namespace QLBXMD.GUI.Admin
 				}
 			}
 
-			// Ki?m tra CCCD
+			// Kiểm tra CCCD
 			if (string.IsNullOrWhiteSpace(txtCCCD.Text))
 			{
 				MessageBox.Show(
-					"Vui l�ng nh?p s? CCCD.\n\nCCCD l� th�ng tin b?t bu?c ?? x�c ??nh danh t�nh.",
-					"Th�ng b�o",
+					"Vui lòng nhập số CCCD.\n\nCCCD là thông tin bắt buộc để xác định danh tính.",
+					"Thông báo",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Warning
 				);
@@ -335,15 +335,15 @@ namespace QLBXMD.GUI.Admin
 				return false;
 			}
 
-			// Ki?m tra ?? d�i CCCD (12 s?)
+			// Kiểm tra độ dài CCCD (12 số)
 			if (txtCCCD.Text.Length != 12)
 			{
 				MessageBox.Show(
-					$"S? CCCD kh�ng h?p l?.\n\n" +
-					$"?? d�i hi?n t?i: {txtCCCD.Text.Length} s?\n" +
-					$"Y�u c?u: 12 s?\n\n" +
-					"CCCD Vi?t Nam c� ?�ng 12 ch? s?.",
-					"L?i CCCD",
+					$"Số CCCD không hợp lệ.\n\n" +
+					$"Độ dài hiện tại: {txtCCCD.Text.Length} số\n" +
+					$"Yêu cầu: 12 số\n\n" +
+					"CCCD Việt Nam có đúng 12 chữ số.",
+					"Lỗi CCCD",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Warning
 				);
@@ -351,12 +351,12 @@ namespace QLBXMD.GUI.Admin
 				return false;
 			}
 
-			// Ki?m tra CCCD ch? ch?a s?
+			// Kiểm tra CCCD chỉ chứa số
 			if (!Regex.IsMatch(txtCCCD.Text, @"^\d{12}$"))
 			{
 				MessageBox.Show(
-					"S? CCCD ch? ???c ch?a ch? s?.\n\nVui l�ng nh?p l?i.",
-					"L?i CCCD",
+					"Số CCCD chỉ được chứa chữ số.\n\nVui lòng nhập lại.",
+					"Lỗi CCCD",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Warning
 				);
@@ -364,12 +364,12 @@ namespace QLBXMD.GUI.Admin
 				return false;
 			}
 
-			// Ki?m tra gi?i t�nh
+			// Kiểm tra giới tính
 			if (GioiTinhValue == null)
 			{
 				MessageBox.Show(
-					"Vui l�ng ch?n gi?i t�nh.",
-					"Th�ng b�o",
+					"Vui lòng chọn giới tính.",
+					"Thông báo",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Warning
 				);
@@ -377,12 +377,12 @@ namespace QLBXMD.GUI.Admin
 				return false;
 			}
 
-			// Ki?m tra s? ?i?n tho?i
+			// Kiểm tra số điện thoại
 			if (string.IsNullOrWhiteSpace(txtSDT.Text))
 			{
 				MessageBox.Show(
-					"Vui l�ng nh?p s? ?i?n tho?i.\n\nS? ?i?n tho?i l� th�ng tin b?t bu?c.",
-					"Th�ng b�o",
+					"Vui lòng nhập số điện thoại.\n\nSố điện thoại là thông tin bắt buộc.",
+					"Thông báo",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Warning
 				);
@@ -390,15 +390,15 @@ namespace QLBXMD.GUI.Admin
 				return false;
 			}
 
-			// Ki?m tra ??nh d?ng s? ?i?n tho?i
+			// Kiểm tra định dạng số điện thoại
 			string phone = txtSDT.Text.Trim();
 			if (phone.Length < 10 || phone.Length > 11)
 			{
 				MessageBox.Show(
-					$"S? ?i?n tho?i kh�ng h?p l?.\n\n" +
-					$"?? d�i hi?n t?i: {phone.Length} s?\n" +
-					$"Y�u c?u: 10-11 s?",
-					"L?i s? ?i?n tho?i",
+					$"Số điện thoại không hợp lệ.\n\n" +
+					$"Độ dài hiện tại: {phone.Length} số\n" +
+					$"Yêu cầu: 10-11 số",
+					"Lỗi số điện thoại",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Warning
 				);
@@ -406,14 +406,14 @@ namespace QLBXMD.GUI.Admin
 				return false;
 			}
 
-			// Ki?m tra ??u s? h?p l? (Vi?t Nam)
+			// Kiểm tra đầu số hợp lệ (Việt Nam)
 			if (!Regex.IsMatch(phone, @"^(03|05|07|08|09)\d{8,9}$"))
 			{
 				var result = MessageBox.Show(
-					$"S? ?i?n tho?i '{phone}' c� v? kh�ng ?�ng ??nh d?ng Vi?t Nam.\n\n" +
-					"??u s? h?p l?: 03, 05, 07, 08, 09\n" +
-					"B?n c� ch?c ch?n mu?n ti?p t?c?",
-					"X�c nh?n s? ?i?n tho?i",
+					$"Số điện thoại '{phone}' có vẻ không đúng định dạng Việt Nam.\n\n" +
+					"Đầu số hợp lệ: 03, 05, 07, 08, 09\n" +
+					"Bạn có chắc chắn muốn tiếp tục?",
+					"Xác nhận số điện thoại",
 					MessageBoxButtons.YesNo,
 					MessageBoxIcon.Question
 				);
@@ -425,12 +425,12 @@ namespace QLBXMD.GUI.Admin
 				}
 			}
 
-			// Ki?m tra ??a ch?
+			// Kiểm tra địa chỉ
 			if (string.IsNullOrWhiteSpace(txtDiaChi.Text))
 			{
 				MessageBox.Show(
-					"Vui l�ng nh?p ??a ch?.\n\n??a ch? l� th�ng tin b?t bu?c.",
-					"Th�ng b�o",
+					"Vui lòng nhập địa chỉ.\n\nĐịa chỉ là thông tin bắt buộc.",
+					"Thông báo",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Warning
 				);
@@ -438,12 +438,12 @@ namespace QLBXMD.GUI.Admin
 				return false;
 			}
 
-			// Ki?m tra ?? d�i ??a ch?
+			// Kiểm tra độ dài địa chỉ
 			if (txtDiaChi.Text.Trim().Length < 5)
 			{
 				MessageBox.Show(
-					"??a ch? qu� ng?n.\n\nVui l�ng nh?p ??a ch? ??y ?? (�t nh?t 5 k� t?).",
-					"Th�ng b�o",
+					"Địa chỉ quá ngắn.\n\nVui lòng nhập địa chỉ đầy đủ (ít nhất 5 ký tự).",
+					"Thông báo",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Warning
 				);
@@ -451,12 +451,12 @@ namespace QLBXMD.GUI.Admin
 				return false;
 			}
 
-			// Ki?m tra b?ng l�i
+			// Kiểm tra bằng lái
 			if (string.IsNullOrWhiteSpace(txtBangLai.Text))
 			{
 				MessageBox.Show(
-					"Vui l�ng nh?p s? b?ng l�i.\n\nB?ng l�i l� th�ng tin b?t bu?c cho t�i x?.",
-					"Th�ng b�o",
+					"Vui lòng nhập số bằng lái.\n\nBằng lái là thông tin bắt buộc cho tài xế.",
+					"Thông báo",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Warning
 				);
@@ -464,15 +464,15 @@ namespace QLBXMD.GUI.Admin
 				return false;
 			}
 
-			// Ki?m tra ??nh d?ng b?ng l�i (v� d?: B1, B2, C, D, E, F...)
+			// Kiểm tra định dạng bằng lái (ví dụ: B1, B2, C, D, E, F...)
 			string bangLai = txtBangLai.Text.Trim().ToUpper();
 			if (!Regex.IsMatch(bangLai, @"^[A-F][0-9]?$"))
 			{
 				var result = MessageBox.Show(
-					$"H?ng b?ng l�i '{txtBangLai.Text}' c� v? kh�ng ?�ng ??nh d?ng.\n\n" +
-					"H?ng b?ng l�i h?p l?: A1, A2, B1, B2, C, D, E, F, FB2, FC...\n" +
-					"B?n c� ch?c ch?n mu?n ti?p t?c?",
-					"X�c nh?n b?ng l�i",
+					$"Hạng bằng lái '{txtBangLai.Text}' có vẻ không đúng định dạng.\n\n" +
+					"Hạng bằng lái hợp lệ: A1, A2, B1, B2, C, D, E, F, FB2, FC...\n" +
+					"Bạn có chắc chắn muốn tiếp tục?",
+					"Xác nhận bằng lái",
 					MessageBoxButtons.YesNo,
 					MessageBoxIcon.Question
 				);
@@ -484,14 +484,14 @@ namespace QLBXMD.GUI.Admin
 				}
 			}
 
-			// Ki?m tra ng�y c?p b?ng l�i
+			// Kiểm tra ngày cấp bằng lái
 			if (dtpNgayCap.Value > DateTime.Now)
 			{
 				MessageBox.Show(
-					"Ng�y c?p kh�ng ???c l?n h?n ng�y hi?n t?i.\n\n" +
-					$"Ng�y hi?n t?i: {DateTime.Now:dd/MM/yyyy}\n" +
-					$"Ng�y c?p ?� ch?n: {dtpNgayCap.Value:dd/MM/yyyy}",
-					"L?i ng�y c?p",
+					"Ngày cấp không được lớn hơn ngày hiện tại.\n\n" +
+					$"Ngày hiện tại: {DateTime.Now:dd/MM/yyyy}\n" +
+					$"Ngày cấp đã chọn: {dtpNgayCap.Value:dd/MM/yyyy}",
+					"Lỗi ngày cấp",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Warning
 				);
@@ -499,16 +499,16 @@ namespace QLBXMD.GUI.Admin
 				return false;
 			}
 
-			// Ki?m tra ng�y c?p ph?i sau ng�y sinh �t nh?t 21 n?m
+			// Kiểm tra ngày cấp phải sau ngày sinh ít nhất 21 năm
 			if (dtpNgayCap.Value < dtpNamSinh.Value.AddYears(21))
 			{
 				MessageBox.Show(
-					"Ng�y c?p b?ng l�i kh�ng h?p l?.\n\n" +
-					"B?ng l�i ph?i ???c c?p sau khi t�i x? ?? 21 tu?i.\n" +
-					$"Ng�y sinh: {dtpNamSinh.Value:dd/MM/yyyy}\n" +
-					$"Ng�y c?p t?i thi?u: {dtpNamSinh.Value.AddYears(21):dd/MM/yyyy}\n" +
-					$"Ng�y c?p hi?n t?i: {dtpNgayCap.Value:dd/MM/yyyy}",
-					"L?i ng�y c?p",
+					"Ngày cấp bằng lái không hợp lệ.\n\n" +
+					"Bằng lái phải được cấp sau khi tài xế đủ 21 tuổi.\n" +
+					$"Ngày sinh: {dtpNamSinh.Value:dd/MM/yyyy}\n" +
+					$"Ngày cấp tối thiểu: {dtpNamSinh.Value.AddYears(21):dd/MM/yyyy}\n" +
+					$"Ngày cấp hiện tại: {dtpNgayCap.Value:dd/MM/yyyy}",
+					"Lỗi ngày cấp",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Warning
 				);
@@ -516,12 +516,12 @@ namespace QLBXMD.GUI.Admin
 				return false;
 			}
 
-			// Ki?m tra tr?ng th�i
+			// Kiểm tra trạng thái
 			if (TrangThaiValue == null)
 			{
 				MessageBox.Show(
-					"Vui l�ng ch?n tr?ng th�i.",
-					"Th�ng b�o",
+					"Vui lòng chọn trạng thái.",
+					"Thông báo",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Warning
 				);

@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using QLBXMD.BUS;
 using QLBXMD.EF;
+using QLBXMD.GUI.User;
 
 namespace QLBXMD.GUI.Admin
 {
@@ -143,7 +144,10 @@ namespace QLBXMD.GUI.Admin
 
 			using (var dialog = new DoiMatKhauDialog(_taiKhoan))
 			{
-				dialog.ShowDialog();
+				if (dialog.ShowDialog() == DialogResult.OK)
+				{
+					MessageBox.Show("Đổi mật khẩu thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+				}
 			}
 		}
 
@@ -195,145 +199,6 @@ namespace QLBXMD.GUI.Admin
 			}
 
 			return true;
-		}
-	}
-
-	public class DoiMatKhauDialog : Form
-	{
-		private TaiKhoan _taiKhoan;
-		private TextBox txtMatKhauCu, txtMatKhauMoi, txtXacNhanMatKhau;
-		private Button btnXacNhan, btnHuy;
-		private CheckBox chkHienMatKhau;
-
-		public DoiMatKhauDialog(TaiKhoan taiKhoan)
-		{
-			_taiKhoan = taiKhoan;
-			InitializeComponent();
-		}
-
-		private void InitializeComponent()
-		{
-			this.Text = "Đổi mật khẩu";
-			this.StartPosition = FormStartPosition.CenterParent;
-			this.Size = new Size(500, 350);
-			this.FormBorderStyle = FormBorderStyle.FixedDialog;
-			this.MaximizeBox = false;
-			this.MinimizeBox = false;
-
-			int leftLabel = 20;
-			int leftControl = 180;
-			int controlWidth = 280;
-			int startTop = 20;
-			int rowHeight = 50;
-
-			var lblTitle = new Label
-			{
-				Text = "Đổi mật khẩu",
-				Font = new Font("Microsoft Sans Serif", 14F, FontStyle.Bold),
-				Left = leftLabel,
-				Top = startTop,
-				Width = 450,
-				TextAlign = ContentAlignment.MiddleCenter
-			};
-
-			var lblMatKhauCu = new Label { Text = "Mật khẩu cũ:", Left = leftLabel, Top = startTop + rowHeight, AutoSize = true };
-			txtMatKhauCu = new TextBox { Left = leftControl, Top = startTop + rowHeight - 4, Width = controlWidth, UseSystemPasswordChar = true };
-
-			var lblMatKhauMoi = new Label { Text = "Mật khẩu mới:", Left = leftLabel, Top = startTop + rowHeight * 2, AutoSize = true };
-			txtMatKhauMoi = new TextBox { Left = leftControl, Top = startTop + rowHeight * 2 - 4, Width = controlWidth, UseSystemPasswordChar = true };
-
-			var lblXacNhan = new Label { Text = "Xác nhận mật khẩu:", Left = leftLabel, Top = startTop + rowHeight * 3, AutoSize = true };
-			txtXacNhanMatKhau = new TextBox { Left = leftControl, Top = startTop + rowHeight * 3 - 4, Width = controlWidth, UseSystemPasswordChar = true };
-
-			chkHienMatKhau = new CheckBox
-			{
-				Text = "Hiện mật khẩu",
-				Left = leftControl,
-				Top = startTop + rowHeight * 4 - 4,
-				AutoSize = true
-			};
-			chkHienMatKhau.CheckedChanged += (s, e) =>
-			{
-				bool show = chkHienMatKhau.Checked;
-				txtMatKhauCu.UseSystemPasswordChar = !show;
-				txtMatKhauMoi.UseSystemPasswordChar = !show;
-				txtXacNhanMatKhau.UseSystemPasswordChar = !show;
-			};
-
-			btnXacNhan = new Button { Left = 270, Top = startTop + rowHeight * 5, Width = 90, Height = 35, Text = "Xác nhận" };
-			btnHuy = new Button { Left = 370, Top = startTop + rowHeight * 5, Width = 90, Height = 35, Text = "Hủy" };
-
-			btnXacNhan.Click += BtnXacNhan_Click;
-			btnHuy.Click += (s, e) => { this.DialogResult = DialogResult.Cancel; this.Close(); };
-
-			Controls.AddRange(new Control[]
-			{
-				lblTitle,
-				lblMatKhauCu, txtMatKhauCu,
-				lblMatKhauMoi, txtMatKhauMoi,
-				lblXacNhan, txtXacNhanMatKhau,
-				chkHienMatKhau,
-				btnXacNhan, btnHuy
-			});
-		}
-
-		private void BtnXacNhan_Click(object sender, EventArgs e)
-		{
-			if (string.IsNullOrWhiteSpace(txtMatKhauCu.Text))
-			{
-				MessageBox.Show("Vui lòng nhập mật khẩu cũ.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-				txtMatKhauCu.Focus();
-				return;
-			}
-
-			if (string.IsNullOrWhiteSpace(txtMatKhauMoi.Text))
-			{
-				MessageBox.Show("Vui lòng nhập mật khẩu mới.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-				txtMatKhauMoi.Focus();
-				return;
-			}
-
-			if (txtMatKhauMoi.Text.Length < 6)
-			{
-				MessageBox.Show("Mật khẩu mới phải có ít nhất 6 ký tự.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-				txtMatKhauMoi.Focus();
-				return;
-			}
-
-			if (txtMatKhauMoi.Text != txtXacNhanMatKhau.Text)
-			{
-				MessageBox.Show("Xác nhận mật khẩu không khớp.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-				txtXacNhanMatKhau.Focus();
-				return;
-			}
-
-			if (_taiKhoan.MatKhau != txtMatKhauCu.Text)
-			{
-				MessageBox.Show("Mật khẩu cũ không đúng.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Error);
-				txtMatKhauCu.Focus();
-				return;
-			}
-
-			try
-			{
-				using (var db = new BXMDEntities())
-				{
-					var tk = db.TaiKhoans.Find(_taiKhoan.MaTK);
-					if (tk != null)
-					{
-						tk.MatKhau = txtMatKhauMoi.Text;
-						db.SaveChanges();
-						_taiKhoan.MatKhau = txtMatKhauMoi.Text;
-						MessageBox.Show("Đổi mật khẩu thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-						this.DialogResult = DialogResult.OK;
-						this.Close();
-					}
-				}
-			}
-			catch (Exception ex)
-			{
-				MessageBox.Show("Lỗi khi đổi mật khẩu: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-			}
 		}
 	}
 

@@ -26,7 +26,17 @@ namespace QLBXMD.GUI.Admin
 			btnXem.Enabled = has;
 			btnSua.Enabled = has;
 			btnXoa.Enabled = has;
-			btnGanTaiKhoan.Enabled = has;
+			
+			// ✅ Chỉ enable nút "Cấp tài khoản" nếu nhân viên CHƯA có tài khoản
+			if (has && dgv.SelectedRows[0].Cells["TaiKhoan"].Value != null)
+			{
+				string taiKhoan = dgv.SelectedRows[0].Cells["TaiKhoan"].Value.ToString();
+				btnGanTaiKhoan.Enabled = (taiKhoan == "Chưa gắn" || taiKhoan == "Chưa cấp");
+			}
+			else
+			{
+				btnGanTaiKhoan.Enabled = false;
+			}
 		}
 
 		private void UCNhanVien_Load(object sender, EventArgs e)
@@ -78,7 +88,7 @@ namespace QLBXMD.GUI.Admin
 				var list = _bus.GetAll() ?? new List<NhanVien>();
 				_data = list
 					.Select(nv => {
-						string taiKhoan = "Chưa gắn";
+						string taiKhoan = "Chưa cấp"; // ✅ Đổi từ "Chưa gắn" thành "Chưa cấp"
 						if (nv.MaTK.HasValue && nv.TaiKhoan != null)
 						{
 							taiKhoan = nv.TaiKhoan.TenDangNhap;
@@ -329,28 +339,40 @@ namespace QLBXMD.GUI.Admin
 
 			int maNV = int.Parse(r.Cells[0].Value.ToString());
 			var nv = _bus.GetById(maNV);
-			if (nv == null) return;
-
-			using (var dialog = new GanTaiKhoanDialog())
+			if (nv == null)
 			{
-				var availableTK = _taiKhoanBUS.GetAvailableAccountsForEdit(nv.MaTK)
-					.Select(tk => new KeyValuePair<int, string>(
-						tk.MaTK,
-						$"{tk.TenDangNhap} ({tk.Email}) - {tk.Quyen?.TenQuyen}"
-					))
-					.ToList();
+				MessageBox.Show("Không tìm thấy nhân viên.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				return;
+			}
 
-				dialog.BindTaiKhoan(availableTK, nv.MaTK);
+			// ✅ Kiểm tra đã có tài khoản chưa
+			if (nv.MaTK.HasValue && nv.MaTK.Value > 0)
+			{
+				MessageBox.Show(
+					$"Nhân viên '{nv.TenNV}' đã có tài khoản.\n\n" +
+					$"Tên đăng nhập: {nv.TaiKhoan?.TenDangNhap}\n\n" +
+					"Không thể cấp tài khoản mới.",
+					"Thông báo",
+					MessageBoxButtons.OK,
+					MessageBoxIcon.Information
+				);
+				return;
+			}
 
+			// ✅ Mở form CẤP TÀI KHOẢN mới
+			using (var dialog = new CapTaiKhoanDialog(nv))
+			{
 				if (dialog.ShowDialog() == DialogResult.OK)
 				{
-					nv.MaTK = dialog.SelectedMaTK;
-					string result = _bus.Update(nv);
-					MessageBox.Show(result, "Thông báo", MessageBoxButtons.OK,
-						result.Contains("thành công") ? MessageBoxIcon.Information : MessageBoxIcon.Error);
+					// Reload data
+					LoadData();
 
-					if (result.Contains("thành công"))
-						LoadData();
+					MessageBox.Show(
+						$"✅ Đã cấp tài khoản thành công cho nhân viên '{nv.TenNV}'!",
+						"Thành công",
+						MessageBoxButtons.OK,
+						MessageBoxIcon.Information
+					);
 				}
 			}
 		}

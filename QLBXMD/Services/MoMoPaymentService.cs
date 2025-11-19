@@ -14,7 +14,7 @@ namespace QLBXMD.Services
 	{
 		private const string PartnerCode = "MOMO4LG620250601_TEST";
 		private const string AccessKey = "e6g7W44vmy1rgT7K";
-		private const string SecretKey = "XAAT9fHRPeJD8zhjKsZnTTUSnyEHFISa";
+		private const string SecretKey = "XAAT9fHRPeJD8zhjKsZnTTUSnYEHFISa";
 		private const string ApiEndpoint = "https://test-payment.momo.vn/v2/gateway/api/create";
 
 		private const string ReturnUrl = "http://localhost:5000/payment/return";

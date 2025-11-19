@@ -1,11 +1,15 @@
-﻿using System;
+﻿using QLBXMD.BUS;
+using QLBXMD.EF;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
 using System.Linq;
+using System.Net.Http;
+using System.Security.Cryptography;
+using System.Text;
+using System.Threading.Tasks;
 using System.Windows.Forms;
-using QLBXMD.BUS;
-using QLBXMD.EF;
 
 namespace QLBXMD.GUI.Admin
 {
@@ -906,61 +910,166 @@ namespace QLBXMD.GUI.Admin
 		{
 			try
 			{
-				// Hiển thị loading
+				// ✅ 1. TẠO HÓA ĐƠN VÀ VÉ TẠM THỜI TRƯỚC (TrangThai = false)
+				int maHD = 0;
+				string orderId = $"HD{DateTime.Now:yyyyMMddHHmmss}";
+				
+				using (var db = new BXMDEntities())
+				{
+					// Kiểm tra chuyến xe
+					var chuyenXe = db.ChuyenXes.FirstOrDefault(cx => cx.MaChuyen == selectedMaChuyen);
+					if (chuyenXe == null)
+					{
+						MessageBox.Show("Chuyến xe không tồn tại.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+						return;
+					}
+
+					// Kiểm tra ghế trùng
+					var daDat = db.VeXes
+						.Where(v => v.MaChuyen == selectedMaChuyen && selectedSeats.Contains(v.ChoNgoi))
+						.Select(v => v.ChoNgoi)
+						.ToList();
+
+					if (daDat.Any())
+					{
+						MessageBox.Show(
+							$"Ghế số {string.Join(", ", daDat)} đã được đặt.\nVui lòng chọn ghế khác.",
+							"Thông báo",
+							MessageBoxButtons.OK,
+							MessageBoxIcon.Warning
+						);
+						LoadSeatMap();
+						return;
+					}
+
+					// Tạo/lấy khách hàng
+					var khachHang = db.KhachHangs.FirstOrDefault(kh => kh.SDT == txtSDT.Text.Trim());
+					if (khachHang == null)
+					{
+						khachHang = new KhachHang
+						{
+							TenKH = txtTenKH.Text.Trim(),
+							NamSinh = dtpNamSinh.Value.Date,
+							SDT = txtSDT.Text.Trim(),
+							GioiTinh = cboGioiTinh.SelectedItem.ToString() == "Nam",
+							MaTK = null
+						};
+						db.KhachHangs.Add(khachHang);
+						db.SaveChanges();
+					}
+
+					// ✅ Tạo hóa đơn TẠM THỜI (TrangThai = false = chờ thanh toán)
+					var hoaDon = new HoaDon
+					{
+						MaKH = khachHang.MaKH,
+						MANV = currentNhanVien?.MaNV,
+						NgayLap = DateTime.Now,
+						TongTien = 0,
+						TrangThai = false // ❌ CHỜ THANH TOÁN
+					};
+					db.HoaDons.Add(hoaDon);
+					db.SaveChanges();
+
+					// ✅ Tạo vé xe
+					foreach (var seat in selectedSeats)
+					{
+						var veXe = new VeXe
+						{
+							MaChuyen = selectedMaChuyen.Value,
+							MaHD = hoaDon.MaHD,
+							ChoNgoi = seat,
+							GiaVe = selectedGiaVe.Value
+						};
+						db.VeXes.Add(veXe);
+					}
+					db.SaveChanges();
+
+					// Refresh để lấy TongTien
+					db.Entry(hoaDon).Reload();
+
+					// ✅ Lưu MaHD để tracking
+					maHD = hoaDon.MaHD;
+					
+					Console.WriteLine($"✅ Đã tạo hóa đơn tạm: MaHD = {maHD}, OrderId = {orderId}");
+				}
+
+				// ✅ 2. GỌI MOMO PAYMENT
 				this.Cursor = Cursors.WaitCursor;
 				
-				// Tạo orderId unique
-				string orderId = $"HD{DateTime.Now:yyyyMMddHHmmss}";
-				//string orderInfo = $"Thanh toan ve xe - {selectedDiemDi} den {selectedDiemDen}";
-				string orderInfo = $"Thanh toan ve xe";
+				string orderInfo = $"Thanh toan ve xe - HD{maHD}";
 				
-				// Tạo request thanh toán MoMo
 				var momoService = new Services.MoMoPaymentService();
+				
+				// ✅ Thêm maHD vào extraData để tracking
+				string extraData = $"{{\"MaHD\":{maHD}}}";
+				
 				var response = await momoService.CreatePaymentRequest(
 					orderId,
 					(long)amount,
-					orderInfo
+					orderInfo,
+					extraData
 				);
 
 				this.Cursor = Cursors.Default;
 
 				if (response.ResultCode == 0)
 				{
-					// Thành công - Mở trình duyệt với PayUrl
+					
+					// Thành công - Mở trình duyệt
 					MessageBox.Show(
-						"Đang chuyển đến trang thanh toán MoMo...\n\n" +
-						"Vui lòng hoàn tất thanh toán trong trình duyệt.\n" +
-						$"Mã đơn hàng: {orderId}",
+						$"✅ Đã tạo đơn hàng tạm thời!\n\n" +
+						$"Mã hóa đơn: {maHD}\n" +
+						$"Mã đơn MoMo: {orderId}\n\n" +
+						$"Đang chuyển đến trang thanh toán MoMo...\n" +
+						$"Vui lòng hoàn tất thanh toán trong trình duyệt.",
 						"Thanh toán MoMo",
 						MessageBoxButtons.OK,
 						MessageBoxIcon.Information
 					);
 
-					System.Diagnostics.Process.Start(response.PayUrl);
 
-					// ✅ TODO: Implement callback handler để cập nhật trạng thái
-					// Hiện tại chỉ mở payment page, cần implement:
-					// 1. Web API để nhận IPN callback từ MoMo
-					// 2. Verify signature
-					// 3. Cập nhật database khi thanh toán thành công
-					// 4. Hiển thị kết quả cho user
+System.Diagnostics.Process.Start(response.PayUrl);
+
+					// ✅ Sau khi mở MoMo, bắt đầu Polling kiểm tra trạng thái
+					StartPollingPaymentStatus(orderId, maHD, amount);
+
+					// ✅ 3. CLEAR FORM NGAY SAU KHI TẠO ĐƠN
+					ResetForm();
 
 					MessageBox.Show(
-						"⚠️ Lưu ý:\n" +
-						"- Sau khi thanh toán thành công trên MoMo, vui lòng quay lại ứng dụng.\n" +
-						"- Hệ thống sẽ tự động xác nhận và cập nhật trạng thái đơn hàng.\n" +
-						"- Nếu có vấn đề, vui lòng liên hệ quản trị viên.\n\n" +
-						$"Mã đơn hàng: {orderId}",
-						"Hướng dẫn",
+						"📌 Hướng dẫn:\n\n" +
+						"1. Hoàn tất thanh toán trên MoMo\n" +
+						"2. Sau khi thanh toán thành công, hệ thống sẽ tự động cập nhật trạng thái\n" +
+						"3. Kiểm tra lại trong 'Quản lý vé' hoặc 'Lịch sử mua vé'\n\n" +
+						$"Mã hóa đơn: {maHD}\n" +
+						$"Trạng thái hiện tại: Chờ thanh toán",
+						"Thông báo",
 						MessageBoxButtons.OK,
 						MessageBoxIcon.Information
 					);
 				}
 				else
 				{
-					// Lỗi
+					// Lỗi - XÓA HÓA ĐƠN TẠM
+					using (var db = new BXMDEntities())
+					{
+						var hoaDonCancel = db.HoaDons.FirstOrDefault(h => h.MaHD == maHD);
+						if (hoaDonCancel != null)
+						{
+							// Xóa vé trước
+							var veXeCancel = db.VeXes.Where(v => v.MaHD == maHD).ToList();
+							db.VeXes.RemoveRange(veXeCancel);
+							
+							// Xóa hóa đơn
+							db.HoaDons.Remove(hoaDonCancel);
+							db.SaveChanges();
+							
+							Console.WriteLine($"❌ Đã hủy hóa đơn tạm: MaHD = {maHD}");
+						}
+					}
+
 					MessageBox.Show(
-						$"Lỗi tạo yêu cầu thanh toán MoMo:\n\n" +
+						$"❌ Lỗi tạo yêu cầu thanh toán MoMo:\n\n" +
 						$"Mã lỗi: {response.ResultCode}\n" +
 						$"Thông báo: {response.Message}\n\n" +
 						$"Vui lòng thử lại hoặc chọn phương thức thanh toán khác.",
@@ -981,6 +1090,155 @@ namespace QLBXMD.GUI.Admin
 					MessageBoxIcon.Error
 				);
 				Console.WriteLine($"❌ MoMo Payment Error: {ex.ToString()}");
+			}
+		}
+		/// <summary>
+		/// ✅ Polling MoMo để kiểm tra trạng thái thanh toán (không cần IPN)
+		/// </summary>
+		private async void StartPollingPaymentStatus(string orderId, int maHD, decimal amount)
+		{
+			int attempt = 0;
+			const int maxAttempts = 12; // 12 lần * 5s = 1 phút
+			const int delayMs = 5000;
+
+			MessageBox.Show("⏳ Đang chờ người dùng hoàn tất thanh toán MoMo...", "MoMo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+			while (attempt < maxAttempts)
+			{
+				attempt++;
+				string status = await QueryMomoOrder(orderId);
+
+				if (status == "Success")
+				{
+					MessageBox.Show("✅ Thanh toán MoMo thành công!", "MoMo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+					UpdateHoaDonTrangThai(maHD, true, "MoMo");
+					return;
+				}
+				else if (status == "Failed")
+				{
+					MessageBox.Show("❌ Thanh toán MoMo thất bại hoặc bị hủy!", "MoMo", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					UpdateHoaDonTrangThai(maHD, false, "MoMo");
+					return;
+				}
+
+				await Task.Delay(delayMs);
+			}
+
+			MessageBox.Show("⏰ Hết thời gian chờ thanh toán MoMo.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+		}
+
+		/// <summary>
+		/// ✅ Gọi API Query của MoMo để xác minh đơn hàng
+		/// </summary>
+		private async Task<string> QueryMomoOrder(string orderId)
+		{
+			const string ApiQuery = "https://test-payment.momo.vn/v2/gateway/api/query";
+			const string PartnerCode = "MOMO4LG620250601_TEST";
+			const string AccessKey = "e6g7W44vmy1rgT7K";
+			const string SecretKey = "XAAT9fHRPeJD8zhjKsZnTTUSnYEHFISa";
+
+			try
+			{
+				string requestId = Guid.NewGuid().ToString();
+				string rawSignature =
+					$"accessKey={AccessKey}" +
+					$"&orderId={orderId}" +
+					$"&partnerCode={PartnerCode}" +
+					$"&requestId={requestId}";
+
+				string signature = ComputeHmacSha256(rawSignature, SecretKey);
+
+				var body = new
+				{
+					partnerCode = PartnerCode,
+					requestId,
+					orderId,
+					signature,
+					lang = "vi"
+				};
+
+				using (var httpClient = new HttpClient())
+				{
+					var json = Newtonsoft.Json.JsonConvert.SerializeObject(body);
+					var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+					var response = await httpClient.PostAsync(ApiQuery, content);
+					string responseJson = await response.Content.ReadAsStringAsync();
+
+					dynamic data = Newtonsoft.Json.JsonConvert.DeserializeObject(responseJson);
+					int resultCode = data.resultCode;
+					string message = data.message;
+
+					Console.WriteLine($"[MoMo Polling] {orderId} => Code: {resultCode}, Message: {message}");
+
+					if (resultCode == 0)
+						return "Success";
+					else if (resultCode == 1006 || resultCode == 1007)
+						return "Pending";
+					else
+						return "Failed";
+				}
+
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine("❌ QueryMoMoOrder Error: " + ex.Message);
+				return "Pending";
+			}
+		}
+
+		/// <summary>
+		/// ✅ Cập nhật trạng thái hóa đơn khi có kết quả thanh toán
+		/// </summary>
+		private void UpdateHoaDonTrangThai(int maHD, bool daThanhToan, string phuongThuc)
+		{
+			try
+			{
+				using (var db = new BXMDEntities())
+				{
+					var hoaDon = db.HoaDons.FirstOrDefault(h => h.MaHD == maHD);
+					if (hoaDon == null) return;
+
+					hoaDon.TrangThai = daThanhToan;
+					hoaDon.TongTien = hoaDon.TongTien ?? 0;
+
+					if (daThanhToan)
+					{
+						var thanhToan = new ThanhToan
+						{
+							MaHD = maHD,
+							TongTien = hoaDon.TongTien.Value,
+							NgayTT = DateTime.Now,
+							PhuongThuc = phuongThuc
+						};
+						db.ThanhToans.Add(thanhToan);
+					}
+
+					db.SaveChanges();
+				}
+
+				if (daThanhToan)
+				{
+					MessageBox.Show(
+						$"💰 Hóa đơn #{maHD} đã được cập nhật trạng thái: ĐÃ THANH TOÁN ({phuongThuc}).",
+						"Thành công",
+						MessageBoxButtons.OK,
+						MessageBoxIcon.Information
+					);
+				}
+				else
+				{
+					MessageBox.Show(
+						$"⚠️ Hóa đơn #{maHD} đã được cập nhật: THANH TOÁN THẤT BẠI.",
+						"Thông báo",
+						MessageBoxButtons.OK,
+						MessageBoxIcon.Warning
+					);
+				}
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show("Lỗi cập nhật hóa đơn: " + ex.Message);
 			}
 		}
 
@@ -1014,6 +1272,18 @@ namespace QLBXMD.GUI.Admin
 			lblThongTinChuyen.Text = "Chưa chọn chuyến";
 			lblTongTien.Text = "Tổng: 0 VNĐ";
 		}
+		private string ComputeHmacSha256(string message, string secretKey)
+		{
+			var keyBytes = Encoding.UTF8.GetBytes(secretKey);
+			var messageBytes = Encoding.UTF8.GetBytes(message);
+
+			using (var hmac = new HMACSHA256(keyBytes))
+			{
+				var hashBytes = hmac.ComputeHash(messageBytes);
+				return BitConverter.ToString(hashBytes).Replace("-", "").ToLower();
+			}
+		}
+
 		#endregion
 	}
 }

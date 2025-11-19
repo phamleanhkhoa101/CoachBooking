@@ -16,6 +16,10 @@ namespace QLBXMD.GUI.Admin
 	{
 		private BXMDEntities db = new BXMDEntities();
 
+        // Backing fields to allow pre-setting values before controls are data-bound
+        private int? _initialMaNhaXe;
+        private int? _initialMaLoaiXe;
+
 		public string MaXe
 		{
 			get => txtMaXe.Text.Trim();
@@ -31,13 +35,28 @@ namespace QLBXMD.GUI.Admin
 		public int? MaNhaXe
 		{
 			get => cbbNhaXe.SelectedValue as int?;
-			set => cbbNhaXe.SelectedValue = value;
+			set
+			{
+				// store initial value; if combo already has data, apply immediately
+				_initialMaNhaXe = value;
+				if (cbbNhaXe.DataSource != null)
+				{
+					cbbNhaXe.SelectedValue = value;
+				}
+			}
 		}
 
 		public int? MaLoaiXe
 		{
 			get => cbbLoaiXe.SelectedValue as int?;
-			set => cbbLoaiXe.SelectedValue = value;
+			set
+			{
+				_initialMaLoaiXe = value;
+				if (cbbLoaiXe.DataSource != null)
+				{
+					cbbLoaiXe.SelectedValue = value;
+				}
+			}
 		}
 
 		public string SoCho
@@ -66,6 +85,12 @@ namespace QLBXMD.GUI.Admin
 			cbbNhaXe.ValueMember = "MaNX";
 			cbbNhaXe.SelectedIndex = -1;
 
+			//apply initial value if any
+			if (_initialMaNhaXe != null)
+			{
+				cbbNhaXe.SelectedValue = _initialMaNhaXe;
+			}
+
 			//load cbb loai xe
 			var loaiXe = db.LoaiXes.Where(lx => lx.TrangThai == true)
 				.Select(lx => new { lx.MaLX, lx.TenLX })
@@ -76,9 +101,29 @@ namespace QLBXMD.GUI.Admin
 			cbbLoaiXe.ValueMember = "MaLX";
 			cbbLoaiXe.SelectedIndex = -1;
 
-			txtSoCho.Enabled =false;
+			if (_initialMaLoaiXe != null)
+			{
+				cbbLoaiXe.SelectedValue = _initialMaLoaiXe;
+			}
+
+			txtSoCho.Enabled = false;
 		}
 
+        // Call this to make the dialog read-only / view-only and hide the primary action button
+        public void SetReadOnlyMode()
+        {
+            // Hide primary (Thêm) button
+            btnPrimary.Visible = false;
+
+            // Make inputs read-only / disabled
+            txtBienSoXe.ReadOnly = false;
+            txtMaXe.ReadOnly = false;
+            txtSoCho.ReadOnly = false;
+            cbbNhaXe.Enabled = false;
+            cbbLoaiXe.Enabled = false;
+            cbbTrangThai.Enabled = false;
+		}
+		
 		private void btnThem_Click(object sender, EventArgs e)
 		{
 			// Validate dữ liệu trước khi đóng dialog

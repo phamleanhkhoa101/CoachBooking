@@ -39,6 +39,8 @@
 			this.tabChuaCo = new System.Windows.Forms.TabPage();
 			this.dgvChuaCo = new System.Windows.Forms.DataGridView();
 			this.panel3 = new System.Windows.Forms.Panel();
+			this.cbbNhaXeChuaCo = new System.Windows.Forms.ComboBox();
+			this.label4 = new System.Windows.Forms.Label();
 			this.cbbLoaiChuaCo = new System.Windows.Forms.ComboBox();
 			this.label3 = new System.Windows.Forms.Label();
 			this.txtSearchChuaCo = new System.Windows.Forms.TextBox();
@@ -192,6 +194,8 @@
 			// 
 			this.panel3.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+			this.panel3.Controls.Add(this.cbbNhaXeChuaCo);
+			this.panel3.Controls.Add(this.label4);
 			this.panel3.Controls.Add(this.btnThemChuaCo);
 			this.panel3.Controls.Add(this.cbbLoaiChuaCo);
 			this.panel3.Controls.Add(this.label3);
@@ -200,6 +204,26 @@
 			this.panel3.Name = "panel3";
 			this.panel3.Size = new System.Drawing.Size(1258, 79);
 			this.panel3.TabIndex = 0;
+			// 
+			// cbbNhaXeChuaCo
+			// 
+			this.cbbNhaXeChuaCo.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.cbbNhaXeChuaCo.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.cbbNhaXeChuaCo.FormattingEnabled = true;
+			this.cbbNhaXeChuaCo.Location = new System.Drawing.Point(680, 22);
+			this.cbbNhaXeChuaCo.Name = "cbbNhaXeChuaCo";
+			this.cbbNhaXeChuaCo.Size = new System.Drawing.Size(250, 33);
+			this.cbbNhaXeChuaCo.TabIndex = 18;
+			// 
+			// label4
+			// 
+			this.label4.AutoSize = true;
+			this.label4.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.label4.Location = new System.Drawing.Point(590, 26);
+			this.label4.Name = "label4";
+			this.label4.Size = new System.Drawing.Size(84, 25);
+			this.label4.TabIndex = 17;
+			this.label4.Text = "Nhà xe:";
 			// 
 			// cbbLoaiChuaCo
 			// 
@@ -319,7 +343,7 @@
 			this.btnThemChuaCo.ForeColor = System.Drawing.Color.White;
 			this.btnThemChuaCo.Image = global::QLBXMD.Properties.Resources.add;
 			this.btnThemChuaCo.Location = new System.Drawing.Point(1114, 12);
-			this.btnThemChuaCo.Name = "btnThemChuaCo";
+		 this.btnThemChuaCo.Name = "btnThemChuaCo";
 			this.btnThemChuaCo.Size = new System.Drawing.Size(130, 50);
 			this.btnThemChuaCo.TabIndex = 16;
 			this.btnThemChuaCo.Text = "Thêm";
@@ -363,6 +387,8 @@
 		private System.Windows.Forms.TextBox txtSearch;
 		private System.Windows.Forms.DataGridView dgvChuaCo;
 		private System.Windows.Forms.Panel panel3;
+		private System.Windows.Forms.ComboBox cbbNhaXeChuaCo;
+		private System.Windows.Forms.Label label4;
 		private System.Windows.Forms.ComboBox cbbLoaiChuaCo;
 		private System.Windows.Forms.Label label3;
 		private System.Windows.Forms.TextBox txtSearchChuaCo;

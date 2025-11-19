@@ -48,19 +48,28 @@ namespace QLBXMD.GUI.User
 						return;
 					}
 
-					// Lấy thông tin khách hàng
+					// Lấy thông tin khách hàng; nếu chưa có thì Tạo mới 1 record liên kết với tài khoản
 					var khachHang = db.KhachHangs.FirstOrDefault(kh => kh.MaTK == currentUser.MaTK);
 					if (khachHang == null)
 					{
-						MessageBox.Show("Không tìm thấy thông tin khách hàng.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-						return;
+						// Tạo khách hàng mặc định liên kết với tài khoản
+						khachHang = new KhachHang
+						{
+							MaTK = currentUser.MaTK,
+							TenKH = taiKhoan.TenDangNhap ?? "",
+							SDT = "",
+							NamSinh = DateTime.Now.AddYears(-21),
+							GioiTinh = null
+						};
+						db.KhachHangs.Add(khachHang);
+						db.SaveChanges();
 					}
 
 					// Hiển thị thông tin
 					txtTenDangNhap.Text = taiKhoan.TenDangNhap;
 					txtTenKH.Text = khachHang.TenKH;
 					txtSDT.Text = khachHang.SDT;
-					txtEmail.Text = ""; // Email không có trong database
+					txtEmail.Text = taiKhoan.Email ?? ""; // Lấy email từ TaiKhoan
 					dtpNamSinh.Value = khachHang.NamSinh;
 					cboGioiTinh.SelectedIndex = (khachHang.GioiTinh ?? true) ? 0 : 1;
 				}
@@ -95,6 +104,17 @@ namespace QLBXMD.GUI.User
 				return;
 			}
 
+			// Validate email
+			if (!string.IsNullOrWhiteSpace(txtEmail.Text))
+			{
+				if (!Validation.IsValidEmail(txtEmail.Text.Trim()))
+				{
+					MessageBox.Show("Email không đúng định dạng.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+					txtEmail.Focus();
+					return;
+				}
+			}
+
 			if (cboGioiTinh.SelectedItem == null)
 			{
 				MessageBox.Show("Vui lòng chọn giới tính.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -122,6 +142,14 @@ namespace QLBXMD.GUI.User
 						return;
 					}
 
+					// Lấy thông tin tài khoản
+					var taiKhoan = db.TaiKhoans.FirstOrDefault(tk => tk.MaTK == currentUser.MaTK);
+					if (taiKhoan == null)
+					{
+						MessageBox.Show("Không tìm thấy thông tin tài khoản.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+						return;
+					}
+
 					// Kiểm tra trùng số điện thoại
 					var existingSDT = db.KhachHangs.FirstOrDefault(kh => kh.SDT == txtSDT.Text.Trim() && kh.MaKH != khachHang.MaKH);
 					if (existingSDT != null)
@@ -131,11 +159,26 @@ namespace QLBXMD.GUI.User
 						return;
 					}
 
-					// Cập nhật thông tin
+					// Kiểm tra trùng email
+					if (!string.IsNullOrWhiteSpace(txtEmail.Text))
+					{
+						var existingEmail = db.TaiKhoans.FirstOrDefault(tk => tk.Email == txtEmail.Text.Trim() && tk.MaTK != currentUser.MaTK);
+						if (existingEmail != null)
+						{
+							MessageBox.Show("Email đã được sử dụng bởi tài khoản khác.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+							txtEmail.Focus();
+							return;
+						}
+					}
+
+					// Cập nhật thông tin khách hàng
 					khachHang.TenKH = txtTenKH.Text.Trim();
 					khachHang.SDT = txtSDT.Text.Trim();
 					khachHang.NamSinh = dtpNamSinh.Value.Date;
 					khachHang.GioiTinh = cboGioiTinh.SelectedItem.ToString() == "Nam";
+
+					// Cập nhật email trong tài khoản
+					taiKhoan.Email = txtEmail.Text.Trim();
 
 					db.SaveChanges();
 

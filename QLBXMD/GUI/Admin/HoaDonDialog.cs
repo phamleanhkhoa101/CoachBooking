@@ -186,7 +186,7 @@ namespace QLBXMD.GUI.Admin
 					btnCancel.BackColor = Color.FromArgb(158, 158, 158);
 					btnCancel.Location = new Point(460, 440);
 					pnlHeader.BackColor = Color.FromArgb(158, 158, 158);
-					SetReadOnly(true);
+					SetReadOnly(false);
 					break;
 			}
 		}

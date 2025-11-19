@@ -29,6 +29,10 @@
 		private void InitializeComponent()
 		{
 			this.panel1 = new System.Windows.Forms.Panel();
+			this.btnXoa = new System.Windows.Forms.Button();
+			this.btnSua = new System.Windows.Forms.Button();
+			this.btnXem = new System.Windows.Forms.Button();
+			this.btnThem = new System.Windows.Forms.Button();
 			this.lblVeXe = new System.Windows.Forms.Label();
 			this.dgvVeXe = new System.Windows.Forms.DataGridView();
 			this.cbbLoai = new System.Windows.Forms.ComboBox();
@@ -36,10 +40,6 @@
 			this.label1 = new System.Windows.Forms.Label();
 			this.txtSearch = new System.Windows.Forms.TextBox();
 			this.dgvVe = new System.Windows.Forms.DataGridView();
-			this.btnXoa = new System.Windows.Forms.Button();
-			this.btnSua = new System.Windows.Forms.Button();
-			this.btnXem = new System.Windows.Forms.Button();
-			this.btnThem = new System.Windows.Forms.Button();
 			this.panel1.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.dgvVeXe)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.dgvVe)).BeginInit();
@@ -66,6 +66,76 @@
 			this.panel1.Name = "panel1";
 			this.panel1.Size = new System.Drawing.Size(1333, 715);
 			this.panel1.TabIndex = 12;
+			// 
+			// btnXoa
+			// 
+			this.btnXoa.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.btnXoa.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(53)))), ((int)(((byte)(69)))));
+			this.btnXoa.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.btnXoa.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.btnXoa.ForeColor = System.Drawing.Color.White;
+			this.btnXoa.Image = global::QLBXMD.Properties.Resources.delete;
+			this.btnXoa.Location = new System.Drawing.Point(1186, 100);
+			this.btnXoa.Name = "btnXoa";
+			this.btnXoa.Size = new System.Drawing.Size(130, 50);
+			this.btnXoa.TabIndex = 14;
+			this.btnXoa.Text = "Xóa";
+			this.btnXoa.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+			this.btnXoa.UseVisualStyleBackColor = false;
+			this.btnXoa.Click += new System.EventHandler(this.btnXoa_Click);
+			// 
+			// btnSua
+			// 
+			this.btnSua.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.btnSua.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(193)))), ((int)(((byte)(7)))));
+			this.btnSua.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.btnSua.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.btnSua.ForeColor = System.Drawing.Color.White;
+			this.btnSua.Image = global::QLBXMD.Properties.Resources.edit;
+			this.btnSua.Location = new System.Drawing.Point(1050, 100);
+			this.btnSua.Name = "btnSua";
+			this.btnSua.Size = new System.Drawing.Size(130, 50);
+			this.btnSua.TabIndex = 13;
+			this.btnSua.Text = "Sửa";
+			this.btnSua.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+			this.btnSua.UseVisualStyleBackColor = false;
+			this.btnSua.Click += new System.EventHandler(this.btnSua_Click);
+			// 
+			// btnXem
+			// 
+			this.btnXem.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.btnXem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(123)))), ((int)(((byte)(255)))));
+			this.btnXem.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.btnXem.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.btnXem.ForeColor = System.Drawing.Color.White;
+			this.btnXem.Image = global::QLBXMD.Properties.Resources.view;
+			this.btnXem.Location = new System.Drawing.Point(912, 100);
+			this.btnXem.Name = "btnXem";
+			this.btnXem.Size = new System.Drawing.Size(130, 50);
+			this.btnXem.TabIndex = 12;
+			this.btnXem.Text = "Xem";
+			this.btnXem.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+			this.btnXem.UseVisualStyleBackColor = false;
+			this.btnXem.Click += new System.EventHandler(this.btnXem_Click);
+			// 
+			// btnThem
+			// 
+			this.btnThem.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.btnThem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(167)))), ((int)(((byte)(69)))));
+			this.btnThem.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.btnThem.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.btnThem.ForeColor = System.Drawing.Color.White;
+			this.btnThem.Image = global::QLBXMD.Properties.Resources.add;
+			this.btnThem.Location = new System.Drawing.Point(776, 100);
+			this.btnThem.Name = "btnThem";
+			this.btnThem.Size = new System.Drawing.Size(130, 50);
+			this.btnThem.TabIndex = 11;
+			this.btnThem.Text = "Thêm";
+			this.btnThem.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+			this.btnThem.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
+			this.btnThem.UseVisualStyleBackColor = false;
+			this.btnThem.Visible = false;
+			this.btnThem.Click += new System.EventHandler(this.btnThem_Click);
 			// 
 			// lblVeXe
 			// 
@@ -150,75 +220,6 @@
 			this.dgvVe.Size = new System.Drawing.Size(1293, 210);
 			this.dgvVe.TabIndex = 0;
 			this.dgvVe.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgv_CellClick);
-			// 
-			// btnXoa
-			// 
-			this.btnXoa.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnXoa.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(53)))), ((int)(((byte)(69)))));
-			this.btnXoa.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this.btnXoa.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.btnXoa.ForeColor = System.Drawing.Color.White;
-			this.btnXoa.Image = global::QLBXMD.Properties.Resources.delete;
-			this.btnXoa.Location = new System.Drawing.Point(1186, 100);
-			this.btnXoa.Name = "btnXoa";
-			this.btnXoa.Size = new System.Drawing.Size(130, 50);
-			this.btnXoa.TabIndex = 14;
-			this.btnXoa.Text = "Xóa";
-			this.btnXoa.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-			this.btnXoa.UseVisualStyleBackColor = false;
-			this.btnXoa.Click += new System.EventHandler(this.btnXoa_Click);
-			// 
-			// btnSua
-			// 
-			this.btnSua.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnSua.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(193)))), ((int)(((byte)(7)))));
-			this.btnSua.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this.btnSua.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.btnSua.ForeColor = System.Drawing.Color.White;
-			this.btnSua.Image = global::QLBXMD.Properties.Resources.edit;
-			this.btnSua.Location = new System.Drawing.Point(1050, 100);
-			this.btnSua.Name = "btnSua";
-			this.btnSua.Size = new System.Drawing.Size(130, 50);
-			this.btnSua.TabIndex = 13;
-			this.btnSua.Text = "Sửa";
-			this.btnSua.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-			this.btnSua.UseVisualStyleBackColor = false;
-			this.btnSua.Click += new System.EventHandler(this.btnSua_Click);
-			// 
-			// btnXem
-			// 
-			this.btnXem.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnXem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(0)))), ((int)(((byte)(123)))), ((int)(((byte)(255)))));
-			this.btnXem.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this.btnXem.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.btnXem.ForeColor = System.Drawing.Color.White;
-			this.btnXem.Image = global::QLBXMD.Properties.Resources.view;
-			this.btnXem.Location = new System.Drawing.Point(912, 100);
-			this.btnXem.Name = "btnXem";
-			this.btnXem.Size = new System.Drawing.Size(130, 50);
-			this.btnXem.TabIndex = 12;
-			this.btnXem.Text = "Xem";
-			this.btnXem.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-			this.btnXem.UseVisualStyleBackColor = false;
-			this.btnXem.Click += new System.EventHandler(this.btnXem_Click);
-			// 
-			// btnThem
-			// 
-			this.btnThem.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.btnThem.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(167)))), ((int)(((byte)(69)))));
-			this.btnThem.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-			this.btnThem.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.btnThem.ForeColor = System.Drawing.Color.White;
-			this.btnThem.Image = global::QLBXMD.Properties.Resources.add;
-			this.btnThem.Location = new System.Drawing.Point(776, 100);
-			this.btnThem.Name = "btnThem";
-			this.btnThem.Size = new System.Drawing.Size(130, 50);
-			this.btnThem.TabIndex = 11;
-			this.btnThem.Text = "Thêm";
-			this.btnThem.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-			this.btnThem.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-			this.btnThem.UseVisualStyleBackColor = false;
-			this.btnThem.Click += new System.EventHandler(this.btnThem_Click);
 			// 
 			// UCHoaDon
 			// 

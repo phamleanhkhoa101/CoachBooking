@@ -63,14 +63,14 @@ namespace QLBXMD.BUS
 				}
 
 				// Kiểm tra hóa đơn có thanh toán hoặc vé xe không
-				if (hoaDon.ThanhToans.Count > 0)
-				{
-					return "Không thể xóa hóa đơn đã có thanh toán.";
-				}
-				if (hoaDon.VeXes.Count > 0)
-				{
-					return "Không thể xóa hóa đơn đã có vé xe.";
-				}
+				//if (hoaDon.ThanhToans.Count > 0)
+				//{
+				//	return "Không thể xóa hóa đơn đã có thanh toán.";
+				//}
+				//if (hoaDon.VeXes.Count > 0)
+				//{
+				//	return "Không thể xóa hóa đơn đã có vé xe.";
+				//}
 
 				hoaDonDAO.Delete(maHD);
 				return "Xóa hóa đơn thành công.";

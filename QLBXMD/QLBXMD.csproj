@@ -162,6 +162,18 @@
     <Compile Include="EF\Xe.cs">
       <DependentUpon>BXMDModel.tt</DependentUpon>
     </Compile>
+    <Compile Include="GUI\Admin\CapTaiKhoanDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\Admin\CapTaiKhoanDialog.Designer.cs">
+      <DependentUpon>CapTaiKhoanDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GUI\Admin\CapTaiKhoanKhachHangDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GUI\Admin\CapTaiKhoanKhachHangDialog.Designer.cs">
+      <DependentUpon>CapTaiKhoanKhachHangDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\Admin\ChuyenXeDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -291,6 +303,12 @@
     <Compile Include="GUI\Admin\UCTaiXe.Designer.cs">
       <DependentUpon>UCTaiXe.cs</DependentUpon>
     </Compile>
+    <Compile Include="GUI\Admin\UCThanhToan.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="GUI\Admin\UCThanhToan.Designer.cs">
+      <DependentUpon>UCThanhToan.cs</DependentUpon>
+    </Compile>
     <Compile Include="GUI\Admin\UCThongTin.cs">
       <SubType>UserControl</SubType>
     </Compile>
@@ -398,6 +416,9 @@
     <Compile Include="Utils\EmailHelper.cs" />
     <Compile Include="Utils\HashHelper.cs" />
     <Compile Include="Utils\Validation.cs" />
+    <EmbeddedResource Include="GUI\Admin\CapTaiKhoanKhachHangDialog.resx">
+      <DependentUpon>CapTaiKhoanKhachHangDialog.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GUI\Admin\ChuyenXeDialog.resx">
       <DependentUpon>ChuyenXeDialog.cs</DependentUpon>
     </EmbeddedResource>
@@ -464,6 +485,9 @@
     <EmbeddedResource Include="GUI\Admin\UCTaiXe.resx">
       <DependentUpon>UCTaiXe.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="GUI\Admin\UCThanhToan.resx">
+      <DependentUpon>UCThanhToan.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GUI\Admin\UCThongTin.resx">
       <DependentUpon>UCThongTin.cs</DependentUpon>
     </EmbeddedResource>
@@ -523,6 +547,7 @@
       <Generator>EntityModelCodeGenerator</Generator>
       <LastGenOutput>BXMDModel.Designer.cs</LastGenOutput>
     </EntityDeploy>
+    <None Include="Docs\CAP_TAI_KHOAN_CHO_NHAN_VIEN.md" />
     <None Include="Docs\HOANTHANH_THANHTOAN_TRACKING.md" />
     <None Include="Docs\HUONG_DAN_TRANG_THONG_KE.md" />
     <None Include="EF\BXMDModel.edmx.diagram">
@@ -552,7 +577,10 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="API\" />
+    <Folder Include="App_Start\" />
+  </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>

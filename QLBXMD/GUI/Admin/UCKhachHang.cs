@@ -23,10 +23,20 @@ namespace QLBXMD.GUI.Admin
 		private void Dgv_SelectionChanged(object sender, EventArgs e)
 		{
 			bool has = dgv.SelectedRows.Count > 0 && dgv.SelectedRows[0].Cells[0].Value != null;
-			btnThem.Enabled = has;
+			btnXem.Enabled = has;
 			btnSua.Enabled = has;
 			btnXoa.Enabled = has;
-			btnGanTaiKhoan.Enabled = has;
+			
+			// ✅ Chỉ enable nút "Cấp tài khoản" nếu khách hàng CHƯA có tài khoản
+			if (has && dgv.SelectedRows[0].Cells["TaiKhoan"].Value != null)
+			{
+				string taiKhoan = dgv.SelectedRows[0].Cells["TaiKhoan"].Value.ToString();
+				btnGanTaiKhoan.Enabled = (taiKhoan == "Chưa gắn" || taiKhoan == "Chưa cấp");
+			}
+			else
+			{
+				btnGanTaiKhoan.Enabled = false;
+			}
 		}
 
 		private void UCKhachHang_Load(object sender, EventArgs e)
@@ -36,7 +46,12 @@ namespace QLBXMD.GUI.Admin
 				SetupGridHeaders();
 				LoadData();
 				InitCbb();
-				btnThem.Enabled = btnSua.Enabled = btnXoa.Enabled = btnGanTaiKhoan.Enabled = false;
+				// ✅ Nút Thêm luôn enabled, các nút khác disabled cho đến khi chọn khách hàng
+				btnThem.Enabled = true;
+				btnXem.Enabled = false;
+				btnSua.Enabled = false;
+				btnXoa.Enabled = false;
+				btnGanTaiKhoan.Enabled = false;
 			}
 			catch (Exception ex)
 			{
@@ -74,7 +89,7 @@ namespace QLBXMD.GUI.Admin
 				var list = _bus.GetAll() ?? new List<KhachHang>();
 				_data = list
 					.Select(kh => {
-						string taiKhoan = "Chưa gắn";
+						string taiKhoan = "Chưa cấp"; // ✅ Đổi "Chưa gắn" → "Chưa cấp"
 						if (kh.MaTK.HasValue && kh.TaiKhoan != null)
 						{
 							taiKhoan = kh.TaiKhoan.TenDangNhap;
@@ -312,28 +327,40 @@ namespace QLBXMD.GUI.Admin
 
 			int maKH = int.Parse(r.Cells[0].Value.ToString());
 			var kh = _bus.GetById(maKH);
-			if (kh == null) return;
-
-			using (var dialog = new GanTaiKhoanDialog())
+			if (kh == null)
 			{
-				var availableTK = _taiKhoanBUS.GetAvailableAccountsForEdit(kh.MaTK)
-					.Select(tk => new KeyValuePair<int, string>(
-						tk.MaTK,
-						$"{tk.TenDangNhap} ({tk.Email}) - {tk.Quyen?.TenQuyen}"
-					))
-					.ToList();
+				MessageBox.Show("Không tìm thấy khách hàng.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				return;
+			}
 
-				dialog.BindTaiKhoan(availableTK, kh.MaTK);
+			// ✅ Kiểm tra đã có tài khoản chưa
+			if (kh.MaTK.HasValue && kh.MaTK.Value > 0)
+			{
+				MessageBox.Show(
+					$"Khách hàng '{kh.TenKH}' đã có tài khoản.\n\n" +
+					$"Tên đăng nhập: {kh.TaiKhoan?.TenDangNhap}\n\n" +
+					"Không thể cấp tài khoản mới.",
+					"Thông báo",
+					MessageBoxButtons.OK,
+					MessageBoxIcon.Information
+				);
+				return;
+			}
 
+			// ✅ Mở form CẤP TÀI KHOẢN mới (dành cho khách hàng)
+			using (var dialog = new CapTaiKhoanKhachHangDialog(kh))
+			{
 				if (dialog.ShowDialog() == DialogResult.OK)
 				{
-					kh.MaTK = dialog.SelectedMaTK;
-					string result = _bus.Update(kh);
-					MessageBox.Show(result, "Thông báo", MessageBoxButtons.OK,
-						result.Contains("thành công") ? MessageBoxIcon.Information : MessageBoxIcon.Error);
+					// Reload data
+					LoadData();
 
-					if (result.Contains("thành công"))
-						LoadData();
+					MessageBox.Show(
+						$"✅ Đã cấp tài khoản thành công cho khách hàng '{kh.TenKH}'!",
+						"Thành công",
+						MessageBoxButtons.OK,
+						MessageBoxIcon.Information
+					);
 				}
 			}
 		}
@@ -405,7 +432,7 @@ namespace QLBXMD.GUI.Admin
 
 		private void EnableBtn(bool enabled)
 		{
-			btnThem.Enabled = enabled;
+			btnXem.Enabled = enabled;
 			btnSua.Enabled = enabled;
 			btnXoa.Enabled = enabled;
 			btnGanTaiKhoan.Enabled = enabled;

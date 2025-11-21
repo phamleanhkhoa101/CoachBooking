@@ -319,7 +319,10 @@ namespace QLBXMD.GUI.Admin
 
 		private void thôngTinToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			ShowControl(new UCThongTin());
+			//ShowControl(new UCThongTin());
+			var ucThongTin = new UCThongTin();
+			ucThongTin.SetData(taiKhoan, nhanVien);
+			ShowControl(ucThongTin);
 		}
 
 		private void đăngXuấtToolStripMenuItem_Click(object sender, EventArgs e)

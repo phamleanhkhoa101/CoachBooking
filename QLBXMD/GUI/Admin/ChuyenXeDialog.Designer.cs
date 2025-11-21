@@ -36,6 +36,7 @@
 			this.dtpDenDuKien = new System.Windows.Forms.DateTimePicker();
 			this.numGiaVe = new System.Windows.Forms.NumericUpDown();
 			this.lblGiaVeInfo = new System.Windows.Forms.Label();
+			this.lblConflictInfo = new System.Windows.Forms.Label();
 			this.btnPrimary = new System.Windows.Forms.Button();
 			this.btnCancel = new System.Windows.Forms.Button();
 			this.label1 = new System.Windows.Forms.Label();
@@ -97,7 +98,7 @@
 			this.dtpKhoiHanh.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
 			this.dtpKhoiHanh.Location = new System.Drawing.Point(216, 304);
 			this.dtpKhoiHanh.Name = "dtpKhoiHanh";
-			this.dtpKhoiHanh.Size = new System.Drawing.Size(220, 30);
+			this.dtpKhoiHanh.Size = new System.Drawing.Size(265, 30);
 			this.dtpKhoiHanh.TabIndex = 4;
 			// 
 			// dtpDenDuKien
@@ -108,7 +109,7 @@
 			this.dtpDenDuKien.Location = new System.Drawing.Point(216, 352);
 			this.dtpDenDuKien.Name = "dtpDenDuKien";
 			this.dtpDenDuKien.ShowCheckBox = true;
-			this.dtpDenDuKien.Size = new System.Drawing.Size(220, 30);
+			this.dtpDenDuKien.Size = new System.Drawing.Size(265, 30);
 			this.dtpDenDuKien.TabIndex = 5;
 			// 
 			// numGiaVe
@@ -126,7 +127,7 @@
             0,
             0});
 			this.numGiaVe.Name = "numGiaVe";
-			this.numGiaVe.Size = new System.Drawing.Size(220, 30);
+			this.numGiaVe.Size = new System.Drawing.Size(265, 30);
 			this.numGiaVe.TabIndex = 6;
 			this.numGiaVe.ThousandsSeparator = true;
 			// 
@@ -135,16 +136,26 @@
 			this.lblGiaVeInfo.AutoSize = true;
 			this.lblGiaVeInfo.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblGiaVeInfo.ForeColor = System.Drawing.Color.Green;
-			this.lblGiaVeInfo.Location = new System.Drawing.Point(216, 425);
+			this.lblGiaVeInfo.Location = new System.Drawing.Point(211, 441);
 			this.lblGiaVeInfo.Name = "lblGiaVeInfo";
 			this.lblGiaVeInfo.Size = new System.Drawing.Size(0, 25);
 			this.lblGiaVeInfo.TabIndex = 7;
+			// 
+			// lblConflictInfo
+			// 
+			this.lblConflictInfo.AutoSize = true;
+			this.lblConflictInfo.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblConflictInfo.ForeColor = System.Drawing.Color.Red;
+			this.lblConflictInfo.Location = new System.Drawing.Point(88, 479);
+			this.lblConflictInfo.Name = "lblConflictInfo";
+			this.lblConflictInfo.Size = new System.Drawing.Size(0, 25);
+			this.lblConflictInfo.TabIndex = 18;
 			// 
 			// btnPrimary
 			// 
 			this.btnPrimary.BackColor = System.Drawing.Color.SpringGreen;
 			this.btnPrimary.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.btnPrimary.Location = new System.Drawing.Point(365, 476);
+			this.btnPrimary.Location = new System.Drawing.Point(365, 522);
 			this.btnPrimary.Name = "btnPrimary";
 			this.btnPrimary.Size = new System.Drawing.Size(100, 44);
 			this.btnPrimary.TabIndex = 8;
@@ -156,7 +167,7 @@
 			// 
 			this.btnCancel.BackColor = System.Drawing.Color.LightCoral;
 			this.btnCancel.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-			this.btnCancel.Location = new System.Drawing.Point(475, 476);
+			this.btnCancel.Location = new System.Drawing.Point(475, 522);
 			this.btnCancel.Name = "btnCancel";
 			this.btnCancel.Size = new System.Drawing.Size(101, 44);
 			this.btnCancel.TabIndex = 9;
@@ -260,7 +271,7 @@
 			this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.SystemColors.Window;
-			this.ClientSize = new System.Drawing.Size(690, 575);
+			this.ClientSize = new System.Drawing.Size(690, 600);
 			this.Controls.Add(this.panel1);
 			this.Controls.Add(this.label7);
 			this.Controls.Add(this.label6);
@@ -271,6 +282,7 @@
 			this.Controls.Add(this.label1);
 			this.Controls.Add(this.btnCancel);
 			this.Controls.Add(this.btnPrimary);
+			this.Controls.Add(this.lblConflictInfo);
 			this.Controls.Add(this.lblGiaVeInfo);
 			this.Controls.Add(this.numGiaVe);
 			this.Controls.Add(this.dtpDenDuKien);
@@ -304,6 +316,7 @@
 		private System.Windows.Forms.DateTimePicker dtpDenDuKien;
 		private System.Windows.Forms.NumericUpDown numGiaVe;
 		private System.Windows.Forms.Label lblGiaVeInfo;
+		private System.Windows.Forms.Label lblConflictInfo;
 		private System.Windows.Forms.Button btnPrimary;
 		private System.Windows.Forms.Button btnCancel;
 		private System.Windows.Forms.Label label1;

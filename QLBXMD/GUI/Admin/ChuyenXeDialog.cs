@@ -44,6 +44,10 @@ namespace QLBXMD.GUI.Admin
 			// Thêm sự kiện khi chọn xe hoặc tuyến
 			cbbXe.SelectedIndexChanged += CbbXeOrTuyen_SelectedIndexChanged;
 			cbbTuyen.SelectedIndexChanged += CbbXeOrTuyen_SelectedIndexChanged;
+			dtpKhoiHanh.ValueChanged += DtpKhoiHanh_ValueChanged;
+			
+			// Mặc định đến dự kiến không được chọn
+			dtpDenDuKien.Checked = false;
 		}
 
 		private void CbbXeOrTuyen_SelectedIndexChanged(object sender, EventArgs e)
@@ -53,6 +57,15 @@ namespace QLBXMD.GUI.Admin
 				return;
 
 			AutoLoadGiaVe();
+			CheckTripConflict();
+		}
+
+		private void DtpKhoiHanh_ValueChanged(object sender, EventArgs e)
+		{
+			if (Mode != ChuyenXeDialogMode.Add && Mode != ChuyenXeDialogMode.Edit)
+				return;
+
+			CheckTripConflict();
 		}
 
 		private void AutoLoadGiaVe()
@@ -105,6 +118,58 @@ namespace QLBXMD.GUI.Admin
 			}
 		}
 
+		private void CheckTripConflict()
+		{
+			if (SelectedMaXe == null)
+			{
+				lblConflictInfo.Text = "";
+				btnPrimary.Enabled = true;
+				return;
+			}
+
+			try
+			{
+				using (var db = new BXMDEntities())
+				{
+					var newStart = dtpKhoiHanh.Value;
+					var newEnd = DenDuKienValue ?? newStart.AddHours(12); // Mặc định 12h nếu không có đến dự kiến
+
+					var conflictTrip = db.ChuyenXes.AsNoTracking()
+						.Where(c => c.MaXe == SelectedMaXe.Value)
+						.ToList()
+						.FirstOrDefault(c => 
+						{
+							var existStart = c.NgayGioKhoiHanh;
+							var existEnd = c.NgayGioDenDuKien ?? existStart.AddHours(12);
+							
+							// Kiểm tra trùng thời gian: newStart < existEnd && newEnd > existStart
+							return newStart < existEnd && newEnd > existStart;
+						});
+
+					if (conflictTrip != null)
+					{
+						var khoiHanh = conflictTrip.NgayGioKhoiHanh.ToString("HH:mm");
+						var denDuKien = conflictTrip.NgayGioDenDuKien?.ToString("HH:mm") ?? "Chưa xác định";
+						
+						lblConflictInfo.Text = $"⚠ Xe đã có chuyến: {khoiHanh} - {denDuKien}";
+						lblConflictInfo.ForeColor = Color.Red;
+						btnPrimary.Enabled = false;
+					}
+					else
+					{
+						lblConflictInfo.Text = "";
+						btnPrimary.Enabled = true;
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				lblConflictInfo.Text = "✗ Lỗi kiểm tra: " + ex.Message;
+				lblConflictInfo.ForeColor = Color.Red;
+				btnPrimary.Enabled = true;
+			}
+		}
+
 		public void BindXe(IEnumerable<KeyValuePair<int, string>> items)
 		{
 			cbbXe.DataSource = items?.ToList();
@@ -137,6 +202,8 @@ namespace QLBXMD.GUI.Admin
 					txtMaChuyen.Enabled = false;
 					SetReadOnly(false);
 					lblGiaVeInfo.Visible = true;
+					lblConflictInfo.Visible = true;
+					AutoLoadGiaVe();
 					break;
 				case ChuyenXeDialogMode.Edit:
 					Text = "Sửa chuyến xe";
@@ -144,6 +211,7 @@ namespace QLBXMD.GUI.Admin
 					txtMaChuyen.Enabled = false;
 					SetReadOnly(false);
 					lblGiaVeInfo.Visible = true;
+					lblConflictInfo.Visible = true;
 					break;
 				case ChuyenXeDialogMode.View:
 					Text = "Xem chuyến xe";
@@ -151,6 +219,7 @@ namespace QLBXMD.GUI.Admin
 					btnCancel.Text = "Đóng";
 					SetReadOnly(false);
 					lblGiaVeInfo.Visible = false;
+					lblConflictInfo.Visible = false;
 					break;
 				case ChuyenXeDialogMode.Delete:
 					Text = "Xóa chuyến xe";
@@ -159,6 +228,7 @@ namespace QLBXMD.GUI.Admin
 					SetReadOnly(true);
 					btnPrimary.Visible = true;
 					lblGiaVeInfo.Visible = false;
+					lblConflictInfo.Visible = false;
 					break;
 			}
 		}
@@ -195,5 +265,6 @@ namespace QLBXMD.GUI.Admin
 			this.DialogResult = DialogResult.Cancel;
 			this.Close();
 		}
+
 	}
 }

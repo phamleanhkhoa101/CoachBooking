@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 using QLBXMD.BUS;
 using QLBXMD.EF;
 using QLBXMD.GUI.User;
+using QLBXMD.Utils;
 
 namespace QLBXMD.GUI.Admin
 {
@@ -34,7 +36,23 @@ namespace QLBXMD.GUI.Admin
 		public void SetData(TaiKhoan taiKhoan, NhanVien nhanVien)
 		{
 			_taiKhoan = taiKhoan;
-			_nhanVien = nhanVien;
+			// If nhanVien is not provided, try to load from DB using taiKhoan.MaTK
+			if (nhanVien == null && taiKhoan != null)
+			{
+				try
+				{
+					using (var db = new BXMDEntities())
+					{
+						_nhanVien = db.NhanViens.FirstOrDefault(n => n.MaTK == taiKhoan.MaTK);
+					}
+				}
+				catch { /* ignore DB errors here; LoadData will handle nulls */ }
+			}
+			else
+			{
+				_nhanVien = nhanVien;
+			}
+
 			LoadData();
 			SetEditMode(false);
 		}
@@ -43,21 +61,51 @@ namespace QLBXMD.GUI.Admin
 		{
 			if (_nhanVien != null)
 			{
-				txtMaNV.Text = _nhanVien.MaNV.ToString();
-				txtTenNV.Text = _nhanVien.TenNV;
-				dtpNamSinh.Value = _nhanVien.NamSinh;
-				txtDiaChi.Text = _nhanVien.DiaChi;
-				txtSDT.Text = _nhanVien.SDT;
-				cbbGioiTinh.SelectedIndex = _nhanVien.GioiTinh == true ? 0 : 1;
-				cbbTrangThai.SelectedIndex = _nhanVien.TrangThai == true ? 0 : 1;
+				try
+				{
+					txtMaNV.Text = _nhanVien.MaNV.ToString();
+					txtTenNV.Text = _nhanVien.TenNV;
+					// Ensure NamSinh fits within DateTimePicker range
+					var ns = _nhanVien.NamSinh;
+					if (ns < dtpNamSinh.MinDate) ns = dtpNamSinh.MinDate;
+					if (ns > dtpNamSinh.MaxDate) ns = dtpNamSinh.MaxDate;
+					dtpNamSinh.Value = ns;
+					txtDiaChi.Text = _nhanVien.DiaChi;
+					txtSDT.Text = _nhanVien.SDT;
+					cbbGioiTinh.SelectedIndex = _nhanVien.GioiTinh == true ? 0 : 1;
+					cbbTrangThai.SelectedIndex = _nhanVien.TrangThai == true ? 0 : 1;
+				}
+				catch (Exception ex)
+				{
+					// If any property access fails, clear fields to avoid exceptions
+					Console.WriteLine("LoadData NhanVien error: " + ex.Message);
+					txtMaNV.Clear();
+					txtTenNV.Clear();
+					dtpNamSinh.Value = dtpNamSinh.MinDate;
+					txtDiaChi.Clear();
+					txtSDT.Clear();
+					cbbGioiTinh.SelectedIndex = -1;
+					cbbTrangThai.SelectedIndex = -1;
+				}
 			}
 
 			if (_taiKhoan != null)
 			{
-				txtMaTK.Text = _taiKhoan.MaTK.ToString();
-				txtTenDangNhap.Text = _taiKhoan.TenDangNhap;
-				txtEmail.Text = _taiKhoan.Email;
-				txtQuyen.Text = _taiKhoan.Quyen?.TenQuyen ?? "N/A";
+				try
+				{
+					txtMaTK.Text = _taiKhoan.MaTK.ToString();
+					txtTenDangNhap.Text = _taiKhoan.TenDangNhap;
+					txtEmail.Text = _taiKhoan.Email;
+					txtQuyen.Text = _taiKhoan.Quyen?.TenQuyen ?? "N/A";
+				}
+				catch (Exception ex)
+				{
+					Console.WriteLine("LoadData TaiKhoan error: " + ex.Message);
+					txtMaTK.Clear();
+					txtTenDangNhap.Clear();
+					txtEmail.Clear();
+					txtQuyen.Clear();
+				}
 			}
 		}
 
@@ -104,6 +152,13 @@ namespace QLBXMD.GUI.Admin
 
 			try
 			{
+				// Guard: ensure we have a valid _nhanVien to update
+				if (_nhanVien == null)
+				{
+					MessageBox.Show("Không có thông tin nhân viên để cập nhật.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					return;
+				}
+
 				using (var db = new BXMDEntities())
 				{
 					var nv = db.NhanViens.Find(_nhanVien.MaNV);
@@ -125,6 +180,10 @@ namespace QLBXMD.GUI.Admin
 
 						MessageBox.Show("Cập nhật thông tin thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
 						SetEditMode(false);
+					}
+					else
+					{
+						MessageBox.Show("Không tìm thấy nhân viên trong cơ sở dữ liệu.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
 					}
 				}
 			}
@@ -340,7 +399,7 @@ namespace QLBXMD.GUI.Admin
 				return;
 			}
 
-			if (_taiKhoan.MatKhau != txtMatKhau.Text)
+			if (_taiKhoan.MatKhau != HashHelper.ComputeHash(txtMatKhau.Text))
 			{
 				MessageBox.Show("Mật khẩu không đúng.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				txtMatKhau.Focus();

@@ -147,7 +147,7 @@ CREATE TABLE ThanhToan (
     TongTien DECIMAL(12,0) DEFAULT 0,
     NgayTT DATETIME NOT NULL,
     PhuongThuc NVARCHAR(50) NOT NULL,
-    FOREIGN KEY (MaHD) REFERENCES HoaDon(MaHD)
+    FOREIGN KEY (MaHD) REFERENCES HoaDon(MaHD) on delete cascade
 );
 
 -- 14. Vé xe
@@ -159,7 +159,7 @@ CREATE TABLE VeXe (
     GiaVe DECIMAL(12,0) DEFAULT 0,
     UNIQUE(MaChuyen, ChoNgoi),
     FOREIGN KEY (MaChuyen) REFERENCES ChuyenXe(MaChuyen),
-    FOREIGN KEY (MaHD) REFERENCES HoaDon(MaHD)
+    FOREIGN KEY (MaHD) REFERENCES HoaDon(MaHD) on delete cascade
 );
 --trg
 --1
@@ -574,4 +574,4 @@ INSERT INTO ThanhToan (MaHD, NgayTT, PhuongThuc) VALUES
 (11, '2025-04-23 09:30:00', N'Tiền mặt'),
 (12, '2025-04-23 11:00:00', N'Tiền mặt');
 
-select * from ChuyenXe
+select * from NhanVien where MaTk=1

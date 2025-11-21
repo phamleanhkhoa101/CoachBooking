@@ -33,6 +33,28 @@ namespace QLBXMD.BUS
 				return "Giá vé phải lớn hơn 0.";
 			}
 
+			// Prevent same vehicle having a trip at the same minute
+			try
+			{
+				using (var db = new BXMDEntities())
+				{
+					var target = cx.NgayGioKhoiHanh;
+					var start = new DateTime(target.Year, target.Month, target.Day, target.Hour, target.Minute, 0);
+					var end = start.AddMinutes(1);
+
+					bool exists = db.ChuyenXes.Any(c => c.MaXe == cx.MaXe && c.NgayGioKhoiHanh >= start && c.NgayGioKhoiHanh < end);
+					if (exists)
+					{
+						return "Xe này đã được lên chuyến vào cùng ngày giờ. Vui lòng chọn xe khác hoặc thay đổi thời gian khởi hành.";
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				// If DB check fails, return error
+				return "Kiểm tra chuyến bị lỗi: " + ex.Message;
+			}
+
 			try
 			{
 				chuyenXeDAO.Add(cx);
@@ -59,6 +81,27 @@ namespace QLBXMD.BUS
 			if (cx.GiaVeThucTe == null || cx.GiaVeThucTe <= 0)
 			{
 				return "Giá vé phải lớn hơn 0.";
+			}
+
+			// Prevent updating to a datetime that conflicts with another trip for same vehicle (same minute)
+			try
+			{
+				using (var db = new BXMDEntities())
+				{
+					var target = cx.NgayGioKhoiHanh;
+					var start = new DateTime(target.Year, target.Month, target.Day, target.Hour, target.Minute, 0);
+					var end = start.AddMinutes(1);
+
+					bool conflict = db.ChuyenXes.Any(c => c.MaXe == cx.MaXe && c.NgayGioKhoiHanh >= start && c.NgayGioKhoiHanh < end && c.MaChuyen != cx.MaChuyen);
+					if (conflict)
+					{
+						return "Không thể cập nhật: cùng xe đã có chuyến vào cùng ngày giờ khác. Vui lòng chọn thời gian khác.";
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				return "Kiểm tra xung đột chuyến bị lỗi: " + ex.Message;
 			}
 
 			try

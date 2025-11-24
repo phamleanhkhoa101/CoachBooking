@@ -34,6 +34,9 @@ namespace QLBXMD.DAO
 				existingNV.DiaChi = nv.DiaChi;
 				existingNV.SDT = nv.SDT;
 				existingNV.NamSinh = nv.NamSinh;
+				// Persist associated account and status as well
+				existingNV.MaTK = nv.MaTK;
+				existingNV.TrangThai = nv.TrangThai;
 				db.SaveChanges();
 			}
 		}

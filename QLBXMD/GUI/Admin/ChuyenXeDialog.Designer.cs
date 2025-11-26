@@ -146,7 +146,7 @@
 			this.lblConflictInfo.AutoSize = true;
 			this.lblConflictInfo.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
 			this.lblConflictInfo.ForeColor = System.Drawing.Color.Red;
-			this.lblConflictInfo.Location = new System.Drawing.Point(88, 479);
+			this.lblConflictInfo.Location = new System.Drawing.Point(25, 479);
 			this.lblConflictInfo.Name = "lblConflictInfo";
 			this.lblConflictInfo.Size = new System.Drawing.Size(0, 25);
 			this.lblConflictInfo.TabIndex = 18;

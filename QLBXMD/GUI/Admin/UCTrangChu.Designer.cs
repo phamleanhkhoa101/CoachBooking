@@ -47,12 +47,18 @@
 			this.lblKhachHangValue = new System.Windows.Forms.Label();
 			this.lblWelcome = new System.Windows.Forms.Label();
 			this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
+			this.lblFrom = new System.Windows.Forms.Label();
+			this.lblTo = new System.Windows.Forms.Label();
+			this.dtpFrom = new System.Windows.Forms.DateTimePicker();
+			this.dtpTo = new System.Windows.Forms.DateTimePicker();
+			this.dgvVeSold = new System.Windows.Forms.DataGridView();
 			this.pnlCard4.SuspendLayout();
 			this.pnlCard3.SuspendLayout();
 			this.pnlIcon3.SuspendLayout();
 			this.pnlCard2.SuspendLayout();
 			this.pnlCard1.SuspendLayout();
 			this.flowLayoutPanel1.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.dgvVeSold)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// pnlCard4
@@ -262,11 +268,67 @@
 			this.flowLayoutPanel1.Controls.Add(this.pnlCard2);
 			this.flowLayoutPanel1.Controls.Add(this.pnlCard3);
 			this.flowLayoutPanel1.Controls.Add(this.pnlCard4);
-			this.flowLayoutPanel1.Location = new System.Drawing.Point(30, 148);
+			this.flowLayoutPanel1.Location = new System.Drawing.Point(57, 113);
 			this.flowLayoutPanel1.MinimumSize = new System.Drawing.Size(1000, 160);
 			this.flowLayoutPanel1.Name = "flowLayoutPanel1";
 			this.flowLayoutPanel1.Size = new System.Drawing.Size(1224, 160);
 			this.flowLayoutPanel1.TabIndex = 10;
+			// 
+			// lblFrom
+			// 
+			this.lblFrom.AutoSize = true;
+			this.lblFrom.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblFrom.Location = new System.Drawing.Point(24, 307);
+			this.lblFrom.Name = "lblFrom";
+			this.lblFrom.Size = new System.Drawing.Size(90, 25);
+			this.lblFrom.TabIndex = 11;
+			this.lblFrom.Text = "Từ ngày:";
+			// 
+			// lblTo
+			// 
+			this.lblTo.AutoSize = true;
+			this.lblTo.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.lblTo.Location = new System.Drawing.Point(285, 307);
+			this.lblTo.Name = "lblTo";
+			this.lblTo.Size = new System.Drawing.Size(102, 25);
+			this.lblTo.TabIndex = 13;
+			this.lblTo.Text = "Đến ngày:";
+			// 
+			// dtpFrom
+			// 
+			this.dtpFrom.CustomFormat = "dd/MM/yy";
+			this.dtpFrom.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.dtpFrom.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
+			this.dtpFrom.Location = new System.Drawing.Point(120, 304);
+			this.dtpFrom.Name = "dtpFrom";
+			this.dtpFrom.Size = new System.Drawing.Size(120, 30);
+			this.dtpFrom.TabIndex = 12;
+			// 
+			// dtpTo
+			// 
+			this.dtpTo.CustomFormat = "dd/MM/yy";
+			this.dtpTo.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.dtpTo.Format = System.Windows.Forms.DateTimePickerFormat.Custom;
+			this.dtpTo.Location = new System.Drawing.Point(402, 304);
+			this.dtpTo.Name = "dtpTo";
+			this.dtpTo.Size = new System.Drawing.Size(120, 30);
+			this.dtpTo.TabIndex = 14;
+			// 
+			// dgvVeSold
+			// 
+			this.dgvVeSold.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.dgvVeSold.AutoSizeColumnsMode = System.Windows.Forms.DataGridViewAutoSizeColumnsMode.Fill;
+			this.dgvVeSold.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+			this.dgvVeSold.Location = new System.Drawing.Point(20, 358);
+			this.dgvVeSold.Name = "dgvVeSold";
+			this.dgvVeSold.ReadOnly = true;
+			this.dgvVeSold.RowHeadersWidth = 62;
+			this.dgvVeSold.RowTemplate.Height = 28;
+			this.dgvVeSold.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
+			this.dgvVeSold.Size = new System.Drawing.Size(1309, 350);
+			this.dgvVeSold.TabIndex = 16;
 			// 
 			// UCTrangChu
 			// 
@@ -274,6 +336,11 @@
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.Color.White;
 			this.Controls.Add(this.flowLayoutPanel1);
+			this.Controls.Add(this.lblFrom);
+			this.Controls.Add(this.dtpFrom);
+			this.Controls.Add(this.lblTo);
+			this.Controls.Add(this.dtpTo);
+			this.Controls.Add(this.dgvVeSold);
 			this.Controls.Add(this.lblWelcome);
 			this.Name = "UCTrangChu";
 			this.Size = new System.Drawing.Size(1349, 728);
@@ -284,6 +351,7 @@
 			this.pnlCard2.ResumeLayout(false);
 			this.pnlCard1.ResumeLayout(false);
 			this.flowLayoutPanel1.ResumeLayout(false);
+			((System.ComponentModel.ISupportInitialize)(this.dgvVeSold)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -310,5 +378,10 @@
 		private System.Windows.Forms.Label lblWelcome;
 		private System.Windows.Forms.Label lblIcon2;
 		private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel1;
+		private System.Windows.Forms.Label lblFrom;
+		private System.Windows.Forms.Label lblTo;
+		private System.Windows.Forms.DateTimePicker dtpFrom;
+		private System.Windows.Forms.DateTimePicker dtpTo;
+		private System.Windows.Forms.DataGridView dgvVeSold;
 	}
 }

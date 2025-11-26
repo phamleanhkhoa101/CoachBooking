@@ -1,4 +1,4 @@
-namespace QLBXMD.GUI.Admin
+﻿namespace QLBXMD.GUI.Admin
 {
 	partial class TaiXeDialog
 	{
@@ -134,8 +134,8 @@ namespace QLBXMD.GUI.Admin
 			this.cbbGioiTinh.Font = new System.Drawing.Font("Segoe UI", 10F);
 			this.cbbGioiTinh.FormattingEnabled = true;
 			this.cbbGioiTinh.Items.AddRange(new object[] {
-            "Nam",
-            "N?"});
+				"Nam",
+				"Nữ"});
 			this.cbbGioiTinh.Location = new System.Drawing.Point(220, 317);
 			this.cbbGioiTinh.Name = "cbbGioiTinh";
 			this.cbbGioiTinh.Size = new System.Drawing.Size(340, 36);
@@ -147,8 +147,8 @@ namespace QLBXMD.GUI.Admin
 			this.cbbTrangThai.Font = new System.Drawing.Font("Segoe UI", 10F);
 			this.cbbTrangThai.FormattingEnabled = true;
 			this.cbbTrangThai.Items.AddRange(new object[] {
-            "Ho?t ??ng",
-            "Ng?ng ho?t ??ng"});
+				"Hoạt động",
+				"Ngừng hoạt động"});
 			this.cbbTrangThai.Location = new System.Drawing.Point(220, 617);
 			this.cbbTrangThai.Name = "cbbTrangThai";
 			this.cbbTrangThai.Size = new System.Drawing.Size(250, 36);
@@ -166,7 +166,7 @@ namespace QLBXMD.GUI.Admin
 			this.btnPrimary.Name = "btnPrimary";
 			this.btnPrimary.Size = new System.Drawing.Size(100, 45);
 			this.btnPrimary.TabIndex = 10;
-			this.btnPrimary.Text = "L?u";
+			this.btnPrimary.Text = "Lưu";
 			this.btnPrimary.UseVisualStyleBackColor = false;
 			this.btnPrimary.Click += new System.EventHandler(this.btnPrimary_Click);
 			// 
@@ -182,7 +182,7 @@ namespace QLBXMD.GUI.Admin
 			this.btnCancel.Name = "btnCancel";
 			this.btnCancel.Size = new System.Drawing.Size(100, 45);
 			this.btnCancel.TabIndex = 11;
-			this.btnCancel.Text = "H?y";
+			this.btnCancel.Text = "Hủy";
 			this.btnCancel.UseVisualStyleBackColor = false;
 			this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
 			// 
@@ -195,7 +195,7 @@ namespace QLBXMD.GUI.Admin
 			this.lblMaTX.Name = "lblMaTX";
 			this.lblMaTX.Size = new System.Drawing.Size(95, 28);
 			this.lblMaTX.TabIndex = 12;
-			this.lblMaTX.Text = "M� t�i x?:";
+			this.lblMaTX.Text = "Mã tài xế:";
 			// 
 			// label2
 			// 
@@ -206,7 +206,7 @@ namespace QLBXMD.GUI.Admin
 			this.label2.Name = "label2";
 			this.label2.Size = new System.Drawing.Size(100, 28);
 			this.label2.TabIndex = 13;
-			this.label2.Text = "T�n t�i x?:";
+			this.label2.Text = "Tên tài xế:";
 			// 
 			// label3
 			// 
@@ -217,7 +217,7 @@ namespace QLBXMD.GUI.Admin
 			this.label3.Name = "label3";
 			this.label3.Size = new System.Drawing.Size(100, 28);
 			this.label3.TabIndex = 14;
-			this.label3.Text = "N?m sinh:";
+			this.label3.Text = "Năm sinh:";
 			// 
 			// label4
 			// 
@@ -239,7 +239,7 @@ namespace QLBXMD.GUI.Admin
 			this.label5.Name = "label5";
 			this.label5.Size = new System.Drawing.Size(91, 28);
 			this.label5.TabIndex = 16;
-			this.label5.Text = "Gi?i t�nh:";
+			this.label5.Text = "Giới tính:";
 			// 
 			// label6
 			// 
@@ -250,7 +250,7 @@ namespace QLBXMD.GUI.Admin
 			this.label6.Name = "label6";
 			this.label6.Size = new System.Drawing.Size(132, 28);
 			this.label6.TabIndex = 17;
-			this.label6.Text = "S? ?i?n tho?i:";
+			this.label6.Text = "Số điện thoại:";
 			// 
 			// label7
 			// 
@@ -261,7 +261,7 @@ namespace QLBXMD.GUI.Admin
 			this.label7.Name = "label7";
 			this.label7.Size = new System.Drawing.Size(76, 28);
 			this.label7.TabIndex = 18;
-			this.label7.Text = "??a ch?:";
+			this.label7.Text = "Địa chỉ:";
 			// 
 			// label8
 			// 
@@ -272,7 +272,7 @@ namespace QLBXMD.GUI.Admin
 			this.label8.Name = "label8";
 			this.label8.Size = new System.Drawing.Size(89, 28);
 			this.label8.TabIndex = 19;
-			this.label8.Text = "B?ng l�i:";
+			this.label8.Text = "Bằng lái:";
 			// 
 			// label9
 			// 
@@ -283,7 +283,7 @@ namespace QLBXMD.GUI.Admin
 			this.label9.Name = "label9";
 			this.label9.Size = new System.Drawing.Size(98, 28);
 			this.label9.TabIndex = 20;
-			this.label9.Text = "Ng�y c?p:";
+			this.label9.Text = "Ngày cấp:";
 			// 
 			// label10
 			// 
@@ -294,7 +294,7 @@ namespace QLBXMD.GUI.Admin
 			this.label10.Name = "label10";
 			this.label10.Size = new System.Drawing.Size(102, 28);
 			this.label10.TabIndex = 21;
-			this.label10.Text = "Tr?ng th�i:";
+			this.label10.Text = "Trạng thái:";
 			// 
 			// pnlHeader
 			// 
@@ -315,7 +315,7 @@ namespace QLBXMD.GUI.Admin
 			this.lblHeader.Name = "lblHeader";
 			this.lblHeader.Size = new System.Drawing.Size(630, 70);
 			this.lblHeader.TabIndex = 0;
-			this.lblHeader.Text = "TH�NG TIN T�I X?";
+			this.lblHeader.Text = "THÔNG TIN TÀI XẾ";
 			this.lblHeader.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 			// 
 			// TaiXeDialog
@@ -353,7 +353,7 @@ namespace QLBXMD.GUI.Admin
 			this.MinimizeBox = false;
 			this.Name = "TaiXeDialog";
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-			this.Text = "Qu?n l� t�i x?";
+			this.Text = "Quản lý tài xế";
 			this.pnlHeader.ResumeLayout(false);
 			this.ResumeLayout(false);
 			this.PerformLayout();

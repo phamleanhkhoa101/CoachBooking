@@ -13,6 +13,38 @@ namespace QLBXMD.BUS
 
 		public string Add(ChuyenXe cx)
 		{
+			// If arrival is not provided, try to compute from route expected duration or fallback
+			if (cx.NgayGioDenDuKien == null)
+			{
+				try
+				{
+					using (var db = new BXMDEntities())
+					{
+						if (cx.MaTuyen != null)
+						{
+							var tuyen = db.TuyenDuongs.AsNoTracking().FirstOrDefault(t => t.MaTuyen == cx.MaTuyen.Value);
+							if (tuyen != null && tuyen.ThoiGianDuKien.HasValue)
+							{
+								cx.NgayGioDenDuKien = cx.NgayGioKhoiHanh.Add(tuyen.ThoiGianDuKien.Value);
+							}
+							else
+							{
+								// fallback to 6 hours if route duration unknown
+								cx.NgayGioDenDuKien = cx.NgayGioKhoiHanh.AddHours(6);
+							}
+						}
+						else
+						{
+							cx.NgayGioDenDuKien = cx.NgayGioKhoiHanh.AddHours(6);
+						}
+					}
+				}
+				catch
+				{
+					// ignore and keep null — later validation will handle
+				}
+			}
+
 			if (cx.MaXe == null || cx.MaTuyen == null || cx.MaTX == null)
 			{
 				return "Vui lòng chọn xe, tuyến đường và tài xế.";
@@ -68,6 +100,37 @@ namespace QLBXMD.BUS
 
 		public string Update(ChuyenXe cx)
 		{
+			// If arrival is not provided, try to compute from route expected duration or fallback
+			if (cx.NgayGioDenDuKien == null)
+			{
+				try
+				{
+					using (var db = new BXMDEntities())
+					{
+						if (cx.MaTuyen != null)
+						{
+							var tuyen = db.TuyenDuongs.AsNoTracking().FirstOrDefault(t => t.MaTuyen == cx.MaTuyen.Value);
+							if (tuyen != null && tuyen.ThoiGianDuKien.HasValue)
+							{
+								cx.NgayGioDenDuKien = cx.NgayGioKhoiHanh.Add(tuyen.ThoiGianDuKien.Value);
+							}
+							else
+							{
+								cx.NgayGioDenDuKien = cx.NgayGioKhoiHanh.AddHours(6);
+							}
+						}
+						else
+						{
+							cx.NgayGioDenDuKien = cx.NgayGioKhoiHanh.AddHours(6);
+						}
+					}
+				}
+				catch
+				{
+					// ignore and keep null — later validation will handle
+				}
+			}
+
 			if (cx.MaXe == null || cx.MaTuyen == null || cx.MaTX == null)
 			{
 				return "Vui lòng chọn xe, tuyến đường và tài xế.";

@@ -5,6 +5,8 @@ using System.Linq;
 using System.Windows.Forms;
 using QLBXMD.EF;
 
+// Encoding: UTF-8 (fixed)
+
 namespace QLBXMD.GUI.Admin
 {
 	public enum ChuyenXeDialogMode { Add, View, Edit, Delete }
@@ -44,6 +46,8 @@ namespace QLBXMD.GUI.Admin
 			// Thêm sự kiện khi chọn xe hoặc tuyến
 			cbbXe.SelectedIndexChanged += CbbXeOrTuyen_SelectedIndexChanged;
 			cbbTuyen.SelectedIndexChanged += CbbXeOrTuyen_SelectedIndexChanged;
+			// Khi đổi tài xế cần kiểm tra xung đột
+			cbbTaiXe.SelectedIndexChanged += (s, e) => { if (Mode == ChuyenXeDialogMode.Add || Mode == ChuyenXeDialogMode.Edit) CheckTripConflict(); };
 			dtpKhoiHanh.ValueChanged += DtpKhoiHanh_ValueChanged;
 			
 			// Mặc định đến dự kiến không được chọn
@@ -120,7 +124,7 @@ namespace QLBXMD.GUI.Admin
 
 		private void CheckTripConflict()
 		{
-			if (SelectedMaXe == null)
+			if (SelectedMaXe == null && SelectedMaTX == null && SelectedMaTuyen == null)
 			{
 				lblConflictInfo.Text = "";
 				btnPrimary.Enabled = true;
@@ -131,35 +135,103 @@ namespace QLBXMD.GUI.Admin
 			{
 				using (var db = new BXMDEntities())
 				{
+					// First, validate selected entities are active
+					if (SelectedMaXe != null)
+					{
+						var xe = db.Xes.AsNoTracking().FirstOrDefault(x => x.MaXe == SelectedMaXe.Value);
+						if (xe == null || xe.TrangThai != true)
+						{
+							lblConflictInfo.Text = "⚠ Xe không tồn tại hoặc không ở trạng thái hoạt động.";
+							lblConflictInfo.ForeColor = Color.Red;
+							btnPrimary.Enabled = false;
+							return;
+						}
+					}
+
+					if (SelectedMaTX != null)
+					{
+						var tx = db.TaiXes.AsNoTracking().FirstOrDefault(t => t.MaTX == SelectedMaTX.Value);
+						if (tx == null || tx.TrangThai != true)
+						{
+							lblConflictInfo.Text = "⚠ Tài xế không tồn tại hoặc không ở trạng thái hoạt động.";
+							lblConflictInfo.ForeColor = Color.Red;
+							btnPrimary.Enabled = false;
+							return;
+						}
+					}
+
+					if (SelectedMaTuyen != null)
+					{
+						var tuyen = db.TuyenDuongs.AsNoTracking().FirstOrDefault(t => t.MaTuyen == SelectedMaTuyen.Value);
+						if (tuyen == null || tuyen.TrangThai != true)
+						{
+							lblConflictInfo.Text = "⚠ Tuyến đường không tồn tại hoặc không ở trạng thái hoạt động.";
+							lblConflictInfo.ForeColor = Color.Red;
+							btnPrimary.Enabled = false;
+							return;
+						}
+					}
+
 					var newStart = dtpKhoiHanh.Value;
 					var newEnd = DenDuKienValue ?? newStart.AddHours(12); // Mặc định 12h nếu không có đến dự kiến
 
-					var conflictTrip = db.ChuyenXes.AsNoTracking()
-						.Where(c => c.MaXe == SelectedMaXe.Value)
-						.ToList()
-						.FirstOrDefault(c => 
-						{
-							var existStart = c.NgayGioKhoiHanh;
-							var existEnd = c.NgayGioDenDuKien ?? existStart.AddHours(12);
-							
-							// Kiểm tra trùng thời gian: newStart < existEnd && newEnd > existStart
-							return newStart < existEnd && newEnd > existStart;
-						});
+					// Nếu đang edit, loại trừ chính chuyến hiện tại khỏi kiểm tra
+					int? currentMaChuyen = null;
+					if (int.TryParse(txtMaChuyen.Text, out int tmp)) currentMaChuyen = tmp;
 
-					if (conflictTrip != null)
+					// Kiểm tra xung đột cho XE
+					if (SelectedMaXe != null)
 					{
-						var khoiHanh = conflictTrip.NgayGioKhoiHanh.ToString("HH:mm");
-						var denDuKien = conflictTrip.NgayGioDenDuKien?.ToString("HH:mm") ?? "Chưa xác định";
-						
-						lblConflictInfo.Text = $"⚠ Xe đã có chuyến: {khoiHanh} - {denDuKien}";
-						lblConflictInfo.ForeColor = Color.Red;
-						btnPrimary.Enabled = false;
+						var conflictTrip = db.ChuyenXes.AsNoTracking()
+							.Where(c => c.MaXe == SelectedMaXe.Value && (currentMaChuyen == null || c.MaChuyen != currentMaChuyen.Value))
+							.ToList()
+							.FirstOrDefault(c => 
+							{
+								var existStart = c.NgayGioKhoiHanh;
+								var existEnd = c.NgayGioDenDuKien ?? existStart.AddHours(12);
+								return newStart < existEnd && newEnd > existStart;
+							});
+
+						if (conflictTrip != null)
+						{
+							var khoiHanh = conflictTrip.NgayGioKhoiHanh.ToString("HH:mm dd/MM/yyyy");
+							var denDuKien = conflictTrip.NgayGioDenDuKien?.ToString("HH:mm dd/MM/yyyy") ?? "Chưa xác định";
+							lblConflictInfo.Text = $"⚠ Xe đã có chuyến: {khoiHanh} - {denDuKien}";
+							lblConflictInfo.ForeColor = Color.Red;
+							btnPrimary.Enabled = false;
+							return;
+						}
 					}
-					else
+
+					// Kiểm tra xung đột cho TÀI XẾ
+					if (SelectedMaTX != null)
 					{
-						lblConflictInfo.Text = "";
-						btnPrimary.Enabled = true;
+						var conflictTripTx = db.ChuyenXes.AsNoTracking()
+							.Where(c => c.MaTX == SelectedMaTX.Value && (currentMaChuyen == null || c.MaChuyen != currentMaChuyen.Value))
+							.ToList()
+							.FirstOrDefault(c => 
+							{
+								var existStart = c.NgayGioKhoiHanh;
+								var existEnd = c.NgayGioDenDuKien ?? existStart.AddHours(12);
+								return newStart < existEnd && newEnd > existStart;
+							});
+
+						if (conflictTripTx != null)
+						{
+							string tenTx = "Tài xế";
+							try { tenTx = conflictTripTx.TaiXe != null ? conflictTripTx.TaiXe.TenTX : tenTx; } catch { }
+							var khoiHanh = conflictTripTx.NgayGioKhoiHanh.ToString("HH:mm dd/MM/yyyy");
+							var denDuKien = conflictTripTx.NgayGioDenDuKien?.ToString("HH:mm dd/MM/yyyy") ?? "Chưa xác định";
+							lblConflictInfo.Text = $"⚠ {tenTx} đã có chuyến: {khoiHanh} - {denDuKien}";
+							lblConflictInfo.ForeColor = Color.Red;
+							btnPrimary.Enabled = false;
+							return;
+						}
 					}
+
+					// Nếu không phát hiện xung đột
+					lblConflictInfo.Text = "";
+					btnPrimary.Enabled = true;
 				}
 			}
 			catch (Exception ex)

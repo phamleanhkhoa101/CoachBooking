@@ -53,6 +53,16 @@ namespace QLBXMD.GUI.Admin
 			chartTuyenDuong.Series[0].LabelFormat = "#,##0";
 			chartTuyenDuong.Series[0]["PieLabelStyle"] = "Outside";
 			chartTuyenDuong.Legends[0].Docking = Docking.Bottom;
+
+			// Cấu hình chart nhà xe
+			chartNhaXe.Titles.Clear();
+			chartNhaXe.Titles.Add("Doanh thu theo Nhà xe");
+			chartNhaXe.Titles[0].Font = new Font("Segoe UI", 12F, FontStyle.Bold);
+			chartNhaXe.Titles[0].ForeColor = Color.FromArgb(33, 150, 243);
+			chartNhaXe.Series[0].IsValueShownAsLabel = true;
+			chartNhaXe.Series[0].LabelFormat = "#,##0";
+			chartNhaXe.Series[0]["PieLabelStyle"] = "Outside";
+			chartNhaXe.Legends[0].Docking = Docking.Bottom;
 		}
 
 		private void UCThongKe_Load(object sender, EventArgs e)
@@ -113,6 +123,9 @@ namespace QLBXMD.GUI.Admin
 
 					// 6. Biểu đồ tuyến đường
 					LoadTuyenDuongChart(db, tuNgay, denNgay);
+
+					// 7. Biểu đồ nhà xe
+					LoadNhaXeChart(db, tuNgay, denNgay);
 				}
 			}
 			catch (Exception ex)
@@ -236,6 +249,62 @@ namespace QLBXMD.GUI.Admin
 			
 			// Cấu hình thêm
 			chartTuyenDuong.ChartAreas[0].Area3DStyle.Enable3D = false;
+		}
+
+		private void LoadNhaXeChart(BXMDEntities db, DateTime tuNgay, DateTime denNgay)
+		{
+			// Tính tổng doanh thu theo Nhà xe (NhaXe.TenNX) trong khoảng
+			var q = db.VeXes
+				.Where(v => v.HoaDon.TrangThai == true && v.HoaDon.NgayLap >= tuNgay && v.HoaDon.NgayLap <= denNgay)
+				.GroupBy(v => v.ChuyenXe.Xe.NhaXe.MaNX)
+				.Select(g => new
+				{
+					MaNX = g.Key,
+					TenNX = g.FirstOrDefault().ChuyenXe.Xe.NhaXe.TenNX,
+					TongTien = g.Sum(v => (decimal?)v.GiaVe * 1) // sum of ticket prices
+				})
+				.OrderByDescending(x => x.TongTien)
+				.ToList();
+
+			chartNhaXe.Series.Clear();
+			var series = new Series
+			{
+				Name = "DoanhThuNX",
+				ChartType = SeriesChartType.Pie,
+				IsValueShownAsLabel = true
+			};
+
+			if (q.Any())
+			{
+				Color[] colors = new Color[]
+				{
+					Color.FromArgb(33, 150, 243),
+					Color.FromArgb(76, 175, 80),
+					Color.FromArgb(255, 152, 0),
+					Color.FromArgb(156, 39, 176),
+					Color.FromArgb(244, 67, 54)
+				};
+
+				int idx = 0;
+				foreach (var item in q)
+				{
+					var p = series.Points.Add((double)(item.TongTien ?? 0));
+					p.Label = $"{item.TenNX}\n{(item.TongTien ?? 0):#,##0} VNĐ";
+					p.LegendText = item.TenNX;
+					p.Color = colors[idx % colors.Length];
+					idx++;
+				}
+			}
+			else
+			{
+				var p = series.Points.Add(1);
+				p.Label = "Không có dữ liệu";
+				p.LegendText = "Không có dữ liệu";
+				p.Color = Color.LightGray;
+			}
+
+			chartNhaXe.Series.Add(series);
+			chartNhaXe.ChartAreas[0].Area3DStyle.Enable3D = false;
 		}
 	}
 }

@@ -34,6 +34,9 @@
 			System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
 			System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
 			System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
+			System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea3 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+			System.Windows.Forms.DataVisualization.Charting.Legend legend3 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+			System.Windows.Forms.DataVisualization.Charting.Series series3 = new System.Windows.Forms.DataVisualization.Charting.Series();
 			this.pnlTop = new System.Windows.Forms.Panel();
 			this.lblTitle = new System.Windows.Forms.Label();
 			this.pnlFilter = new System.Windows.Forms.Panel();
@@ -58,6 +61,7 @@
 			this.pnlCharts = new System.Windows.Forms.Panel();
 			this.chartTuyenDuong = new System.Windows.Forms.DataVisualization.Charting.Chart();
 			this.chartDoanhThu = new System.Windows.Forms.DataVisualization.Charting.Chart();
+			this.chartNhaXe = new System.Windows.Forms.DataVisualization.Charting.Chart();
 			this.pnlTop.SuspendLayout();
 			this.pnlFilter.SuspendLayout();
 			this.pnlStats.SuspendLayout();
@@ -68,6 +72,7 @@
 			this.pnlCharts.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.chartTuyenDuong)).BeginInit();
 			((System.ComponentModel.ISupportInitialize)(this.chartDoanhThu)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.chartNhaXe)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// pnlTop
@@ -305,6 +310,7 @@
 			this.pnlCharts.BackColor = System.Drawing.Color.White;
 			this.pnlCharts.Controls.Add(this.chartTuyenDuong);
 			this.pnlCharts.Controls.Add(this.chartDoanhThu);
+			this.pnlCharts.Controls.Add(this.chartNhaXe);
 			this.pnlCharts.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.pnlCharts.Location = new System.Drawing.Point(0, 274);
 			this.pnlCharts.Name = "pnlCharts";
@@ -347,6 +353,23 @@
 			this.chartDoanhThu.TabIndex = 0;
 			this.chartDoanhThu.Text = "chart1";
 			// 
+			// chartNhaXe
+			// 
+			chartArea3.Name = "ChartArea1";
+			this.chartNhaXe.ChartAreas.Add(chartArea3);
+			this.chartNhaXe.Dock = System.Windows.Forms.DockStyle.Right;
+			legend3.Name = "Legend1";
+			this.chartNhaXe.Legends.Add(legend3);
+			this.chartNhaXe.Location = new System.Drawing.Point(661, 20);
+			this.chartNhaXe.Name = "chartNhaXe";
+			series3.ChartArea = "ChartArea1";
+			series3.Legend = "Legend1";
+			series3.Name = "Series1";
+			this.chartNhaXe.Series.Add(series3);
+			this.chartNhaXe.Size = new System.Drawing.Size(320, 364);
+			this.chartNhaXe.TabIndex = 2;
+			this.chartNhaXe.Text = "chartNhaXe";
+			// 
 			// UCThongKe
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
@@ -375,6 +398,7 @@
 			this.pnlCharts.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.chartTuyenDuong)).EndInit();
 			((System.ComponentModel.ISupportInitialize)(this.chartDoanhThu)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.chartNhaXe)).EndInit();
 			this.ResumeLayout(false);
 
 		}
@@ -405,5 +429,6 @@
 		private System.Windows.Forms.Panel pnlCharts;
 		private System.Windows.Forms.DataVisualization.Charting.Chart chartDoanhThu;
 		private System.Windows.Forms.DataVisualization.Charting.Chart chartTuyenDuong;
+		private System.Windows.Forms.DataVisualization.Charting.Chart chartNhaXe;
 	}
 }

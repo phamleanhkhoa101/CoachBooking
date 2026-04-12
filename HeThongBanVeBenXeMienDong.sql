@@ -6,7 +6,7 @@ CREATE DATABASE HeThongBanVeXeMienDong;
 GO
 USE HeThongBanVeXeMienDong;
 GO
--- 1. Quyền
+-- 1. Quyền.
 CREATE TABLE Quyen (
     MaQuyen INT IDENTITY(1,1) PRIMARY KEY,
     TenQuyen NVARCHAR(50) UNIQUE NOT NULL,

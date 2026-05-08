@@ -18,7 +18,6 @@ namespace QLBXMD.GUI
 		public FrmDangKy()
 		{
 			InitializeComponent();
-			chkHienThiMatKhau.Visible = false;
 			UpdatePasswordToggleButton(txtMatKhau, btnHienMatKhau);
 			UpdatePasswordToggleButton(txtMatKhau2, btnHienMatKhau2);
 		}
@@ -59,12 +58,6 @@ namespace QLBXMD.GUI
 			{
 				MessageBox.Show(result, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 			}
-		}
-
-		private void chkHienThiMatKhau_CheckedChanged(object sender, EventArgs e)
-		{
-			SetPasswordVisibility(txtMatKhau, btnHienMatKhau, chkHienThiMatKhau.Checked);
-			SetPasswordVisibility(txtMatKhau2, btnHienMatKhau2, chkHienThiMatKhau.Checked);
 		}
 
 		private void TogglePasswordField(TextBox textBox, Button button)

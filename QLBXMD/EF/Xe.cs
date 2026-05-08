@@ -21,7 +21,7 @@ namespace QLBXMD.EF
         }
     
         public int MaXe { get; set; }
-        public Nullable<int> MaNX { get; set; }
+        public int MaNX { get; set; }
         public int MaLX { get; set; }
         public string BienSoXe { get; set; }
         public Nullable<bool> TrangThai { get; set; }

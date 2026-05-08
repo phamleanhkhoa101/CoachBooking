@@ -33,7 +33,6 @@ namespace QLBXMD.EF
         public virtual DbSet<NhanVien> NhanViens { get; set; }
         public virtual DbSet<NhaXe> NhaXes { get; set; }
         public virtual DbSet<Quyen> Quyens { get; set; }
-        public virtual DbSet<sysdiagram> sysdiagrams { get; set; }
         public virtual DbSet<TaiKhoan> TaiKhoans { get; set; }
         public virtual DbSet<TaiXe> TaiXes { get; set; }
         public virtual DbSet<ThanhToan> ThanhToans { get; set; }

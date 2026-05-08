@@ -14,9 +14,23 @@ namespace QLBXMD.GUI
 	public partial class FrmDangKy : Form
 	{
 		private TaiKhoanBUS taiKhoanBUS = new TaiKhoanBUS();
+		private readonly ToolTip passwordToolTip = new ToolTip();
 		public FrmDangKy()
 		{
 			InitializeComponent();
+			chkHienThiMatKhau.Visible = false;
+			UpdatePasswordToggleButton(txtMatKhau, btnHienMatKhau);
+			UpdatePasswordToggleButton(txtMatKhau2, btnHienMatKhau2);
+		}
+
+		private void btnHienMatKhau_Click(object sender, EventArgs e)
+		{
+			TogglePasswordField(txtMatKhau, btnHienMatKhau);
+		}
+
+		private void btnHienMatKhau2_Click(object sender, EventArgs e)
+		{
+			TogglePasswordField(txtMatKhau2, btnHienMatKhau2);
 		}
 
 		private void linkDangKy_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -45,6 +59,30 @@ namespace QLBXMD.GUI
 			{
 				MessageBox.Show(result, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 			}
+		}
+
+		private void chkHienThiMatKhau_CheckedChanged(object sender, EventArgs e)
+		{
+			SetPasswordVisibility(txtMatKhau, btnHienMatKhau, chkHienThiMatKhau.Checked);
+			SetPasswordVisibility(txtMatKhau2, btnHienMatKhau2, chkHienThiMatKhau.Checked);
+		}
+
+		private void TogglePasswordField(TextBox textBox, Button button)
+		{
+			SetPasswordVisibility(textBox, button, textBox.PasswordChar != '\0');
+		}
+
+		private void SetPasswordVisibility(TextBox textBox, Button button, bool isVisible)
+		{
+			textBox.PasswordChar = isVisible ? '\0' : '*';
+			UpdatePasswordToggleButton(textBox, button);
+		}
+
+		private void UpdatePasswordToggleButton(TextBox textBox, Button button)
+		{
+			bool isVisible = textBox.PasswordChar == '\0';
+			button.Image = isVisible ? Properties.Resources.unshow_pass : Properties.Resources.show_pass;
+			passwordToolTip.SetToolTip(button, isVisible ? "Ẩn mật khẩu" : "Hiện mật khẩu");
 		}
 	}
 }

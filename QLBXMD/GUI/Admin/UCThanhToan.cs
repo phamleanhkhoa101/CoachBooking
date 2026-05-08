@@ -220,7 +220,7 @@ namespace QLBXMD.GUI.Admin
 							dialog.SetMode(HoaDonDialogMode.View);
 							dialog.MaHD = hoaDon.MaHD.ToString();
 							dialog.SelectedMaKH = hoaDon.MaKH;
-							dialog.SelectedMANV = hoaDon.MANV;
+							dialog.SelectedMANV = hoaDon.MaNV;
 							dialog.NgayLapValue = hoaDon.NgayLap;
 							dialog.TongTienValue = hoaDon.TongTien ?? 0;
 							dialog.TrangThaiValue = hoaDon.TrangThai;

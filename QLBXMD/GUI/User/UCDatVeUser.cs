@@ -1,4 +1,4 @@
-﻿using QLBXMD.BUS;
+using QLBXMD.BUS;
 using QLBXMD.EF;
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Newtonsoft.Json; // ✅ Thêm using
+using Newtonsoft.Json; // ? Th�m using
 
 namespace QLBXMD.GUI.User
 {
@@ -27,7 +27,7 @@ namespace QLBXMD.GUI.User
 		private string selectedDiemDen;
 		private DateTime selectedNgayDi;
 		private TaiKhoan currentUser;
-		private bool isLoadingData = false; // Flag để tránh recursive calls
+		private bool isLoadingData = false; // Flag �? tr�nh recursive calls
 		#endregion
 
 		#region Constructor
@@ -46,21 +46,21 @@ namespace QLBXMD.GUI.User
 		#region Load Events
 		private void UCDatVeUser_Load(object sender, EventArgs e)
 		{
-			isLoadingData = true; // Bắt đầu load
+			isLoadingData = true; // B?t �?u load
 			
 			LoadDiemDiDiemDen();
 			dtpNgayDi.Value = DateTime.Now;
-			cboGioDi.SelectedIndex = 0; // Chọn "Tất cả"
+			cboGioDi.SelectedIndex = 0; // Ch?n "T?t c?"
 			
-			// Thêm event handlers để tự động tìm chuyến
+			// Th�m event handlers �? t? �?ng t?m chuy?n
 			cboDiemDi.SelectedIndexChanged += CboDiemDi_SelectedIndexChanged;
 			cboDiemDen.SelectedIndexChanged += CboDiemDen_SelectedIndexChanged;
 			dtpNgayDi.ValueChanged += DtpNgayDi_ValueChanged;
 			cboGioDi.SelectedIndexChanged += CboGioDi_SelectedIndexChanged;
 			
-			isLoadingData = false; // Kết thúc load
+			isLoadingData = false; // K?t th�c load
 			
-			// Tải chuyến xe ngay khi vào
+			// T?i chuy?n xe ngay khi v�o
 			LoadChuyenXeAuto();
 		}
 
@@ -102,58 +102,58 @@ namespace QLBXMD.GUI.User
 						.OrderBy(d => d)
 						.ToList();
 
-					// Thêm placeholder vào đầu danh sách
+					// Th�m placeholder v�o �?u danh s�ch
 					var diemDiList = new List<string>();
-					diemDiList.Add("-- Chọn điểm đi --");
+					diemDiList.Add("-- Ch?n �i?m �i --");
 					diemDiList.AddRange(diemDi);
 
 					var diemDenList = new List<string>();
-					diemDenList.Add("-- Chọn điểm đến --");
+					diemDenList.Add("-- Ch?n �i?m �?n --");
 					diemDenList.AddRange(diemDen);
 
 					cboDiemDi.DataSource = diemDiList;
 					cboDiemDen.DataSource = diemDenList;
 
-					// Chọn placeholder (index 0)
+					// Ch?n placeholder (index 0)
 					cboDiemDi.SelectedIndex = 0;
 					cboDiemDen.SelectedIndex = 0;
 					
-					System.Diagnostics.Debug.WriteLine($"Đã tải {diemDi.Count} điểm đi và {diemDen.Count} điểm đến");
+					System.Diagnostics.Debug.WriteLine($"�? t?i {diemDi.Count} �i?m �i v� {diemDen.Count} �i?m �?n");
 				}
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show("Lỗi tải dữ liệu: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show("L?i t?i d? li?u: " + ex.Message, "L?i", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
 		#endregion
 
-		#region Bước 1: Tìm chuyến xe
+		#region B�?c 1: T?m chuy?n xe
 		
 		private void LoadChuyenXeAuto()
 		{
-			// Lấy giá trị hiện tại
+			// L?y gi� tr? hi?n t?i
 			string diemDi = cboDiemDi.SelectedItem?.ToString();
 			string diemDen = cboDiemDen.SelectedItem?.ToString();
 			
-			// Bỏ qua placeholder
+			// B? qua placeholder
 			if (diemDi != null && diemDi.StartsWith("--")) diemDi = null;
 			if (diemDen != null && diemDen.StartsWith("--")) diemDen = null;
 			
-			// Nếu cả hai đều trống, hiển thị tất cả chuyến xe
+			// N?u c? hai �?u tr?ng, hi?n th? t?t c? chuy?n xe
 			if (string.IsNullOrEmpty(diemDi) && string.IsNullOrEmpty(diemDen))
 			{
 				LoadChuyenXe(null, null);
 				return;
 			}
 			
-			// Nếu chỉ có một trong hai
+			// N?u ch? c� m?t trong hai
 			LoadChuyenXe(diemDi, diemDen);
 		}
 		
 		private void btnTimChuyen_Click(object sender, EventArgs e)
 		{
-			// Giữ lại để tương thích, nhưng giờ chỉ gọi LoadChuyenXeAuto
+			// Gi? l?i �? t��ng th�ch, nh�ng gi? ch? g?i LoadChuyenXeAuto
 			LoadChuyenXeAuto();
 		}
 
@@ -165,7 +165,7 @@ namespace QLBXMD.GUI.User
 				
 				using (var db = new BXMDEntities())
 				{
-					// Lấy tất cả chuyến xe trước
+					// L?y t?t c? chuy?n xe tr�?c
 					var query = (from cx in db.ChuyenXes
 								join x in db.Xes on cx.MaXe equals x.MaXe
 								join nx in db.NhaXes on x.MaNX equals nx.MaNX
@@ -189,24 +189,24 @@ namespace QLBXMD.GUI.User
 									DiemDen = td.DiemDen
 								}).ToList();
 
-					// Debug: Kiểm tra số lượng chuyến ban đầu
-					System.Diagnostics.Debug.WriteLine($"Tìm thấy {query.Count} chuyến xe ngày {selectedNgayDi:dd/MM/yyyy}");
+					// Debug: Ki?m tra s? l�?ng chuy?n ban �?u
+					System.Diagnostics.Debug.WriteLine($"T?m th?y {query.Count} chuy?n xe ng�y {selectedNgayDi:dd/MM/yyyy}");
 
-					// Lọc theo điểm đi nếu có
+					// L?c theo �i?m �i n?u c�
 					if (!string.IsNullOrEmpty(diemDi))
 					{
 						query = query.Where(r => r.DiemDi == diemDi).ToList();
-						System.Diagnostics.Debug.WriteLine($"Sau khi lọc điểm đi '{diemDi}': {query.Count} chuyến");
+						System.Diagnostics.Debug.WriteLine($"Sau khi l?c �i?m �i '{diemDi}': {query.Count} chuy?n");
 					}
 					
-					// Lọc theo điểm đến nếu có
+					// L?c theo �i?m �?n n?u c�
 					if (!string.IsNullOrEmpty(diemDen))
 					{
 						query = query.Where(r => r.DiemDen == diemDen).ToList();
-						System.Diagnostics.Debug.WriteLine($"Sau khi lọc điểm đến '{diemDen}': {query.Count} chuyến");
+						System.Diagnostics.Debug.WriteLine($"Sau khi l?c �i?m �?n '{diemDen}': {query.Count} chuy?n");
 					}
 
-					// Lọc theo giờ nếu không chọn "Tất cả"
+					// L?c theo gi? n?u kh�ng ch?n "T?t c?"
 					if (cboGioDi.SelectedIndex > 0)
 					{
 						int gioIndex = cboGioDi.SelectedIndex;
@@ -222,32 +222,32 @@ namespace QLBXMD.GUI.User
 								default: return true;
 							}
 						}).ToList();
-						System.Diagnostics.Debug.WriteLine($"Sau khi lọc giờ: {query.Count} chuyến");
+						System.Diagnostics.Debug.WriteLine($"Sau khi l?c gi?: {query.Count} chuy?n");
 					}
 
 					if (!query.Any())
 					{
-						// Không hiện thông báo nữa, chỉ ẩn panel
-						System.Diagnostics.Debug.WriteLine("Không có chuyến xe phù hợp");
+						// Kh�ng hi?n th�ng b�o n?a, ch? ?n panel
+						System.Diagnostics.Debug.WriteLine("Kh�ng c� chuy?n xe ph� h?p");
 						pnlResults.Visible = false;
 						return;
 					}
 
-					// Lưu thông tin để dùng sau
+					// L�u th�ng tin �? d�ng sau
 					if (!string.IsNullOrEmpty(diemDi)) selectedDiemDi = diemDi;
 					if (!string.IsNullOrEmpty(diemDen)) selectedDiemDen = diemDen;
 
-					// Hiển thị panel trước để tính toán layout đúng
+					// Hi?n th? panel tr�?c �? t�nh to�n layout ��ng
 					pnlResults.Visible = true;
 					
-					// Đảm bảo layout được update
+					// �?m b?o layout ��?c update
 					pnlResults.PerformLayout();
 					flpChuyenXe.PerformLayout();
 					Application.DoEvents();
 
-					// Clear và add cards
+					// Clear v� add cards
 					flpChuyenXe.Controls.Clear();
-					flpChuyenXe.SuspendLayout(); // Tạm dừng layout updates
+					flpChuyenXe.SuspendLayout(); // T?m d?ng layout updates
 					
 					foreach (var item in query)
 					{
@@ -259,13 +259,13 @@ namespace QLBXMD.GUI.User
 					}
 					
 					flpChuyenXe.ResumeLayout(); // Resume layout updates
-					System.Diagnostics.Debug.WriteLine($"Đã hiển thị {query.Count} chuyến xe");
+					System.Diagnostics.Debug.WriteLine($"�? hi?n th? {query.Count} chuy?n xe");
 				}
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show("Lỗi tải danh sách chuyến xe: " + ex.Message + "\n\nStack trace: " + ex.StackTrace, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-				System.Diagnostics.Debug.WriteLine($"Lỗi: {ex.Message}\n{ex.StackTrace}");
+				MessageBox.Show("L?i t?i danh s�ch chuy?n xe: " + ex.Message + "\n\nStack trace: " + ex.StackTrace, "L?i", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				System.Diagnostics.Debug.WriteLine($"L?i: {ex.Message}\n{ex.StackTrace}");
 			}
 		}
 
@@ -280,24 +280,24 @@ namespace QLBXMD.GUI.User
 			Panel card = new Panel
 			{
 				Width = cardWidth,
-				Height = 100, // Giảm từ 140 xuống 100
+				Height = 100, // Gi?m t? 140 xu?ng 100
 				BorderStyle = BorderStyle.FixedSingle,
 				BackColor = Color.White,
 				Margin = new Padding(5, 5, 5, 10)
 			};
 
-			// Logo xe - nhỏ hơn
+			// Logo xe - nh? h�n
 			Label lblBusIcon = new Label
 			{
-				Text = "🚌",
+				Text = "??",
 				Location = new Point(10, 10),
-				Size = new Size(40, 40), // Giảm từ 50x50 xuống 40x40
-				Font = new Font("Segoe UI", 20F), // Giảm từ 24F xuống 20F
+				Size = new Size(40, 40), // Gi?m t? 50x50 xu?ng 40x40
+				Font = new Font("Segoe UI", 20F), // Gi?m t? 24F xu?ng 20F
 				TextAlign = ContentAlignment.MiddleCenter,
 				BackColor = Color.FromArgb(240, 240, 240)
 			};
 
-			// Tên nhà xe
+			// T�n nh� xe
 			Label lblTenNX = new Label
 			{
 				Text = tenNX,
@@ -305,35 +305,35 @@ namespace QLBXMD.GUI.User
 				AutoSize = false,
 				Width = 250,
 				Height = 22,
-				Font = new Font("Segoe UI", 10F, FontStyle.Bold), // Giảm từ 11F xuống 10F
+				Font = new Font("Segoe UI", 10F, FontStyle.Bold), // Gi?m t? 11F xu?ng 10F
 				ForeColor = Color.FromArgb(51, 51, 51)
 			};
 
-			// Loại xe
+			// Lo?i xe
 			Label lblLoaiXe = new Label
 			{
-				Text = $"{tenLX} - {soCho} chỗ",
+				Text = $"{tenLX} - {soCho} ch?",
 				Location = new Point(60, 32),
 				AutoSize = false,
 				Width = 200,
 				Height = 16,
-				Font = new Font("Segoe UI", 8F), // Giảm từ 8.5F xuống 8F
+				Font = new Font("Segoe UI", 8F), // Gi?m t? 8.5F xu?ng 8F
 				ForeColor = Color.Gray
 			};
 
-			// Tuyến đường: Điểm đi → Điểm đến
+			// Tuy?n ��?ng: �i?m �i ? �i?m �?n
 			Label lblTuyen = new Label
 			{
-				Text = $"{diemDi} → {diemDen}",
+				Text = $"{diemDi} ? {diemDen}",
 				Location = new Point(60, 50),
 				AutoSize = false,
 				Width = 350,
 				Height = 18,
-				Font = new Font("Segoe UI", 8.5F, FontStyle.Bold), // Giảm từ 9F xuống 8.5F
+				Font = new Font("Segoe UI", 8.5F, FontStyle.Bold), // Gi?m t? 9F xu?ng 8.5F
 				ForeColor = Color.FromArgb(0, 150, 136)
 			};
 
-			// Giờ đi
+			// Gi? �i
 			Label lblGioDi = new Label
 			{
 				Text = khoiHanh.ToString("HH:mm"),
@@ -341,23 +341,23 @@ namespace QLBXMD.GUI.User
 				AutoSize = false,
 				Width = 55,
 				Height = 22,
-				Font = new Font("Segoe UI", 12F, FontStyle.Bold), // Giảm từ 13F xuống 12F
+				Font = new Font("Segoe UI", 12F, FontStyle.Bold), // Gi?m t? 13F xu?ng 12F
 				ForeColor = Color.FromArgb(0, 150, 136)
 			};
 
 			Label lblMuiTen = new Label
 			{
-				Text = "→",
+				Text = "?",
 				Location = new Point(120, 70),
 				AutoSize = false,
 				Width = 20,
 				Height = 22,
-				Font = new Font("Segoe UI", 11F), // Giảm từ 12F xuống 11F
+				Font = new Font("Segoe UI", 11F), // Gi?m t? 12F xu?ng 11F
 				ForeColor = Color.Gray,
 				TextAlign = ContentAlignment.MiddleCenter
 			};
 
-			// Giờ đến
+			// Gi? �?n
 			Label lblGioDen = new Label
 			{
 				Text = denDuKien.ToString("HH:mm"),
@@ -365,11 +365,11 @@ namespace QLBXMD.GUI.User
 				AutoSize = false,
 				Width = 55,
 				Height = 22,
-				Font = new Font("Segoe UI", 12F, FontStyle.Bold), // Giảm từ 13F xuống 12F
+				Font = new Font("Segoe UI", 12F, FontStyle.Bold), // Gi?m t? 13F xu?ng 12F
 				ForeColor = Color.FromArgb(0, 150, 136)
 			};
 
-			// Ngày đi
+			// Ng�y �i
 			Label lblNgayDi = new Label
 			{
 				Text = khoiHanh.ToString("dd/MM/yyyy"),
@@ -377,45 +377,45 @@ namespace QLBXMD.GUI.User
 				AutoSize = false,
 				Width = 85,
 				Height = 16,
-				Font = new Font("Segoe UI", 8F), // Giảm từ 8.5F xuống 8F
+				Font = new Font("Segoe UI", 8F), // Gi?m t? 8.5F xu?ng 8F
 				ForeColor = Color.Gray
 			};
 
-			// Số chỗ trống
+			// S? ch? tr?ng
 			Label lblChoTrong = new Label
 			{
-				Text = soChoTrong > 0 ? $"Còn {soChoTrong} chỗ" : "Hết chỗ",
+				Text = soChoTrong > 0 ? $"C?n {soChoTrong} ch?" : "H?t ch?",
 				Location = new Point(310, 73),
 				AutoSize = false,
 				Width = 100,
 				Height = 18,
-				Font = new Font("Segoe UI", 8F), // Giảm từ 8.5F xuống 8F
+				Font = new Font("Segoe UI", 8F), // Gi?m t? 8.5F xu?ng 8F
 				ForeColor = soChoTrong > 0 ? Color.Green : Color.Red
 			};
 
-			// Giá vé (position from right)
+			// Gi� v� (position from right)
 			Label lblGiaVe = new Label
 			{
-				Text = $"{giaVe:#,##0} VNĐ",
+				Text = $"{giaVe:#,##0} VN�",
 				Location = new Point(cardWidth - 260, 25),
 				AutoSize = false,
 				Width = 140,
 				Height = 28,
-				Font = new Font("Segoe UI", 12F, FontStyle.Bold), // Giảm từ 13F xuống 12F
+				Font = new Font("Segoe UI", 12F, FontStyle.Bold), // Gi?m t? 13F xu?ng 12F
 				ForeColor = Color.FromArgb(244, 67, 54),
 				TextAlign = ContentAlignment.MiddleRight
 			};
 
-			// Button chọn (position from right)
+			// Button ch?n (position from right)
 			Button btnChon = new Button
 			{
-				Text = "Chọn chuyến",
+				Text = "Ch?n chuy?n",
 				Location = new Point(cardWidth - 145, 60),
-				Size = new Size(125, 32), // Giảm từ 135x35 xuống 125x32
+				Size = new Size(125, 32), // Gi?m t? 135x35 xu?ng 125x32
 				BackColor = Color.FromArgb(0, 150, 136),
 				ForeColor = Color.White,
 				FlatStyle = FlatStyle.Flat,
-				Font = new Font("Segoe UI", 9.5F, FontStyle.Bold), // Giảm từ 10F xuống 9.5F
+				Font = new Font("Segoe UI", 9.5F, FontStyle.Bold), // Gi?m t? 10F xu?ng 9.5F
 				Cursor = Cursors.Hand,
 				Enabled = soChoTrong > 0,
 				TabStop = true,
@@ -440,7 +440,7 @@ namespace QLBXMD.GUI.User
 				}
 				catch (Exception ex)
 				{
-					MessageBox.Show($"Lỗi chọn chuyến: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					MessageBox.Show($"L?i ch?n chuy?n: {ex.Message}", "L?i", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				}
 			};
 
@@ -476,7 +476,7 @@ namespace QLBXMD.GUI.User
 		}
 		#endregion
 
-		#region Bước 2: Chọn chuyến xe và hiển thị sơ đồ ghế
+		#region B�?c 2: Ch?n chuy?n xe v� hi?n th? s� �? gh?
 		private void ChonChuyenXe(int maChuyen, int maXe, int maLoaiXe, decimal giaVe)
 		{
 			selectedMaChuyen = maChuyen;
@@ -486,7 +486,7 @@ namespace QLBXMD.GUI.User
 
 			LoadSeatMap();
 			
-			// Không hiện pnlSeatInfo ngay, chỉ hiện khi chọn ghế
+			// Kh�ng hi?n pnlSeatInfo ngay, ch? hi?n khi ch?n gh?
 			pnlSeatInfo.Visible = true;
 			UpdateThongTinGhe();
 		}
@@ -500,20 +500,20 @@ namespace QLBXMD.GUI.User
 					var loaiXe = db.LoaiXes.FirstOrDefault(lx => lx.MaLX == selectedMaLoaiXe);
 					if (loaiXe == null)
 					{
-						MessageBox.Show($"Không tìm thấy loại xe với MaLX = {selectedMaLoaiXe}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+						MessageBox.Show($"Kh�ng t?m th?y lo?i xe v?i MaLX = {selectedMaLoaiXe}", "L?i", MessageBoxButtons.OK, MessageBoxIcon.Error);
 						return;
 					}
 
 					int soCho = loaiXe.SoCho;
 					if (soCho == 0)
 					{
-						MessageBox.Show("Loại xe có số chỗ = 0", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+						MessageBox.Show("Lo?i xe c� s? ch? = 0", "L?i", MessageBoxButtons.OK, MessageBoxIcon.Error);
 						return;
 					}
 
-					bool isGiuongNam = loaiXe.TenLX.ToLower().Contains("giường");
+					bool isGiuongNam = loaiXe.TenLX.ToLower().Contains("gi�?ng");
 
-					// Lấy danh sách ghế đã đặt
+					// L?y danh s�ch gh? �? �?t
 					bookedSeats = db.VeXes
 						.Where(v => v.MaChuyen == selectedMaChuyen)
 						.Select(v => v.ChoNgoi)
@@ -527,12 +527,12 @@ namespace QLBXMD.GUI.User
 
 					if (isGiuongNam)
 					{
-						// Xe giường nằm: 2 tầng
-						lblLoaiGhe.Text = "Sơ đồ giường nằm";
+						// Xe gi�?ng n?m: 2 t?ng
+						lblLoaiGhe.Text = "S� �? gi�?ng n?m";
 						gbTangDuoi.Visible = true;
 						gbTangTren.Visible = true;
-						gbTangDuoi.Text = "Tầng dưới";
-						gbTangTren.Text = "Tầng trên";
+						gbTangDuoi.Text = "T?ng d�?i";
+						gbTangTren.Text = "T?ng tr�n";
 
 						int choMoiTang = soCho / 2;
 						CreateSeatButtons(flpTangDuoi, 1, choMoiTang);
@@ -540,11 +540,11 @@ namespace QLBXMD.GUI.User
 					}
 					else
 					{
-						// Xe ghế ngồi: 1 tầng
-						lblLoaiGhe.Text = "Sơ đồ ghế ngồi";
+						// Xe gh? ng?i: 1 t?ng
+						lblLoaiGhe.Text = "S� �? gh? ng?i";
 						gbTangDuoi.Visible = true;
 						gbTangTren.Visible = false;
-						gbTangDuoi.Text = "Sơ đồ ghế";
+						gbTangDuoi.Text = "S� �? gh?";
 
 						CreateSeatButtons(flpTangDuoi, 1, soCho);
 					}
@@ -555,7 +555,7 @@ namespace QLBXMD.GUI.User
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show($"Lỗi tải sơ đồ ghế:\n{ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show($"L?i t?i s� �? gh?:\n{ex.Message}", "L?i", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
 
@@ -583,7 +583,7 @@ namespace QLBXMD.GUI.User
 
 				if (bookedSeats.Contains(i))
 				{
-					// Ghế đã đặt
+					// Gh? �? �?t
 					btnSeat.BackColor = Color.FromArgb(220, 220, 220);
 					btnSeat.ForeColor = Color.Gray;
 					btnSeat.Enabled = false;
@@ -591,8 +591,8 @@ namespace QLBXMD.GUI.User
 				}
 				else
 				{
-					// Ghế trống
-					btnSeat.BackColor = Color.FromArgb(0, 199, 174); // Xanh - trống
+					// Gh? tr?ng
+					btnSeat.BackColor = Color.FromArgb(0, 199, 174); // Xanh - tr?ng
 					btnSeat.ForeColor = Color.White;
 					btnSeat.Click += BtnSeat_Click;
 				}
@@ -611,14 +611,14 @@ namespace QLBXMD.GUI.User
 
 			if (selectedSeats.Contains(seatNumber))
 			{
-				// Bỏ chọn - về màu xanh lá (trống)
+				// B? ch?n - v? m�u xanh l� (tr?ng)
 				selectedSeats.Remove(seatNumber);
 				btn.BackColor = Color.FromArgb(0, 199, 174);
 				btn.ForeColor = Color.White;
 			}
 			else
 			{
-				// Chọn ghế - màu cam (đang chọn)
+				// Ch?n gh? - m�u cam (�ang ch?n)
 				selectedSeats.Add(seatNumber);
 				btn.BackColor = Color.FromArgb(245, 128, 37);
 				btn.ForeColor = Color.White;
@@ -633,39 +633,39 @@ namespace QLBXMD.GUI.User
 		{
 			if (selectedSeats.Count > 0)
 			{
-				lblGheDaChon.Text = $"Ghế đã chọn: {string.Join(", ", selectedSeats.OrderBy(s => s))}";
+				lblGheDaChon.Text = $"Gh? �? ch?n: {string.Join(", ", selectedSeats.OrderBy(s => s))}";
 				decimal tongTien = selectedSeats.Count * (selectedGiaVe ?? 0);
-				lblTongTien.Text = $"Tổng tiền: {tongTien:#,##0} VNĐ";
+				lblTongTien.Text = $"T?ng ti?n: {tongTien:#,##0} VN�";
 				btnDatVe.Enabled = true;
 			}
 			else
 			{
-				lblGheDaChon.Text = "Ghế đã chọn: Chưa chọn";
-				lblTongTien.Text = "Tổng tiền: 0 VNĐ";
+				lblGheDaChon.Text = "Gh? �? ch?n: Ch�a ch?n";
+				lblTongTien.Text = "T?ng ti?n: 0 VN�";
 				btnDatVe.Enabled = false;
 			}
 		}
 		#endregion
 
-		#region Bước 3: Đặt vé
+		#region B�?c 3: �?t v�
 		private void btnDatVe_Click(object sender, EventArgs e)
 		{
 			if (!selectedMaChuyen.HasValue || selectedSeats.Count == 0)
 			{
-				MessageBox.Show("Vui lòng chọn chuyến xe và ghế.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				MessageBox.Show("Vui l?ng ch?n chuy?n xe v� gh?.", "Th�ng b�o", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				return;
 			}
 
-			// Lấy thông tin khách hàng từ tài khoản
+			// L?y th�ng tin kh�ch h�ng t? t�i kho?n
 			if (currentUser == null)
 			{
-				MessageBox.Show("Vui lòng đăng nhập để đặt vé.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				MessageBox.Show("Vui l?ng ��ng nh?p �? �?t v�.", "Th�ng b�o", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				return;
 			}
 
 			try
 			{
-				// Tính tổng tiền trước
+				// T�nh t?ng ti?n tr�?c
 				decimal tienTam = selectedSeats.Count * (selectedGiaVe ?? 0);
 				DateTime ngayKhoiHanh = DateTime.Now;
 				int maHD = 0;
@@ -678,20 +678,20 @@ namespace QLBXMD.GUI.User
 						ngayKhoiHanh = chuyenXe.NgayGioKhoiHanh;
 					}
 
-					// Lấy thông tin khách hàng
+					// L?y th�ng tin kh�ch h�ng
 					var khachHang = db.KhachHangs.FirstOrDefault(kh => kh.MaTK == currentUser.MaTK);
 					if (khachHang == null)
 					{
-						MessageBox.Show("Không tìm thấy thông tin khách hàng.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+						MessageBox.Show("Kh�ng t?m th?y th�ng tin kh�ch h�ng.", "L?i", MessageBoxButtons.OK, MessageBoxIcon.Error);
 						return;
 					}
 
-					// ✅ Hiển thị dialog xác nhận
+					// ? Hi?n th? dialog x�c nh?n
 					using (var confirmDialog = new XacNhanDatVeUserDialog())
 					{
 						confirmDialog.TenKhachHang = khachHang.TenKH;
 						confirmDialog.SoDienThoai = khachHang.SDT;
-						confirmDialog.GioiTinh = khachHang.GioiTinh.HasValue && khachHang.GioiTinh.Value ? "Nam" : "Nữ";
+						confirmDialog.GioiTinh = khachHang.GioiTinh.HasValue && khachHang.GioiTinh.Value ? "Nam" : "N?";
 						confirmDialog.NamSinh = khachHang.NamSinh;
 						confirmDialog.DiemDi = selectedDiemDi;
 						confirmDialog.DiemDen = selectedDiemDen;
@@ -705,22 +705,22 @@ namespace QLBXMD.GUI.User
 							return;
 					}
 
-					// ✅ TẠO HÓA ĐƠN (TongTien = 0, để trigger tính)
+					// ? T?O H�A ��N (TongTien = 0, �? trigger t�nh)
 					var hoaDon = new HoaDon
 					{
 						MaKH = khachHang.MaKH,
-						MANV = null,
+						MaNV = null,
 						NgayLap = DateTime.Now,
-						TongTien = 0, // ✅ Để trigger tự tính
-						TrangThai = false // Chưa thanh toán
+						TongTien = 0, // ? �? trigger t? t�nh
+						TrangThai = false // Ch�a thanh to�n
 					};
 					db.HoaDons.Add(hoaDon);
 					db.SaveChanges();
 
 					maHD = hoaDon.MaHD;
-					Console.WriteLine($"✅ Tạo hóa đơn: MaHD = {maHD}, TongTien ban đầu = {hoaDon.TongTien}");
+					Console.WriteLine($"? T?o h�a ��n: MaHD = {maHD}, TongTien ban �?u = {hoaDon.TongTien}");
 
-					// ✅ TẠO VÉ XE (với GiaVe)
+					// ? T?O V� XE (v?i GiaVe)
 					foreach (int soGhe in selectedSeats)
 					{
 						var ve = new VeXe
@@ -728,43 +728,43 @@ namespace QLBXMD.GUI.User
 							MaChuyen = selectedMaChuyen.Value,
 							ChoNgoi = soGhe,
 							MaHD = maHD,
-							GiaVe = selectedGiaVe.Value // ✅ Lưu giá vé
+							GiaVe = selectedGiaVe.Value // ? L�u gi� v�
 						};
 						db.VeXes.Add(ve);
 					}
 					db.SaveChanges();
-					Console.WriteLine($"✅ Đã tạo {selectedSeats.Count} vé xe");
+					Console.WriteLine($"? �? t?o {selectedSeats.Count} v� xe");
 
-					// ✅ REFRESH để lấy TongTien đã được trigger tính
+					// ? REFRESH �? l?y TongTien �? ��?c trigger t�nh
 					db.Entry(hoaDon).Reload();
-					Console.WriteLine($"✅ Sau khi refresh: TongTien = {hoaDon.TongTien}");
+					Console.WriteLine($"? Sau khi refresh: TongTien = {hoaDon.TongTien}");
 
-					// ✅ Xử lý thanh toán MoMo (với TongTien đã đúng)
+					// ? X? l? thanh to�n MoMo (v?i TongTien �? ��ng)
 					ProcessMoMoPayment(hoaDon.TongTien ?? tienTam, khachHang.MaKH, maHD);
 				}
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show($"Lỗi đặt vé: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-				Console.WriteLine($"❌ Error: {ex.ToString()}");
+				MessageBox.Show($"L?i �?t v�: {ex.Message}", "L?i", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				Console.WriteLine($"? Error: {ex.ToString()}");
 			}
 		}
 
 		/// <summary>
-		/// Xử lý thanh toán MoMo
+		/// X? l? thanh to�n MoMo
 		/// </summary>
 		private async void ProcessMoMoPayment(decimal amount, int maKH, int maHD)
 		{
 			try
 			{
-				// Hiển thị loading
+				// Hi?n th? loading
 				this.Cursor = Cursors.WaitCursor;
 
-				// Tạo orderId unique
+				// T?o orderId unique
 				string orderId = $"HD{maHD}_{DateTime.Now:yyyyMMddHHmmss}";
 				string orderInfo = $"Thanh toan ve xe - Ma HD: {maHD}";
 
-				// Tạo request thanh toán MoMo
+				// T?o request thanh to�n MoMo
 				var momoService = new Services.MoMoPaymentService();
 				var response = await momoService.CreatePaymentRequest(
 					orderId,
@@ -776,32 +776,32 @@ namespace QLBXMD.GUI.User
 
 				if (response.ResultCode == 0)
 				{
-					// Thành công - Mở trình duyệt với PayUrl
+					// Th�nh c�ng - M? tr?nh duy?t v?i PayUrl
 					MessageBox.Show(
-						"Đang chuyển đến trang thanh toán MoMo...\n\n" +
-						"Vui lòng hoàn tất thanh toán trong trình duyệt.\n" +
-						$"Mã đơn hàng: {orderId}",
-						"Thanh toán MoMo",
+						"�ang chuy?n �?n trang thanh to�n MoMo...\n\n" +
+						"Vui l?ng ho�n t?t thanh to�n trong tr?nh duy?t.\n" +
+						$"M? ��n h�ng: {orderId}",
+						"Thanh to�n MoMo",
 						MessageBoxButtons.OK,
 						MessageBoxIcon.Information
 					);
 
 					System.Diagnostics.Process.Start(response.PayUrl);
 					
-					// ✅ Bắt đầu polling để check trạng thái
+					// ? B?t �?u polling �? check tr?ng th�i
 					StartPollingPaymentStatus(orderId, maHD, amount);
 				}
 				else
 				{
-					// Lỗi - Xóa hóa đơn và vé đã tạo
+					// L?i - X�a h�a ��n v� v� �? t?o
 					RollbackHoaDon(maHD);
 					
 					MessageBox.Show(
-						$"Lỗi tạo yêu cầu thanh toán MoMo:\n\n" +
-						$"Mã lỗi: {response.ResultCode}\n" +
-						$"Thông báo: {response.Message}\n\n" +
-						$"Vui lòng thử lại hoặc liên hệ quản trị viên.",
-						"Lỗi thanh toán",
+						$"L?i t?o y�u c?u thanh to�n MoMo:\n\n" +
+						$"M? l?i: {response.ResultCode}\n" +
+						$"Th�ng b�o: {response.Message}\n\n" +
+						$"Vui l?ng th? l?i ho?c li�n h? qu?n tr? vi�n.",
+						"L?i thanh to�n",
 						MessageBoxButtons.OK,
 						MessageBoxIcon.Error
 					);
@@ -811,22 +811,22 @@ namespace QLBXMD.GUI.User
 			{
 				this.Cursor = Cursors.Default;
 				MessageBox.Show(
-					$"Lỗi kết nối với MoMo:\n{ex.Message}\n\n" +
-					$"Vui lòng kiểm tra kết nối internet và thử lại.",
-					"Lỗi",
+					$"L?i k?t n?i v?i MoMo:\n{ex.Message}\n\n" +
+					$"Vui l?ng ki?m tra k?t n?i internet v� th? l?i.",
+					"L?i",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Error
 				);
-				Console.WriteLine($"❌ MoMo Payment Error: {ex.ToString()}");
+				Console.WriteLine($"? MoMo Payment Error: {ex.ToString()}");
 			}
 		}
 		/// <summary>
-		/// ✅ Polling MoMo để kiểm tra trạng thái thanh toán (không cần IPN)
+		/// ? Polling MoMo �? ki?m tra tr?ng th�i thanh to�n (kh�ng c?n IPN)
 		/// </summary>
 		private async void StartPollingPaymentStatus(string orderId, int maHD, decimal amount)
 		{
 			int attempt = 0;
-			const int maxAttempts = 24; // 24 lần * 5s = 2 phút
+			const int maxAttempts = 24; // 24 l?n * 5s = 2 ph�t
 			const int delayMs = 5000;
 
 			while (attempt < maxAttempts)
@@ -839,26 +839,26 @@ namespace QLBXMD.GUI.User
 				if (status == "Success")
 				{
 					MessageBox.Show(
-						"✅ Thanh toán MoMo thành công!\n\n" +
-						$"Mã hóa đơn: {maHD}\n" +
-						$"Số tiền: {amount:#,##0} VNĐ",
-						"Thành công",
+						"? Thanh to�n MoMo th�nh c�ng!\n\n" +
+						$"M? h�a ��n: {maHD}\n" +
+						$"S? ti?n: {amount:#,##0} VN�",
+						"Th�nh c�ng",
 						MessageBoxButtons.OK,
 						MessageBoxIcon.Information
 					);
 					
 					UpdateHoaDonTrangThai(maHD, true, "MoMo");
 					
-					// ✅ Reset form sau khi thành công
+					// ? Reset form sau khi th�nh c�ng
 					ResetFormAfterPayment();
 					return;
 				}
 				else if (status == "Failed")
 				{
 					MessageBox.Show(
-						"❌ Thanh toán MoMo thất bại hoặc bị hủy!\n\n" +
-						"Hóa đơn và vé đã được hủy.",
-						"Thất bại",
+						"? Thanh to�n MoMo th?t b?i ho?c b? h?y!\n\n" +
+						"H�a ��n v� v� �? ��?c h?y.",
+						"Th?t b?i",
 						MessageBoxButtons.OK,
 						MessageBoxIcon.Error
 					);
@@ -873,8 +873,8 @@ namespace QLBXMD.GUI.User
 
 			// Timeout
 			MessageBox.Show(
-				"⏰ Hết thời gian chờ thanh toán MoMo.\n\n" +
-				"Vui lòng kiểm tra lại trạng thái đơn hàng trong Lịch sử mua vé.",
+				"? H?t th?i gian ch? thanh to�n MoMo.\n\n" +
+				"Vui l?ng ki?m tra l?i tr?ng th�i ��n h�ng trong L?ch s? mua v�.",
 				"Timeout",
 				MessageBoxButtons.OK,
 				MessageBoxIcon.Warning
@@ -882,7 +882,7 @@ namespace QLBXMD.GUI.User
 		}
 
 		/// <summary>
-		/// ✅ Gọi API Query của MoMo để xác minh đơn hàng
+		/// ? G?i API Query c?a MoMo �? x�c minh ��n h�ng
 		/// </summary>
 		private async Task<string> QueryMomoOrder(string orderId)
 		{
@@ -925,12 +925,12 @@ namespace QLBXMD.GUI.User
 
 					Console.WriteLine($"[MoMo Query] {orderId} => Code: {resultCode}, Message: {message}");
 
-					// ✅ MoMo result codes:
-					// 0 = Success (Giao dịch thành công)
-					// 1000 = Transaction initiated (Đang chờ user xác nhận)
-					// 1006 = Transaction not found (Chưa có trong hệ thống)
-					// 1007 = Transaction pending (Đang xử lý)
-					// 9000 = Transaction failed/cancelled (Thất bại/hủy)
+					// ? MoMo result codes:
+					// 0 = Success (Giao d?ch th�nh c�ng)
+					// 1000 = Transaction initiated (�ang ch? user x�c nh?n)
+					// 1006 = Transaction not found (Ch�a c� trong h? th?ng)
+					// 1007 = Transaction pending (�ang x? l?)
+					// 9000 = Transaction failed/cancelled (Th?t b?i/h?y)
 					// Other = Error
 					
 					if (resultCode == 0)
@@ -939,32 +939,32 @@ namespace QLBXMD.GUI.User
 					}
 					else if (resultCode == 1000 || resultCode == 1006 || resultCode == 1007)
 					{
-						// ✅ 1000 = Đang chờ user thanh toán → Pending
+						// ? 1000 = �ang ch? user thanh to�n ? Pending
 						return "Pending";
 					}
 					else if (resultCode == 9000 || resultCode == 1001)
 					{
-						// 9000 = User hủy giao dịch
-						// 1001 = Giao dịch thất bại
+						// 9000 = User h?y giao d?ch
+						// 1001 = Giao d?ch th?t b?i
 						return "Failed";
 					}
 					else
 					{
-						// Unknown code → Retry
-						Console.WriteLine($"⚠️ Unknown MoMo code: {resultCode}");
+						// Unknown code ? Retry
+						Console.WriteLine($"?? Unknown MoMo code: {resultCode}");
 						return "Pending";
 					}
 				}
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine("❌ QueryMoMoOrder Error: " + ex.Message);
+				Console.WriteLine("? QueryMoMoOrder Error: " + ex.Message);
 				return "Pending"; // Retry on error
 			}
 		}
 
 		/// <summary>
-		/// ✅ Cập nhật trạng thái hóa đơn khi có kết quả thanh toán
+		/// ? C?p nh?t tr?ng th�i h�a ��n khi c� k?t qu? thanh to�n
 		/// </summary>
 		private void UpdateHoaDonTrangThai(int maHD, bool daThanhToan, string phuongThuc)
 		{
@@ -975,7 +975,7 @@ namespace QLBXMD.GUI.User
 					var hoaDon = db.HoaDons.FirstOrDefault(h => h.MaHD == maHD);
 					if (hoaDon == null)
 					{
-						Console.WriteLine($"❌ Không tìm thấy hóa đơn #{maHD}");
+						Console.WriteLine($"? Kh�ng t?m th?y h�a ��n #{maHD}");
 						return;
 					}
 
@@ -983,7 +983,7 @@ namespace QLBXMD.GUI.User
 
 					if (daThanhToan)
 					{
-						// Tạo bản ghi thanh toán
+						// T?o b?n ghi thanh to�n
 						var thanhToan = new ThanhToan
 						{
 							MaHD = maHD,
@@ -993,7 +993,7 @@ namespace QLBXMD.GUI.User
 						};
 						db.ThanhToans.Add(thanhToan);
 						
-						Console.WriteLine($"✅ Hóa đơn #{maHD} đã thanh toán qua {phuongThuc}");
+						Console.WriteLine($"? H�a ��n #{maHD} �? thanh to�n qua {phuongThuc}");
 					}
 
 					db.SaveChanges();
@@ -1001,13 +1001,13 @@ namespace QLBXMD.GUI.User
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show($"Lỗi cập nhật hóa đơn: {ex.Message}", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-				Console.WriteLine($"❌ UpdateHoaDonTrangThai Error: {ex.Message}");
+				MessageBox.Show($"L?i c?p nh?t h�a ��n: {ex.Message}", "L?i", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				Console.WriteLine($"? UpdateHoaDonTrangThai Error: {ex.Message}");
 			}
 		}
 
 		/// <summary>
-		/// ✅ Rollback hóa đơn khi thanh toán thất bại
+		/// ? Rollback h�a ��n khi thanh to�n th?t b?i
 		/// </summary>
 		private void RollbackHoaDon(int maHD)
 		{
@@ -1015,11 +1015,11 @@ namespace QLBXMD.GUI.User
 			{
 				using (var db = new BXMDEntities())
 				{
-					// Xóa vé
+					// X�a v�
 					var veXes = db.VeXes.Where(v => v.MaHD == maHD).ToList();
 					db.VeXes.RemoveRange(veXes);
 
-					// Xóa hóa đơn
+					// X�a h�a ��n
 					var hoaDon = db.HoaDons.FirstOrDefault(h => h.MaHD == maHD);
 					if (hoaDon != null)
 					{
@@ -1027,17 +1027,17 @@ namespace QLBXMD.GUI.User
 					}
 
 					db.SaveChanges();
-					Console.WriteLine($"✅ Đã rollback hóa đơn #{maHD}");
+					Console.WriteLine($"? �? rollback h�a ��n #{maHD}");
 				}
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"❌ RollbackHoaDon Error: {ex.Message}");
+				Console.WriteLine($"? RollbackHoaDon Error: {ex.Message}");
 			}
 		}
 
 		/// <summary>
-		/// ✅ Reset form sau khi thanh toán thành công
+		/// ? Reset form sau khi thanh to�n th�nh c�ng
 		/// </summary>
 		private void ResetFormAfterPayment()
 		{
@@ -1045,20 +1045,20 @@ namespace QLBXMD.GUI.User
 			{
 				ResetForm();
 				
-				// Reload lại danh sách chuyến xe
+				// Reload l?i danh s�ch chuy?n xe
 				LoadChuyenXeAuto();
 				
 				MessageBox.Show(
-					"🎉 Đặt vé thành công!\n\n" +
-					"Bạn có thể xem chi tiết trong mục 'Lịch sử mua vé'.",
-					"Thành công",
+					"?? �?t v� th�nh c�ng!\n\n" +
+					"B?n c� th? xem chi ti?t trong m?c 'L?ch s? mua v�'.",
+					"Th�nh c�ng",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Information
 				);
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"❌ ResetFormAfterPayment Error: {ex.Message}");
+				Console.WriteLine($"? ResetFormAfterPayment Error: {ex.Message}");
 			}
 		}
 		#endregion
@@ -1077,13 +1077,13 @@ namespace QLBXMD.GUI.User
 			pnlSeatMap.Visible = false;
 			pnlSeatInfo.Visible = false;
 
-			lblGheDaChon.Text = "Ghế đã chọn: Chưa chọn";
-			lblTongTien.Text = "Tổng tiền: 0 VNĐ";
+			lblGheDaChon.Text = "Gh? �? ch?n: Ch�a ch?n";
+			lblTongTien.Text = "T?ng ti?n: 0 VN�";
 			btnDatVe.Enabled = false;
 		}
 		#endregion
 
-		#region Swap địa điểm
+		#region Swap �?a �i?m
 		private void btnSwap_Click(object sender, EventArgs e)
 		{
 			if (cboDiemDi.SelectedItem != null && cboDiemDen.SelectedItem != null)
@@ -1091,12 +1091,12 @@ namespace QLBXMD.GUI.User
 				string diemDi = cboDiemDi.SelectedItem.ToString();
 				string diemDen = cboDiemDen.SelectedItem.ToString();
 
-				// Swap cả khi có placeholder (không cần kiểm tra)
+				// Swap c? khi c� placeholder (kh�ng c?n ki?m tra)
 				var temp = cboDiemDi.SelectedItem;
 				cboDiemDi.SelectedItem = cboDiemDen.SelectedItem;
 				cboDiemDen.SelectedItem = temp;
 				
-				// LoadChuyenXeAuto sẽ được gọi tự động qua SelectedIndexChanged event
+				// LoadChuyenXeAuto s? ��?c g?i t? �?ng qua SelectedIndexChanged event
 			}
 		}
 		#endregion

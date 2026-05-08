@@ -21,9 +21,9 @@ namespace QLBXMD.EF
         }
     
         public int MaChuyen { get; set; }
-        public Nullable<int> MaXe { get; set; }
-        public Nullable<int> MaTuyen { get; set; }
-        public Nullable<int> MaTX { get; set; }
+        public int MaXe { get; set; }
+        public int MaTuyen { get; set; }
+        public int MaTX { get; set; }
         public System.DateTime NgayGioKhoiHanh { get; set; }
         public Nullable<System.DateTime> NgayGioDenDuKien { get; set; }
         public Nullable<decimal> GiaVeThucTe { get; set; }

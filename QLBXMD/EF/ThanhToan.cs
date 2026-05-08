@@ -15,7 +15,7 @@ namespace QLBXMD.EF
     public partial class ThanhToan
     {
         public int MaTT { get; set; }
-        public Nullable<int> MaHD { get; set; }
+        public int MaHD { get; set; }
         public Nullable<decimal> TongTien { get; set; }
         public System.DateTime NgayTT { get; set; }
         public string PhuongThuc { get; set; }

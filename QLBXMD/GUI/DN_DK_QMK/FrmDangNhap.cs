@@ -18,9 +18,17 @@ namespace QLBXMD.GUI.DN_DK_QMK
 	public partial class FrmDangNhap : Form
 	{
 		private TaiKhoanBUS taiKhoanBUS = new TaiKhoanBUS();
+		private readonly ToolTip passwordToolTip = new ToolTip();
 		public FrmDangNhap()
 		{
 			InitializeComponent();
+			UpdatePasswordToggleButton(txtMatKhau, btnHienMatKhau);
+		}
+
+		private void btnHienMatKhau_Click(object sender, EventArgs e)
+		{
+			txtMatKhau.PasswordChar = txtMatKhau.PasswordChar == '\0' ? '*' : '\0';
+			UpdatePasswordToggleButton(txtMatKhau, btnHienMatKhau);
 		}
 
 		private void linkDangKy_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -86,6 +94,13 @@ namespace QLBXMD.GUI.DN_DK_QMK
 				}
 			}
 
+		}
+
+		private void UpdatePasswordToggleButton(TextBox textBox, Button button)
+		{
+			bool isVisible = textBox.PasswordChar == '\0';
+			button.Image = isVisible ? Properties.Resources.unshow_pass : Properties.Resources.show_pass;
+			passwordToolTip.SetToolTip(button, isVisible ? "Ẩn mật khẩu" : "Hiện mật khẩu");
 		}
 	}
 }

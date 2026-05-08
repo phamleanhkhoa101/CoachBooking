@@ -13,7 +13,7 @@ namespace QLBXMD.BUS
 
 		public string Add(HoaDon hd)
 		{
-			if (hd.MaKH == null && hd.MANV == null)
+			if (hd.MaKH == null && hd.MaNV == null)
 			{
 				return "Vui lòng chọn khách hàng hoặc nhân viên.";
 			}

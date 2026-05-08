@@ -1,4 +1,4 @@
-﻿using QLBXMD.EF;
+using QLBXMD.EF;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,7 +29,7 @@ namespace QLBXMD.DAO
 			if (existingHD != null)
 			{
 				existingHD.MaKH = hd.MaKH;
-				existingHD.MANV = hd.MANV;
+				existingHD.MaNV = hd.MaNV;
 				existingHD.NgayLap = hd.NgayLap;
 				existingHD.TongTien = hd.TongTien;
 				existingHD.TrangThai = hd.TrangThai;
@@ -49,9 +49,9 @@ namespace QLBXMD.DAO
         {
             return db.HoaDons.Where(hd => hd.MaKH == maKH).ToList();
         }
-        public List<HoaDon> GetByNhanVien(int maNV)
+        public List<HoaDon> GetByNhanVien(int MaNV)
         {
-            return db.HoaDons.Where(hd => hd.MANV == maNV).ToList();
+            return db.HoaDons.Where(hd => hd.MaNV == MaNV).ToList();
         }
     }
 }

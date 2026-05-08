@@ -102,65 +102,62 @@
     <Compile Include="DAO\TuyenDuongDAO.cs" />
     <Compile Include="DAO\VeXeDAO.cs" />
     <Compile Include="DAO\XeDAO.cs" />
-    <Compile Include="EF\BXMDModel.Context.cs">
+    <Compile Include="EF\BXMDEntities.Context.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>BXMDModel.Context.tt</DependentUpon>
+      <DependentUpon>BXMDEntities.Context.tt</DependentUpon>
     </Compile>
-    <Compile Include="EF\BXMDModel.cs">
+    <Compile Include="EF\BXMDEntities.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>BXMDModel.tt</DependentUpon>
+      <DependentUpon>BXMDEntities.tt</DependentUpon>
     </Compile>
-    <Compile Include="EF\BXMDModel.Designer.cs">
+    <Compile Include="EF\BXMDEntities.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>BXMDModel.edmx</DependentUpon>
+      <DependentUpon>BXMDEntities.edmx</DependentUpon>
     </Compile>
     <Compile Include="EF\ChuyenXe.cs">
-      <DependentUpon>BXMDModel.tt</DependentUpon>
+      <DependentUpon>BXMDEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="EF\GiaVe.cs">
-      <DependentUpon>BXMDModel.tt</DependentUpon>
+      <DependentUpon>BXMDEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="EF\HoaDon.cs">
-      <DependentUpon>BXMDModel.tt</DependentUpon>
+      <DependentUpon>BXMDEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="EF\KhachHang.cs">
-      <DependentUpon>BXMDModel.tt</DependentUpon>
+      <DependentUpon>BXMDEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="EF\LoaiXe.cs">
-      <DependentUpon>BXMDModel.tt</DependentUpon>
+      <DependentUpon>BXMDEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="EF\NhanVien.cs">
-      <DependentUpon>BXMDModel.tt</DependentUpon>
+      <DependentUpon>BXMDEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="EF\NhaXe.cs">
-      <DependentUpon>BXMDModel.tt</DependentUpon>
+      <DependentUpon>BXMDEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="EF\Quyen.cs">
-      <DependentUpon>BXMDModel.tt</DependentUpon>
-    </Compile>
-    <Compile Include="EF\sysdiagram.cs">
-      <DependentUpon>BXMDModel.tt</DependentUpon>
+      <DependentUpon>BXMDEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="EF\TaiKhoan.cs">
-      <DependentUpon>BXMDModel.tt</DependentUpon>
+      <DependentUpon>BXMDEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="EF\TaiXe.cs">
-      <DependentUpon>BXMDModel.tt</DependentUpon>
+      <DependentUpon>BXMDEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="EF\ThanhToan.cs">
-      <DependentUpon>BXMDModel.tt</DependentUpon>
+      <DependentUpon>BXMDEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="EF\TuyenDuong.cs">
-      <DependentUpon>BXMDModel.tt</DependentUpon>
+      <DependentUpon>BXMDEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="EF\VeXe.cs">
-      <DependentUpon>BXMDModel.tt</DependentUpon>
+      <DependentUpon>BXMDEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="EF\Xe.cs">
-      <DependentUpon>BXMDModel.tt</DependentUpon>
+      <DependentUpon>BXMDEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="GUI\Admin\CapTaiKhoanDialog.cs">
       <SubType>Form</SubType>
@@ -543,15 +540,15 @@
       <SubType>Designer</SubType>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EntityDeploy Include="EF\BXMDModel.edmx">
-      <Generator>EntityModelCodeGenerator</Generator>
-      <LastGenOutput>BXMDModel.Designer.cs</LastGenOutput>
-    </EntityDeploy>
     <None Include="Docs\CAP_TAI_KHOAN_CHO_NHAN_VIEN.md" />
     <None Include="Docs\HOANTHANH_THANHTOAN_TRACKING.md" />
     <None Include="Docs\HUONG_DAN_TRANG_THONG_KE.md" />
-    <None Include="EF\BXMDModel.edmx.diagram">
-      <DependentUpon>BXMDModel.edmx</DependentUpon>
+    <EntityDeploy Include="EF\BXMDEntities.edmx">
+      <Generator>EntityModelCodeGenerator</Generator>
+      <LastGenOutput>BXMDEntities.Designer.cs</LastGenOutput>
+    </EntityDeploy>
+    <None Include="EF\BXMDEntities.edmx.diagram">
+      <DependentUpon>BXMDEntities.edmx</DependentUpon>
     </None>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
@@ -585,27 +582,29 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="resource\show_pass.png" />
+    <Content Include="resource\unshow_pass.png" />
     <None Include="resource\wallet.png" />
     <None Include="resource\search.png" />
     <None Include="resource\view.png" />
     <None Include="resource\setting.png" />
     <None Include="resource\user.png" />
     <None Include="resource\logout.png" />
-    <Content Include="EF\BXMDModel.Context.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <DependentUpon>BXMDModel.edmx</DependentUpon>
-      <LastGenOutput>BXMDModel.Context.cs</LastGenOutput>
-    </Content>
-    <Content Include="EF\BXMDModel.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <DependentUpon>BXMDModel.edmx</DependentUpon>
-      <LastGenOutput>BXMDModel.cs</LastGenOutput>
-    </Content>
     <None Include="resource\Bus-icon.png" />
     <None Include="resource\padlock.png" />
     <None Include="resource\home.png" />
     <None Include="resource\menu.png" />
     <None Include="resource\personal-security.png" />
+    <Content Include="EF\BXMDEntities.Context.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>BXMDEntities.edmx</DependentUpon>
+      <LastGenOutput>BXMDEntities.Context.cs</LastGenOutput>
+    </Content>
+    <Content Include="EF\BXMDEntities.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <DependentUpon>BXMDEntities.edmx</DependentUpon>
+      <LastGenOutput>BXMDEntities.cs</LastGenOutput>
+    </Content>
     <Content Include="GUI\Admin\UPDATE_GIAVETHUCTE.sql" />
     <None Include="resource\add.png" />
     <None Include="resource\edit.png" />

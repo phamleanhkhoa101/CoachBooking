@@ -1,4 +1,4 @@
-﻿using QLBXMD.EF;
+using QLBXMD.EF;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,22 +16,22 @@ namespace QLBXMD.DAO
 		}
 
 		/// <summary>
-		/// Lấy tất cả các tổ hợp NhaXe x LoaiXe x TuyenDuong mà nhà xe thực sự có xe chạy,
-		/// bao gồm cả những tổ hợp chưa có giá vé
+		/// L?y t?t c? c�c t? h?p NhaXe x LoaiXe x TuyenDuong m� nh� xe th?c s? c� xe ch?y,
+		/// bao g?m c? nh?ng t? h?p ch�a c� gi� v�
 		/// </summary>
 		public List<dynamic> GetAllCombinations()
 		{
-			// ✅ Lấy các tổ hợp THỰC TẾ từ bảng Xe và ChuyenXe
-			// Chỉ lấy những Nhà xe x Loại xe x Tuyến mà nhà xe đó có xe loại đó và chạy tuyến đó
+			// ? L?y c�c t? h?p TH?C T? t? b?ng Xe v� ChuyenXe
+			// Ch? l?y nh?ng Nh� xe x Lo?i xe x Tuy?n m� nh� xe �� c� xe lo?i �� v� ch?y tuy?n ��
 			var actualCombinations = (from cx in db.ChuyenXes
 									  join x in db.Xes on cx.MaXe equals x.MaXe
 									  join nx in db.NhaXes on x.MaNX equals nx.MaNX
 									  join lx in db.LoaiXes on x.MaLX equals lx.MaLX
 									  join td in db.TuyenDuongs on cx.MaTuyen equals td.MaTuyen
-									  where x.MaNX.HasValue // ✅ Chỉ lấy xe có nhà xe
+									  where x.MaNX != 0 // ? Ch? l?y xe c� nh� xe
 									  select new
 									  {
-										  MaNX = x.MaNX.Value,
+										  MaNX = x.MaNX,
 										  TenNX = nx.TenNX,
 										  MaLX = x.MaLX,
 										  TenLX = lx.TenLX,
@@ -39,13 +39,13 @@ namespace QLBXMD.DAO
 										  DiemDi = td.DiemDi,
 										  DiemDen = td.DiemDen
 									  })
-									  .Distinct() // ✅ Loại bỏ trùng lặp (vì nhiều chuyến có thể cùng tổ hợp)
+									  .Distinct() // ? Lo?i b? tr�ng l?p (v? nhi?u chuy?n c� th? c�ng t? h?p)
 									  .ToList();
 
-			// Lấy tất cả giá vé hiện có
+			// L?y t?t c? gi� v� hi?n c�
 			var existingPrices = db.GiaVes.ToList();
 
-			// Kết hợp dữ liệu
+			// K?t h?p d? li?u
 			var result = actualCombinations.Select(combo =>
 			{
 				var price = existingPrices.FirstOrDefault(gv =>

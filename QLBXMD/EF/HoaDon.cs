@@ -23,7 +23,7 @@ namespace QLBXMD.EF
     
         public int MaHD { get; set; }
         public Nullable<int> MaKH { get; set; }
-        public Nullable<int> MANV { get; set; }
+        public Nullable<int> MaNV { get; set; }
         public System.DateTime NgayLap { get; set; }
         public Nullable<decimal> TongTien { get; set; }
         public Nullable<bool> TrangThai { get; set; }

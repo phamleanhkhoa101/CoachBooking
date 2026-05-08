@@ -22,7 +22,7 @@ namespace QLBXMD.BUS
 					{
 						if (cx.MaTuyen != null)
 						{
-							var tuyen = db.TuyenDuongs.AsNoTracking().FirstOrDefault(t => t.MaTuyen == cx.MaTuyen.Value);
+							var tuyen = db.TuyenDuongs.AsNoTracking().FirstOrDefault(t => t.MaTuyen == cx.MaTuyen);
 							if (tuyen != null && tuyen.ThoiGianDuKien.HasValue)
 							{
 								cx.NgayGioDenDuKien = cx.NgayGioKhoiHanh.Add(tuyen.ThoiGianDuKien.Value);
@@ -45,7 +45,7 @@ namespace QLBXMD.BUS
 				}
 			}
 
-			if (cx.MaXe == null || cx.MaTuyen == null || cx.MaTX == null)
+			if (cx.MaXe == 0 || cx.MaTuyen == 0 || cx.MaTX == 0)
 			{
 				return "Vui lòng chọn xe, tuyến đường và tài xế.";
 			}
@@ -109,7 +109,7 @@ namespace QLBXMD.BUS
 					{
 						if (cx.MaTuyen != null)
 						{
-							var tuyen = db.TuyenDuongs.AsNoTracking().FirstOrDefault(t => t.MaTuyen == cx.MaTuyen.Value);
+							var tuyen = db.TuyenDuongs.AsNoTracking().FirstOrDefault(t => t.MaTuyen == cx.MaTuyen);
 							if (tuyen != null && tuyen.ThoiGianDuKien.HasValue)
 							{
 								cx.NgayGioDenDuKien = cx.NgayGioKhoiHanh.Add(tuyen.ThoiGianDuKien.Value);
@@ -131,7 +131,7 @@ namespace QLBXMD.BUS
 				}
 			}
 
-			if (cx.MaXe == null || cx.MaTuyen == null || cx.MaTX == null)
+			if (cx.MaXe == 0 || cx.MaTuyen == 0 || cx.MaTX == 0)
 			{
 				return "Vui lòng chọn xe, tuyến đường và tài xế.";
 			}

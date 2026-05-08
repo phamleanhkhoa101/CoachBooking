@@ -15,8 +15,8 @@ namespace QLBXMD.EF
     public partial class VeXe
     {
         public int MaVe { get; set; }
-        public Nullable<int> MaChuyen { get; set; }
-        public Nullable<int> MaHD { get; set; }
+        public int MaChuyen { get; set; }
+        public int MaHD { get; set; }
         public int ChoNgoi { get; set; }
         public Nullable<decimal> GiaVe { get; set; }
     

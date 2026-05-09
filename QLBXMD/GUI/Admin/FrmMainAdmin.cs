@@ -2,6 +2,7 @@
 using QLBXMD.EF;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq; // add
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
@@ -12,8 +13,22 @@ namespace QLBXMD.GUI.Admin
 	{
 		private TaiKhoan taiKhoan;
 		private List<Button> sidebarButtons;
+		private Button activeSidebarButton;
+		private Panel sidebarIndicator;
 		private NhanVien nhanVien;
 		private TaiKhoanBUS taiKhoanBus = new TaiKhoanBUS();
+		private readonly Color menuBackColor = Color.FromArgb(248, 250, 252);
+		private readonly Color menuCardColor = Color.White;
+		private readonly Color menuItemColor = Color.FromArgb(248, 250, 252);
+		private readonly Color menuItemHoverColor = Color.FromArgb(241, 245, 249);
+		private readonly Color menuItemActiveColor = Color.FromArgb(224, 242, 254);
+		private readonly Color menuTextColor = Color.FromArgb(30, 41, 59);
+		private readonly Color menuMutedTextColor = Color.FromArgb(234, 88, 12);
+		private readonly Color menuAccentColor = Color.FromArgb(249, 115, 22);
+		private readonly Color borderColor = Color.FromArgb(226, 232, 240);
+		private readonly Color headerBackColor = Color.FromArgb(204, 251, 241);
+		private readonly Color headerTextColor = Color.FromArgb(15, 23, 42);
+		private readonly Color mainBackColor = Color.FromArgb(248, 250, 252);
 
 		// Collapsible groups: Chung, DanhMuc, HeThong
 		private class GroupState
@@ -53,8 +68,12 @@ namespace QLBXMD.GUI.Admin
 				btnTuyenDuong, btnChuyenXe, btnGiaVe, btnTaiXe,
 				btnTaiKhoan, btnThongKe, btnPhanQuyen
 			};
+			ApplySidebarTheme();
 			//lblName.Text = taiKhoan.
 			lblRole.Text = taiKhoan.Quyen.TenQuyen;
+			lblName.Text = nhanVien != null
+				? $"Xin chào, {nhanVien.TenNV}"
+				: $"Xin chào, {taiKhoan.TenDangNhap}";
 
 			// Capture original positions of all controls in the menu for deterministic reflow
 			_origTop.Clear();
@@ -113,11 +132,23 @@ namespace QLBXMD.GUI.Admin
 		{
 			foreach (var btn in sidebarButtons)
 			{
-				btn.BackColor = System.Drawing.Color.White;
-				btn.ForeColor = System.Drawing.Color.Black;
+				btn.BackColor = menuItemColor;
+				btn.ForeColor = menuTextColor;
 			}
-			selectedButton.BackColor = System.Drawing.Color.FromArgb(32, 58, 115);
-			selectedButton.ForeColor = System.Drawing.Color.White;
+
+			activeSidebarButton = selectedButton;
+			selectedButton.BackColor = menuItemActiveColor;
+			selectedButton.ForeColor = Color.FromArgb(15, 23, 42);
+
+			if (sidebarIndicator != null)
+			{
+				sidebarIndicator.Visible = true;
+				sidebarIndicator.Height = selectedButton.Height - 8;
+				sidebarIndicator.Top = selectedButton.Top + 4;
+				sidebarIndicator.Left = Math.Max(2, selectedButton.Left - 6);
+				sidebarIndicator.BringToFront();
+				selectedButton.BringToFront();
+			}
 		}
 
 		private void btnLoaiXe_Click(object sender, EventArgs e)
@@ -281,6 +312,13 @@ namespace QLBXMD.GUI.Admin
 
 				c.Top = _origTop[c] - collapsedAbove;
 			}
+
+			if (activeSidebarButton != null && sidebarIndicator != null)
+			{
+				sidebarIndicator.Top = activeSidebarButton.Top + 5;
+				sidebarIndicator.Visible = activeSidebarButton.Visible;
+				sidebarIndicator.BringToFront();
+			}
 		}
 
 		private void button1_Click(object sender, EventArgs e)
@@ -408,6 +446,69 @@ namespace QLBXMD.GUI.Admin
 		{
 			//ShowControl(new UCThanhToan());
 			//HightlightButton(btnThanhToan);
+		}
+
+		private void ApplySidebarTheme()
+		{
+			pnlMenu.BackColor = menuBackColor;
+			pnlHeader.BackColor = headerBackColor;
+			pnlMain.BackColor = mainBackColor;
+			BackColor = mainBackColor;
+
+			label2.ForeColor = headerTextColor;
+			lblName.ForeColor = headerTextColor;
+			lblRole.ForeColor = Color.FromArgb(71, 85, 105);
+			btnSetting.BackColor = headerBackColor;
+			btnSetting.FlatAppearance.MouseOverBackColor = Color.FromArgb(153, 246, 228);
+			btnSetting.FlatAppearance.MouseDownBackColor = Color.FromArgb(153, 246, 228);
+
+			panel1.BackColor = menuCardColor;
+			panel1.BorderStyle = BorderStyle.FixedSingle;
+
+			label1.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+			label3.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+			label5.Font = new Font("Segoe UI", 11F, FontStyle.Bold);
+			label1.ForeColor = menuMutedTextColor;
+			label3.ForeColor = menuMutedTextColor;
+			label5.ForeColor = menuMutedTextColor;
+
+			panel3.BackColor = borderColor;
+			panel4.BackColor = borderColor;
+
+			StyleSectionIcon(guna2PictureBox1);
+			StyleSectionIcon(guna2PictureBox2);
+			StyleSectionIcon(guna2PictureBox3);
+
+			foreach (var btn in sidebarButtons)
+			{
+				btn.FlatStyle = FlatStyle.Flat;
+				btn.FlatAppearance.BorderSize = 0;
+				btn.FlatAppearance.MouseDownBackColor = menuItemHoverColor;
+				btn.FlatAppearance.MouseOverBackColor = menuItemHoverColor;
+				btn.BackColor = menuItemColor;
+				btn.ForeColor = menuTextColor;
+				btn.Font = new Font("Segoe UI Semibold", 10F, FontStyle.Regular);
+				btn.Padding = new Padding(36, 0, 0, 0);
+				btn.TextAlign = ContentAlignment.MiddleLeft;
+				btn.Cursor = Cursors.Hand;
+				btn.UseVisualStyleBackColor = false;
+			}
+
+			if (sidebarIndicator == null)
+			{
+				sidebarIndicator = new Panel
+				{
+					Size = new Size(4, 32),
+					BackColor = menuAccentColor,
+					Visible = false
+				};
+				pnlMenu.Controls.Add(sidebarIndicator);
+			}
+		}
+
+		private void StyleSectionIcon(Control icon)
+		{
+			icon.BackColor = Color.Transparent;
 		}
 	}
 }

@@ -1,145 +1,141 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using QLBXMD.EF;
 
 namespace QLBXMD.GUI.Admin
 {
-	public enum HoaDonDialogMode { Add, View, Edit }
+	public enum HoaDonDialogMode
+	{
+		Add,
+		View,
+		Edit
+	}
 
 	public partial class HoaDonDialog : Form
 	{
-		public HoaDonDialogMode Mode { get; private set; } = HoaDonDialogMode.Add;
+		private bool _runtimeInitialized;
+		private HoaDonDialogMode _mode;
 
-		public string MaHD { get => txtMaHD.Text; set => txtMaHD.Text = value; }
-		public DateTime NgayLapValue { get => dtpNgayLap.Value; set => dtpNgayLap.Value = value; }
-		public decimal TongTienValue { get => numTongTien.Value; set => numTongTien.Value = value; }
-
-		public int? SelectedMaKH 
-		{ 
-			get { return cbbKhachHang.SelectedValue is int v ? (int?)v : (cbbKhachHang.SelectedValue as int?); } 
-			set { if (value.HasValue) cbbKhachHang.SelectedValue = value.Value; else cbbKhachHang.SelectedIndex = -1; } 
+		public HoaDonDialogMode Mode
+		{
+			get { return _mode; }
+			private set { _mode = value; }
 		}
-		
-		public int? SelectedMANV 
-		{ 
-			get { return cbbNhanVien.SelectedValue is int v ? (int?)v : (cbbNhanVien.SelectedValue as int?); } 
-			set { if (value.HasValue) cbbNhanVien.SelectedValue = value.Value; else cbbNhanVien.SelectedIndex = -1; } 
+
+		public string MaHD
+		{
+			get { return txtMaHD.Text; }
+			set { txtMaHD.Text = value; }
+		}
+
+		public DateTime NgayLapValue
+		{
+			get { return dtpNgayLap.Value; }
+			set { dtpNgayLap.Value = value; }
+		}
+
+		public decimal TongTienValue
+		{
+			get { return numTongTien.Value; }
+			set { numTongTien.Value = value; }
+		}
+
+		public int? SelectedMaKH
+		{
+			get
+			{
+				if (cbbKhachHang.SelectedValue is int)
+				{
+					return (int)cbbKhachHang.SelectedValue;
+				}
+
+				return cbbKhachHang.SelectedValue as int?;
+			}
+			set
+			{
+				if (value.HasValue)
+				{
+					cbbKhachHang.SelectedValue = value.Value;
+				}
+				else
+				{
+					cbbKhachHang.SelectedIndex = -1;
+				}
+			}
+		}
+
+		public int? SelectedMANV
+		{
+			get
+			{
+				if (cbbNhanVien.SelectedValue is int)
+				{
+					return (int)cbbNhanVien.SelectedValue;
+				}
+
+				return cbbNhanVien.SelectedValue as int?;
+			}
+			set
+			{
+				if (value.HasValue)
+				{
+					cbbNhanVien.SelectedValue = value.Value;
+				}
+				else
+				{
+					cbbNhanVien.SelectedIndex = -1;
+				}
+			}
 		}
 
 		public bool? TrangThaiValue
 		{
 			get
 			{
-				if (cbbTrangThai.SelectedIndex == 0) return true; // Đã thanh toán
-				if (cbbTrangThai.SelectedIndex == 1) return false; // Chưa thanh toán
+				if (cbbTrangThai.SelectedIndex == 0)
+				{
+					return true;
+				}
+
+				if (cbbTrangThai.SelectedIndex == 1)
+				{
+					return false;
+				}
+
 				return null;
 			}
 			set
 			{
-				if (value == true) cbbTrangThai.SelectedIndex = 0;
-				else if (value == false) cbbTrangThai.SelectedIndex = 1;
-				else cbbTrangThai.SelectedIndex = -1;
+				if (value == true)
+				{
+					cbbTrangThai.SelectedIndex = 0;
+				}
+				else if (value == false)
+				{
+					cbbTrangThai.SelectedIndex = 1;
+				}
+				else
+				{
+					cbbTrangThai.SelectedIndex = -1;
+				}
 			}
 		}
 
 		public HoaDonDialog()
 		{
 			InitializeComponent();
-			cbbTrangThai.SelectedIndex = 1; // Mặc định chưa thanh toán
-			SetupButtonEffects();
-			SetupNumericUpDownValidation();
-		}
-
-		private void SetupButtonEffects()
-		{
-			// Hiệu ứng cho nút Primary (Lưu/Thêm)
-			btnPrimary.MouseEnter += (s, e) => {
-				if (Mode == HoaDonDialogMode.Edit)
-					btnPrimary.BackColor = Color.FromArgb(53, 170, 255);
-				else
-					btnPrimary.BackColor = Color.FromArgb(96, 195, 100);
-			};
-			btnPrimary.MouseLeave += (s, e) => {
-				if (Mode == HoaDonDialogMode.Edit)
-					btnPrimary.BackColor = Color.FromArgb(33, 150, 243);
-				else
-					btnPrimary.BackColor = Color.FromArgb(76, 175, 80);
-			};
-			btnPrimary.MouseDown += (s, e) => {
-				if (Mode == HoaDonDialogMode.Edit)
-					btnPrimary.BackColor = Color.FromArgb(13, 130, 223);
-				else
-					btnPrimary.BackColor = Color.FromArgb(56, 155, 60);
-			};
-			btnPrimary.MouseUp += (s, e) => {
-				if (Mode == HoaDonDialogMode.Edit)
-					btnPrimary.BackColor = Color.FromArgb(53, 170, 255);
-				else
-					btnPrimary.BackColor = Color.FromArgb(96, 195, 100);
-			};
-
-			// Hiệu ứng cho nút Cancel (Hủy)
-			btnCancel.MouseEnter += (s, e) => {
-				btnCancel.BackColor = Color.FromArgb(255, 87, 74);
-			};
-			btnCancel.MouseLeave += (s, e) => {
-				btnCancel.BackColor = Color.FromArgb(244, 67, 54);
-			};
-			btnCancel.MouseDown += (s, e) => {
-				btnCancel.BackColor = Color.FromArgb(200, 50, 40);
-			};
-			btnCancel.MouseUp += (s, e) => {
-				btnCancel.BackColor = Color.FromArgb(255, 87, 74);
-			};
-		}
-
-		private void SetupNumericUpDownValidation()
-		{
-			// Đảm bảo tổng tiền không thể là số âm
-			numTongTien.Minimum = 0;
-			numTongTien.Maximum = 1000000000; // 1 tỷ VNĐ
-			numTongTien.DecimalPlaces = 0;
-			numTongTien.Increment = 10000; // Tăng mỗi lần 10,000 VNĐ
-
-			// Xử lý sự kiện khi giá trị thay đổi
-			numTongTien.ValueChanged += (s, e) => {
-				// Đảm bảo giá trị không âm
-				if (numTongTien.Value < 0)
-				{
-					numTongTien.Value = 0;
-				}
-			};
-
-			// Xử lý khi người dùng nhập thủ công
-			numTongTien.KeyPress += (s, e) => {
-				// Chỉ cho phép số và các phím điều khiển
-				if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
-				{
-					e.Handled = true;
-				}
-			};
-
-			// Xử lý khi mất focus
-			numTongTien.Leave += (s, e) => {
-				// Nếu giá trị nhỏ hơn 0, reset về 0
-				if (numTongTien.Value < 0)
-				{
-					numTongTien.Value = 0;
-					MessageBox.Show(
-						"Tổng tiền không thể là số âm. Giá trị đã được đặt lại về 0.",
-						"Thông báo",
-						MessageBoxButtons.OK,
-						MessageBoxIcon.Warning
-					);
-				}
-			};
+			_mode = HoaDonDialogMode.Add;
 		}
 
 		public void BindKhachHang(IEnumerable<KeyValuePair<int, string>> items)
 		{
-			var list = items?.ToList() ?? new List<KeyValuePair<int, string>>();
+			List<KeyValuePair<int, string>> list = items != null
+				? items.ToList()
+				: new List<KeyValuePair<int, string>>();
+
 			list.Insert(0, new KeyValuePair<int, string>(0, "-- Không chọn --"));
 			cbbKhachHang.DataSource = list;
 			cbbKhachHang.DisplayMember = "Value";
@@ -148,7 +144,10 @@ namespace QLBXMD.GUI.Admin
 
 		public void BindNhanVien(IEnumerable<KeyValuePair<int, string>> items)
 		{
-			var list = items?.ToList() ?? new List<KeyValuePair<int, string>>();
+			List<KeyValuePair<int, string>> list = items != null
+				? items.ToList()
+				: new List<KeyValuePair<int, string>>();
+
 			list.Insert(0, new KeyValuePair<int, string>(0, "-- Không chọn --"));
 			cbbNhanVien.DataSource = list;
 			cbbNhanVien.DisplayMember = "Value";
@@ -157,57 +156,240 @@ namespace QLBXMD.GUI.Admin
 
 		public void SetMode(HoaDonDialogMode mode)
 		{
+			EnsureRuntimeInitialized();
 			Mode = mode;
+
 			switch (mode)
 			{
 				case HoaDonDialogMode.Add:
 					Text = "Thêm hóa đơn";
-					lblHeader.Text = "📄 THÊM HÓA ĐƠN MỚI";
+					lblHeader.Text = "THÊM HÓA ĐƠN MỚI";
 					btnPrimary.Text = "Thêm";
+					btnPrimary.Visible = true;
 					btnPrimary.BackColor = Color.FromArgb(76, 175, 80);
 					pnlHeader.BackColor = Color.FromArgb(76, 175, 80);
+					btnCancel.Text = "Hủy";
+					btnCancel.BackColor = Color.FromArgb(244, 67, 54);
+					btnPrimary.Location = new Point(350, 440);
+					btnCancel.Location = new Point(460, 440);
+					ClientSize = new Size(630, 515);
 					txtMaHD.Enabled = false;
 					SetReadOnly(false);
+					ToggleTicketGrid(false);
 					break;
+
 				case HoaDonDialogMode.Edit:
 					Text = "Sửa hóa đơn";
-					lblHeader.Text = "📄 CẬP NHẬT HÓA ĐƠN";
+					lblHeader.Text = "CẬP NHẬT HÓA ĐƠN";
 					btnPrimary.Text = "Lưu";
+					btnPrimary.Visible = true;
 					btnPrimary.BackColor = Color.FromArgb(33, 150, 243);
 					pnlHeader.BackColor = Color.FromArgb(33, 150, 243);
+					btnCancel.Text = "Hủy";
+					btnCancel.BackColor = Color.FromArgb(244, 67, 54);
+					btnPrimary.Location = new Point(350, 440);
+					btnCancel.Location = new Point(460, 440);
+					ClientSize = new Size(630, 515);
 					txtMaHD.Enabled = false;
 					SetReadOnly(false);
+					ToggleTicketGrid(false);
 					break;
+
 				case HoaDonDialogMode.View:
 					Text = "Xem hóa đơn";
-					lblHeader.Text = "📄 THÔNG TIN HÓA ĐƠN";
+					lblHeader.Text = "THÔNG TIN HÓA ĐƠN";
 					btnPrimary.Visible = false;
 					btnCancel.Text = "Đóng";
 					btnCancel.BackColor = Color.FromArgb(158, 158, 158);
-					btnCancel.Location = new Point(460, 440);
+					btnCancel.Location = new Point(780, 590);
 					pnlHeader.BackColor = Color.FromArgb(158, 158, 158);
-					SetReadOnly(false);
+					ClientSize = new Size(900, 660);
+					SetReadOnly(true);
+					ToggleTicketGrid(true);
 					break;
 			}
 		}
 
-		private void SetReadOnly(bool ro)
+		public void LoadVeXeByHoaDon(int maHD)
 		{
-			txtMaHD.Enabled = !ro;
-			cbbKhachHang.Enabled = !ro;
-			cbbNhanVien.Enabled = !ro;
-			dtpNgayLap.Enabled = !ro;
-			numTongTien.Enabled = !ro;
-			cbbTrangThai.Enabled = !ro;
+			dgvDanhSachVe.Rows.Clear();
+			if (maHD <= 0)
+			{
+				return;
+			}
 
-			cbbKhachHang.TabStop = !ro;
-			cbbNhanVien.TabStop = !ro;
-			dtpNgayLap.TabStop = !ro;
-			numTongTien.TabStop = !ro;
-			cbbTrangThai.TabStop = !ro;
+			try
+			{
+				using (BXMDEntities db = new BXMDEntities())
+				{
+					var veXeList = db.VeXes
+						.Where(v => v.MaHD == maHD)
+						.Select(v => new
+						{
+							MaVe = v.MaVe,
+							TuyenDuong = v.ChuyenXe != null && v.ChuyenXe.TuyenDuong != null
+								? v.ChuyenXe.TuyenDuong.DiemDi + " - " + v.ChuyenXe.TuyenDuong.DiemDen
+								: "N/A",
+							NgayKhoiHanh = v.ChuyenXe != null
+								? (DateTime?)v.ChuyenXe.NgayGioKhoiHanh
+								: null,
+							ChoNgoi = v.ChoNgoi,
+							GiaVe = v.GiaVe ?? 0,
+							NhaXe = v.ChuyenXe != null && v.ChuyenXe.Xe != null && v.ChuyenXe.Xe.NhaXe != null
+								? v.ChuyenXe.Xe.NhaXe.TenNX
+								: "N/A"
+						})
+						.ToList();
 
-			// Thay đổi màu nền khi readonly
-			if (ro)
+					foreach (var ve in veXeList)
+					{
+						dgvDanhSachVe.Rows.Add(
+							ve.MaVe,
+							ve.TuyenDuong,
+							ve.NgayKhoiHanh.HasValue ? ve.NgayKhoiHanh.Value.ToString("dd/MM/yyyy HH:mm") : "N/A",
+							ve.ChoNgoi,
+							ve.GiaVe.ToString("#,##0"),
+							ve.NhaXe
+						);
+					}
+				}
+
+				dgvDanhSachVe.ClearSelection();
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(
+					"Không thể tải danh sách vé của hóa đơn: " + ex.Message,
+					"Lỗi",
+					MessageBoxButtons.OK,
+					MessageBoxIcon.Error);
+			}
+		}
+
+		private void SetupButtonEffects()
+		{
+			btnPrimary.MouseEnter += delegate
+			{
+				if (Mode == HoaDonDialogMode.Edit)
+				{
+					btnPrimary.BackColor = Color.FromArgb(53, 170, 255);
+				}
+				else
+				{
+					btnPrimary.BackColor = Color.FromArgb(96, 195, 100);
+				}
+			};
+
+			btnPrimary.MouseLeave += delegate
+			{
+				if (Mode == HoaDonDialogMode.Edit)
+				{
+					btnPrimary.BackColor = Color.FromArgb(33, 150, 243);
+				}
+				else
+				{
+					btnPrimary.BackColor = Color.FromArgb(76, 175, 80);
+				}
+			};
+
+			btnPrimary.MouseDown += delegate
+			{
+				if (Mode == HoaDonDialogMode.Edit)
+				{
+					btnPrimary.BackColor = Color.FromArgb(13, 130, 223);
+				}
+				else
+				{
+					btnPrimary.BackColor = Color.FromArgb(56, 155, 60);
+				}
+			};
+
+			btnPrimary.MouseUp += delegate
+			{
+				if (Mode == HoaDonDialogMode.Edit)
+				{
+					btnPrimary.BackColor = Color.FromArgb(53, 170, 255);
+				}
+				else
+				{
+					btnPrimary.BackColor = Color.FromArgb(96, 195, 100);
+				}
+			};
+
+			btnCancel.MouseEnter += delegate
+			{
+				btnCancel.BackColor = Color.FromArgb(255, 87, 74);
+			};
+
+			btnCancel.MouseLeave += delegate
+			{
+				btnCancel.BackColor = Color.FromArgb(244, 67, 54);
+			};
+
+			btnCancel.MouseDown += delegate
+			{
+				btnCancel.BackColor = Color.FromArgb(200, 50, 40);
+			};
+
+			btnCancel.MouseUp += delegate
+			{
+				btnCancel.BackColor = Color.FromArgb(255, 87, 74);
+			};
+		}
+
+		private void SetupNumericUpDownValidation()
+		{
+			numTongTien.Minimum = 0;
+			numTongTien.Maximum = 1000000000;
+			numTongTien.DecimalPlaces = 0;
+			numTongTien.Increment = 10000;
+
+			numTongTien.ValueChanged += delegate
+			{
+				if (numTongTien.Value < 0)
+				{
+					numTongTien.Value = 0;
+				}
+			};
+
+			numTongTien.KeyPress += delegate(object sender, KeyPressEventArgs e)
+			{
+				if (!char.IsControl(e.KeyChar) && !char.IsDigit(e.KeyChar))
+				{
+					e.Handled = true;
+				}
+			};
+
+			numTongTien.Leave += delegate
+			{
+				if (numTongTien.Value < 0)
+				{
+					numTongTien.Value = 0;
+					MessageBox.Show(
+						"Tổng tiền không thể là số âm. Giá trị đã được đặt lại về 0.",
+						"Thông báo",
+						MessageBoxButtons.OK,
+						MessageBoxIcon.Warning);
+				}
+			};
+		}
+
+		private void SetReadOnly(bool readOnly)
+		{
+			txtMaHD.Enabled = !readOnly;
+			cbbKhachHang.Enabled = !readOnly;
+			cbbNhanVien.Enabled = !readOnly;
+			dtpNgayLap.Enabled = !readOnly;
+			numTongTien.Enabled = !readOnly;
+			cbbTrangThai.Enabled = !readOnly;
+
+			cbbKhachHang.TabStop = !readOnly;
+			cbbNhanVien.TabStop = !readOnly;
+			dtpNgayLap.TabStop = !readOnly;
+			numTongTien.TabStop = !readOnly;
+			cbbTrangThai.TabStop = !readOnly;
+
+			if (readOnly)
 			{
 				txtMaHD.BackColor = Color.WhiteSmoke;
 				cbbKhachHang.BackColor = Color.WhiteSmoke;
@@ -218,7 +400,7 @@ namespace QLBXMD.GUI.Admin
 			}
 			else
 			{
-				txtMaHD.BackColor = Color.WhiteSmoke; // Luôn readonly
+				txtMaHD.BackColor = Color.WhiteSmoke;
 				cbbKhachHang.BackColor = Color.White;
 				cbbNhanVien.BackColor = Color.White;
 				dtpNgayLap.BackColor = Color.White;
@@ -231,65 +413,62 @@ namespace QLBXMD.GUI.Admin
 		{
 			if (ValidateInput())
 			{
-				this.DialogResult = DialogResult.OK;
-				this.Close();
+				DialogResult = DialogResult.OK;
+				Close();
 			}
 		}
 
 		private void btnCancel_Click(object sender, EventArgs e)
 		{
-			this.DialogResult = DialogResult.Cancel;
-			this.Close();
+			DialogResult = DialogResult.Cancel;
+			Close();
 		}
 
 		private bool ValidateInput()
 		{
 			if (Mode == HoaDonDialogMode.View)
+			{
 				return true;
+			}
 
-			// Phải chọn ít nhất khách hàng hoặc nhân viên
 			int? maKH = SelectedMaKH;
 			int? maNV = SelectedMANV;
-			
-			if ((maKH == null || maKH == 0) && (maNV == null || maNV == 0))
+
+			if ((!maKH.HasValue || maKH.Value == 0) && (!maNV.HasValue || maNV.Value == 0))
 			{
 				MessageBox.Show(
-					"Vui lòng chọn ít nhất khách hàng hoặc nhân viên.\n\n" +
-					"Hóa đơn phải liên kết với ít nhất một khách hàng hoặc nhân viên.",
+					"Vui lòng chọn ít nhất khách hàng hoặc nhân viên.\n\nHóa đơn phải liên kết với ít nhất một khách hàng hoặc nhân viên.",
 					"Thông báo",
 					MessageBoxButtons.OK,
-					MessageBoxIcon.Warning
-				);
+					MessageBoxIcon.Warning);
 				cbbKhachHang.Focus();
 				return false;
 			}
 
-			// Kiểm tra ngày lập
 			if (dtpNgayLap.Value > DateTime.Now)
 			{
 				MessageBox.Show(
-					"Ngày lập không được lớn hơn ngày hiện tại.\n\n" +
-					$"Ngày hiện tại: {DateTime.Now:dd/MM/yyyy HH:mm}\n" +
-					$"Ngày đã chọn: {dtpNgayLap.Value:dd/MM/yyyy HH:mm}",
+					"Ngày lập không được lớn hơn ngày hiện tại.\n\nNgày hiện tại: "
+						+ DateTime.Now.ToString("dd/MM/yyyy HH:mm")
+						+ "\nNgày đã chọn: "
+						+ dtpNgayLap.Value.ToString("dd/MM/yyyy HH:mm"),
 					"Lỗi ngày lập",
 					MessageBoxButtons.OK,
-					MessageBoxIcon.Warning
-				);
+					MessageBoxIcon.Warning);
 				dtpNgayLap.Focus();
 				return false;
 			}
 
-			// Kiểm tra ngày lập không quá xa trong quá khứ (hơn 1 năm)
 			if (dtpNgayLap.Value < DateTime.Now.AddYears(-1))
 			{
-				var result = MessageBox.Show(
-					$"Ngày lập đã chọn là {DateTime.Now.Subtract(dtpNgayLap.Value).Days} ngày trước.\n\n" +
-					"Bạn có chắc chắn muốn tiếp tục?",
+				DialogResult result = MessageBox.Show(
+					"Ngày lập đã chọn là "
+						+ DateTime.Now.Subtract(dtpNgayLap.Value).Days
+						+ " ngày trước.\n\nBạn có chắc chắn muốn tiếp tục?",
 					"Xác nhận ngày lập",
 					MessageBoxButtons.YesNo,
-					MessageBoxIcon.Question
-				);
-				
+					MessageBoxIcon.Question);
+
 				if (result != DialogResult.Yes)
 				{
 					dtpNgayLap.Focus();
@@ -297,46 +476,40 @@ namespace QLBXMD.GUI.Admin
 				}
 			}
 
-			// Kiểm tra tổng tiền không thể là số âm
 			if (numTongTien.Value < 0)
 			{
 				MessageBox.Show(
 					"Tổng tiền không thể là số âm.\n\nVui lòng nhập tổng tiền hợp lệ.",
 					"Lỗi nhập liệu",
 					MessageBoxButtons.OK,
-					MessageBoxIcon.Error
-				);
+					MessageBoxIcon.Error);
 				numTongTien.Value = 0;
 				numTongTien.Focus();
 				return false;
 			}
 
-			// Kiểm tra tổng tiền phải lớn hơn 0
 			if (numTongTien.Value == 0)
 			{
 				MessageBox.Show(
 					"Tổng tiền phải lớn hơn 0.\n\nVui lòng nhập tổng tiền hợp lệ.",
 					"Lỗi nhập liệu",
 					MessageBoxButtons.OK,
-					MessageBoxIcon.Warning
-				);
+					MessageBoxIcon.Warning);
 				numTongTien.Focus();
 				return false;
 			}
 
-			// Kiểm tra tổng tiền trong khoảng hợp lý
 			if (numTongTien.Value < 10000)
 			{
-				var result = MessageBox.Show(
-					$"Tổng tiền quá thấp ({numTongTien.Value:#,##0} VNĐ).\n\n" +
-					"Tổng tiền thông thường từ 10,000 VNĐ trở lên.\n" +
-					"Bạn có chắc chắn muốn tiếp tục?",
+				DialogResult lowValueResult = MessageBox.Show(
+					"Tổng tiền quá thấp (" + numTongTien.Value.ToString("#,##0") + " VNĐ).\n\n"
+						+ "Tổng tiền thông thường từ 10,000 VNĐ trở lên.\n"
+						+ "Bạn có chắc chắn muốn tiếp tục?",
 					"Xác nhận tổng tiền",
 					MessageBoxButtons.YesNo,
-					MessageBoxIcon.Question
-				);
-				
-				if (result != DialogResult.Yes)
+					MessageBoxIcon.Question);
+
+				if (lowValueResult != DialogResult.Yes)
 				{
 					numTongTien.Focus();
 					return false;
@@ -345,35 +518,52 @@ namespace QLBXMD.GUI.Admin
 
 			if (numTongTien.Value > 100000000)
 			{
-				var result = MessageBox.Show(
-					$"Tổng tiền rất cao ({numTongTien.Value:#,##0} VNĐ).\n\n" +
-					"Bạn có chắc chắn tổng tiền này đúng?",
+				DialogResult highValueResult = MessageBox.Show(
+					"Tổng tiền rất cao (" + numTongTien.Value.ToString("#,##0") + " VNĐ).\n\n"
+						+ "Bạn có chắc chắn tổng tiền này đúng?",
 					"Xác nhận tổng tiền",
 					MessageBoxButtons.YesNo,
-					MessageBoxIcon.Question
-				);
-				
-				if (result != DialogResult.Yes)
+					MessageBoxIcon.Question);
+
+				if (highValueResult != DialogResult.Yes)
 				{
 					numTongTien.Focus();
 					return false;
 				}
 			}
 
-			// Kiểm tra trạng thái thanh toán
 			if (TrangThaiValue == null)
 			{
 				MessageBox.Show(
 					"Vui lòng chọn trạng thái thanh toán.",
 					"Thông báo",
 					MessageBoxButtons.OK,
-					MessageBoxIcon.Warning
-				);
+					MessageBoxIcon.Warning);
 				cbbTrangThai.Focus();
 				return false;
 			}
 
 			return true;
+		}
+
+		private void ToggleTicketGrid(bool visible)
+		{
+			lblDanhSachVe.Visible = visible;
+			dgvDanhSachVe.Visible = visible;
+		}
+
+		private void EnsureRuntimeInitialized()
+		{
+			if (_runtimeInitialized)
+			{
+				return;
+			}
+
+			cbbTrangThai.SelectedIndex = 1;
+			SetupButtonEffects();
+			SetupNumericUpDownValidation();
+			AdminGridTheme.Apply(dgvDanhSachVe);
+			_runtimeInitialized = true;
 		}
 	}
 }

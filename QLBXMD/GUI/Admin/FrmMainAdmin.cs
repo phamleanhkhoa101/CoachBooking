@@ -125,6 +125,7 @@ namespace QLBXMD.GUI.Admin
 		{
 			pnlMain.Controls.Clear();
 			control.Dock = DockStyle.Fill;
+			AdminGridTheme.ApplyToControlTree(control);
 			pnlMain.Controls.Add(control);
 			control.BringToFront();
 		}

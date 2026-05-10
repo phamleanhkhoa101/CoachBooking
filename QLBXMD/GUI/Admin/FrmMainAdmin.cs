@@ -17,17 +17,17 @@ namespace QLBXMD.GUI.Admin
 		private Panel sidebarIndicator;
 		private NhanVien nhanVien;
 		private TaiKhoanBUS taiKhoanBus = new TaiKhoanBUS();
-		private readonly Color menuBackColor = Color.FromArgb(248, 250, 252);
+		private readonly Color menuBackColor = Color.White;
 		private readonly Color menuCardColor = Color.White;
-		private readonly Color menuItemColor = Color.FromArgb(248, 250, 252);
-		private readonly Color menuItemHoverColor = Color.FromArgb(241, 245, 249);
-		private readonly Color menuItemActiveColor = Color.FromArgb(224, 242, 254);
+		private readonly Color menuItemColor = Color.White;
+		private readonly Color menuItemHoverColor = Color.FromArgb(248, 250, 252);
+		private readonly Color menuItemActiveColor = Color.White;
 		private readonly Color menuTextColor = Color.FromArgb(30, 41, 59);
-		private readonly Color menuMutedTextColor = Color.FromArgb(234, 88, 12);
-		private readonly Color menuAccentColor = Color.FromArgb(249, 115, 22);
+		private readonly Color menuMutedTextColor = Color.Black;
+		private readonly Color menuAccentColor = Color.FromArgb(29, 78, 216);
 		private readonly Color borderColor = Color.FromArgb(226, 232, 240);
-		private readonly Color headerBackColor = Color.FromArgb(204, 251, 241);
-		private readonly Color headerTextColor = Color.FromArgb(15, 23, 42);
+		private readonly Color headerBackColor = Color.FromArgb(37, 99, 235);
+		private readonly Color headerTextColor = Color.White;
 		private readonly Color mainBackColor = Color.FromArgb(248, 250, 252);
 
 		// Collapsible groups: Chung, DanhMuc, HeThong
@@ -457,10 +457,10 @@ namespace QLBXMD.GUI.Admin
 
 			label2.ForeColor = headerTextColor;
 			lblName.ForeColor = headerTextColor;
-			lblRole.ForeColor = Color.FromArgb(71, 85, 105);
+			lblRole.ForeColor = Color.FromArgb(191, 219, 254);
 			btnSetting.BackColor = headerBackColor;
-			btnSetting.FlatAppearance.MouseOverBackColor = Color.FromArgb(153, 246, 228);
-			btnSetting.FlatAppearance.MouseDownBackColor = Color.FromArgb(153, 246, 228);
+			btnSetting.FlatAppearance.MouseOverBackColor = Color.FromArgb(59, 130, 246);
+			btnSetting.FlatAppearance.MouseDownBackColor = Color.FromArgb(59, 130, 246);
 
 			panel1.BackColor = menuCardColor;
 			panel1.BorderStyle = BorderStyle.FixedSingle;
@@ -510,5 +510,5 @@ namespace QLBXMD.GUI.Admin
 		{
 			icon.BackColor = Color.Transparent;
 		}
-	}
+    }
 }

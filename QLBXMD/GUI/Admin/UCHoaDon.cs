@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
@@ -26,7 +26,7 @@ namespace QLBXMD.GUI.Admin
 			btnSua.Enabled = has; 
 			btnXoa.Enabled = has;
 			
-			// Load vé khi ch?n hóa ðõn
+			// Load vÃ© khi chá»n hÃ³a Ä‘Æ¡n
 			if (has)
 			{
 				int maHD = int.Parse(dgvVe.SelectedRows[0].Cells[0].Value.ToString());
@@ -54,7 +54,7 @@ namespace QLBXMD.GUI.Admin
 						NhanVien = hd.NhanVien != null ? hd.NhanVien.TenNV : "N/A",
 						NgayLap = hd.NgayLap.ToString("dd/MM/yyyy HH:mm"),
 						TongTien = hd.TongTien?.ToString("N0") ?? "0",
-						TrangThai = hd.TrangThai == true ? "Ð? thanh toán" : "Chýa thanh toán",
+						TrangThai = hd.TrangThai == true ? "ÄÃ£ thanh toÃ¡n" : "ChÆ°a thanh toÃ¡n",
 						MaKH = hd.MaKH,
 						MaNV = hd.MaNV,
 						NgayLapDate = hd.NgayLap,
@@ -70,30 +70,30 @@ namespace QLBXMD.GUI.Admin
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show("T?i d? li?u th?t b?i: " + ex.Message, "L?i", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show("Táº£i dá»¯ liá»‡u tháº¥t báº¡i: " + ex.Message, "Lá»—i", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
 
 		private void SetupGridHeaders()
 		{
 			dgvVe.Columns.Clear();
-			dgvVe.Columns.Add("MaHD", "M? hóa ðõn");
-			dgvVe.Columns.Add("KhachHang", "Khách hàng");
-			dgvVe.Columns.Add("NhanVien", "Nhân viên");
-			dgvVe.Columns.Add("NgayLap", "Ngày l?p");
-			dgvVe.Columns.Add("TongTien", "T?ng ti?n (þ)");
-			dgvVe.Columns.Add("TrangThai", "Tr?ng thái");
+			dgvVe.Columns.Add("MaHD", "MÃ£ hÃ³a Ä‘Æ¡n");
+			dgvVe.Columns.Add("KhachHang", "KhÃ¡ch hÃ ng");
+			dgvVe.Columns.Add("NhanVien", "NhÃ¢n viÃªn");
+			dgvVe.Columns.Add("NgayLap", "NgÃ y láº­p");
+			dgvVe.Columns.Add("TongTien", "Tá»•ng tiá»n (â‚«)");
+			dgvVe.Columns.Add("TrangThai", "Tráº¡ng thÃ¡i");
 		}
 
 		private void SetupVeXeGridHeaders()
 		{
 			dgvVeXe.Columns.Clear();
-			dgvVeXe.Columns.Add("MaVe", "M? vé");
-			dgvVeXe.Columns.Add("TuyenDuong", "Tuy?n ðý?ng");
-			dgvVeXe.Columns.Add("NgayKhoiHanh", "Ngày kh?i hành");
-			dgvVeXe.Columns.Add("GioKhoiHanh", "Gi? kh?i hành");
-			dgvVeXe.Columns.Add("ChoNgoi", "Ch? ng?i");
-			dgvVeXe.Columns.Add("GiaVe", "Giá vé (þ)");
+			dgvVeXe.Columns.Add("MaVe", "MÃ£ vÃ©");
+			dgvVeXe.Columns.Add("TuyenDuong", "Tuyáº¿n Ä‘Æ°á»ng");
+			dgvVeXe.Columns.Add("NgayKhoiHanh", "NgÃ y khá»Ÿi hÃ nh");
+			dgvVeXe.Columns.Add("GioKhoiHanh", "Giá» khá»Ÿi hÃ nh");
+			dgvVeXe.Columns.Add("ChoNgoi", "Chá»— ngá»“i");
+			dgvVeXe.Columns.Add("GiaVe", "GiÃ¡ vÃ© (â‚«)");
 		}
 
 		private void LoadVeXeByHoaDon(int maHD)
@@ -137,7 +137,7 @@ namespace QLBXMD.GUI.Admin
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show("T?i danh sách vé th?t b?i: " + ex.Message, "L?i", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show("Táº£i danh sÃ¡ch vÃ© tháº¥t báº¡i: " + ex.Message, "Lá»—i", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
 
@@ -149,12 +149,12 @@ namespace QLBXMD.GUI.Admin
 		private void InitCbb()
 		{
 			cbbLoai.Items.Clear();
-			cbbLoai.Items.Add("T?t c?");
-			cbbLoai.Items.Add("M? hóa ðõn");
-			cbbLoai.Items.Add("Khách hàng");
-			cbbLoai.Items.Add("Nhân viên");
-			cbbLoai.Items.Add("Ngày l?p");
-			cbbLoai.Items.Add("Tr?ng thái");
+			cbbLoai.Items.Add("Táº¥t cáº£");
+			cbbLoai.Items.Add("MÃ£ hÃ³a Ä‘Æ¡n");
+			cbbLoai.Items.Add("KhÃ¡ch hÃ ng");
+			cbbLoai.Items.Add("NhÃ¢n viÃªn");
+			cbbLoai.Items.Add("NgÃ y láº­p");
+			cbbLoai.Items.Add("Tráº¡ng thÃ¡i");
 			cbbLoai.SelectedIndex = 0;
 			cbbLoai.SelectedIndexChanged += cbbLoai_SelectedIndexChanged;
 		}
@@ -233,10 +233,10 @@ namespace QLBXMD.GUI.Admin
 					};
 					
 					string result = _bus.Add(hd);
-					MessageBox.Show(result, "Thông báo", MessageBoxButtons.OK,
-						result.Contains("thành công") ? MessageBoxIcon.Information : MessageBoxIcon.Error);
+					MessageBox.Show(result, "ThÃ´ng bÃ¡o", MessageBoxButtons.OK,
+						result.Contains("thÃ nh cÃ´ng") ? MessageBoxIcon.Information : MessageBoxIcon.Error);
 					
-					if (result.Contains("thành công")) 
+					if (result.Contains("thÃ nh cÃ´ng")) 
 						UCHoaDon_Load(null, null);
 				}
 			}
@@ -277,7 +277,7 @@ namespace QLBXMD.GUI.Admin
 			var existing = _bus.GetById(maHD);
 			if (existing == null)
 			{
-				MessageBox.Show("Không t?m th?y hóa ðõn.", "L?i", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show("KhÃ´ng tÃ¬m tháº¥y hÃ³a Ä‘Æ¡n.", "Lá»—i", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				return;
 			}
 
@@ -306,10 +306,10 @@ namespace QLBXMD.GUI.Admin
 					};
 
 					string result = _bus.Update(update);
-					MessageBox.Show(result, "Thông báo", MessageBoxButtons.OK,
-						result.Contains("thành công") ? MessageBoxIcon.Information : MessageBoxIcon.Error);
+					MessageBox.Show(result, "ThÃ´ng bÃ¡o", MessageBoxButtons.OK,
+						result.Contains("thÃ nh cÃ´ng") ? MessageBoxIcon.Information : MessageBoxIcon.Error);
 					
-					if (result.Contains("thành công")) 
+					if (result.Contains("thÃ nh cÃ´ng")) 
 						UCHoaDon_Load(null, null);
 				}
 			}
@@ -319,33 +319,33 @@ namespace QLBXMD.GUI.Admin
 		{
 			if (dgvVe.SelectedRows.Count == 0)
 			{
-				MessageBox.Show("Vui l?ng ch?n hóa ðõn c?n xóa.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				MessageBox.Show("Vui lÃ²ng chá»n hÃ³a Ä‘Æ¡n cáº§n xÃ³a.", "ThÃ´ng bÃ¡o", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				return;
 			}
 			
 			var r = dgvVe.SelectedRows[0];
 			if (r.Cells[0].Value == null)
 			{
-				MessageBox.Show("Vui l?ng ch?n hóa ðõn c?n xóa.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				MessageBox.Show("Vui lÃ²ng chá»n hÃ³a Ä‘Æ¡n cáº§n xÃ³a.", "ThÃ´ng bÃ¡o", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				return;
 			}
 			
 			int maHD = int.Parse(r.Cells[0].Value.ToString());
 			
-			// L?y thông tin ð? hi?n th? trong câu h?i xác nh?n
+			// Láº¥y thÃ´ng tin Ä‘á»ƒ hiá»ƒn thá»‹ trong cÃ¢u há»i xÃ¡c nháº­n
 			string khachHang = r.Cells[1].Value?.ToString() ?? "N/A";
 			string nhanVien = r.Cells[2].Value?.ToString() ?? "N/A";
 			string ngayLap = r.Cells[3].Value?.ToString() ?? "N/A";
 			string tongTien = r.Cells[4].Value?.ToString() ?? "N/A";
 			
-			// Hi?n th? dialog xác nh?n xóa
+			// Hiá»ƒn thá»‹ dialog xÃ¡c nháº­n xÃ³a
 			var confirmResult = MessageBox.Show(
-				$"B?n có ch?c ch?n mu?n xóa hóa ðõn?\n\n" +
-				$"Khách hàng: {khachHang}\n" +
-				$"Nhân viên: {nhanVien}\n" +
-				$"Ngày l?p: {ngayLap}\n" +
-				$"T?ng ti?n: {tongTien} þ",
-				"Xác nh?n xóa",
+				$"Báº¡n cÃ³ cháº¯c cháº¯n muá»‘n xÃ³a hÃ³a Ä‘Æ¡n?\n\n" +
+				$"KhÃ¡ch hÃ ng: {khachHang}\n" +
+				$"NhÃ¢n viÃªn: {nhanVien}\n" +
+				$"NgÃ y láº­p: {ngayLap}\n" +
+				$"Tá»•ng tiá»n: {tongTien} â‚«",
+				"XÃ¡c nháº­n xÃ³a",
 				MessageBoxButtons.YesNo,
 				MessageBoxIcon.Question
 			);
@@ -353,10 +353,10 @@ namespace QLBXMD.GUI.Admin
 			if (confirmResult == DialogResult.Yes)
 			{
 				string result = _bus.Delete(maHD);
-				MessageBox.Show(result, "Thông báo", MessageBoxButtons.OK,
-					result.Contains("thành công") ? MessageBoxIcon.Information : MessageBoxIcon.Error);
+				MessageBox.Show(result, "ThÃ´ng bÃ¡o", MessageBoxButtons.OK,
+					result.Contains("thÃ nh cÃ´ng") ? MessageBoxIcon.Information : MessageBoxIcon.Error);
 				
-				if (result.Contains("thành công")) 
+				if (result.Contains("thÃ nh cÃ´ng")) 
 				{
 					UCHoaDon_Load(null, null);
 				}
@@ -379,22 +379,22 @@ namespace QLBXMD.GUI.Admin
 			
 			switch (selected)
 			{
-				case 1: // M? hóa ðõn
+				case 1: // MÃ£ hÃ³a Ä‘Æ¡n
 					filtered = _data.Where(x => x.MaHD.ToString().ToLowerInvariant().Contains(keyword)).ToList(); 
 					break;
-				case 2: // Khách hàng
+				case 2: // KhÃ¡ch hÃ ng
 					filtered = _data.Where(x => (x.KhachHang ?? "").ToLowerInvariant().Contains(keyword)).ToList(); 
 					break;
-				case 3: // Nhân viên
+				case 3: // NhÃ¢n viÃªn
 					filtered = _data.Where(x => (x.NhanVien ?? "").ToLowerInvariant().Contains(keyword)).ToList(); 
 					break;
-				case 4: // Ngày l?p
+				case 4: // NgÃ y láº­p
 					filtered = _data.Where(x => (x.NgayLap ?? "").ToLowerInvariant().Contains(keyword)).ToList(); 
 					break;
-				case 5: // Tr?ng thái
+				case 5: // Tráº¡ng thÃ¡i
 					filtered = _data.Where(x => (x.TrangThai ?? "").ToLowerInvariant().Contains(keyword)).ToList(); 
 					break;
-				default: // T?t c?
+				default: // Táº¥t cáº£
 					filtered = _data.Where(x => new[] 
 					{ 
 						x.MaHD.ToString(), 

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
@@ -37,7 +37,7 @@ namespace QLBXMD.GUI.Admin
 					{
 						MaChuyen = cx.MaChuyen,
 						XeName = cx.Xe != null ? cx.Xe.BienSoXe : (cx.MaXe != 0 ? $"Xe {cx.MaXe}" : null),
-						TuyenName = cx.TuyenDuong != null ? ($"{cx.TuyenDuong.DiemDi} -> {cx.TuyenDuong.DiemDen}") : (cx.MaTuyen != 0 ? $"Tuy?n {cx.MaTuyen}" : null),
+						TuyenName = cx.TuyenDuong != null ? ($"{cx.TuyenDuong.DiemDi} -> {cx.TuyenDuong.DiemDen}") : (cx.MaTuyen != 0 ? $"Tuyến {cx.MaTuyen}" : null),
 						TaiXeName = cx.TaiXe != null ? cx.TaiXe.TenTX : (cx.MaTX != 0 ? $"TX {cx.MaTX}" : null),
 						KhoiHanh = cx.NgayGioKhoiHanh.ToString("dd/MM/yyyy HH:mm"),
 						GiaVe = cx.GiaVeThucTe?.ToString("N0"),
@@ -53,7 +53,7 @@ namespace QLBXMD.GUI.Admin
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show("T?i d? li?u th?t b?i: " + ex.Message, "L?i", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show("Tải dữ liệu thất bại: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
 
@@ -61,25 +61,25 @@ namespace QLBXMD.GUI.Admin
 		{
 			if (dgv.Columns.Count >= 6)
 			{
-				dgv.Columns[0].HeaderText = "M? chuy?n";
+				dgv.Columns[0].HeaderText = "Mã chuyến";
 				dgv.Columns[1].HeaderText = "Xe";
-				dgv.Columns[2].HeaderText = "Tuy?n";
-				dgv.Columns[3].HeaderText = "T�i x?";
-				dgv.Columns[4].HeaderText = "Kh?i h�nh";
-				dgv.Columns[5].HeaderText = "Gi� v� (�)";
+				dgv.Columns[2].HeaderText = "Tuyến";
+				dgv.Columns[3].HeaderText = "Tài xế";
+				dgv.Columns[4].HeaderText = "Khởi hành";
+				dgv.Columns[5].HeaderText = "Giá vé (đ)";
 			}
 		}
 
 		private void InitCbb()
 		{
 			cbbLoai.Items.Clear();
-			cbbLoai.Items.Add("T?t c?");
-			cbbLoai.Items.Add("M? chuy?n");
+			cbbLoai.Items.Add("Tất cả");
+			cbbLoai.Items.Add("Mã chuyến");
 			cbbLoai.Items.Add("Xe");
-			cbbLoai.Items.Add("Tuy?n");
-			cbbLoai.Items.Add("T�i x?");
-			cbbLoai.Items.Add("Kh?i h�nh");
-			cbbLoai.Items.Add("Gi� v�");
+			cbbLoai.Items.Add("Tuyến");
+			cbbLoai.Items.Add("Tài xế");
+			cbbLoai.Items.Add("Khởi hành");
+			cbbLoai.Items.Add("Giá vé");
 			cbbLoai.SelectedIndex = 0;
 		}
 
@@ -158,9 +158,9 @@ namespace QLBXMD.GUI.Admin
 						GiaVeThucTe = dialog.GiaVeValue
 					};
 					string result = _bus.Add(cx);
-					MessageBox.Show(result, "Th�ng b�o", MessageBoxButtons.OK,
-						result.Contains("th�nh c�ng") ? MessageBoxIcon.Information : MessageBoxIcon.Error);
-					if (result.Contains("th�nh c�ng")) UCChuyenXe_Load(null, null);
+					MessageBox.Show(result, "Thông báo", MessageBoxButtons.OK,
+						result.Contains("thành công") ? MessageBoxIcon.Information : MessageBoxIcon.Error);
+					if (result.Contains("thành công")) UCChuyenXe_Load(null, null);
 				}
 			}
 		}
@@ -199,7 +199,7 @@ namespace QLBXMD.GUI.Admin
 			var existing = _bus.GetById(maChuyen);
 			if (existing == null)
 			{
-				MessageBox.Show("Kh�ng t?m th?y chuy?n xe.", "L?i", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show("Không tìm thấy chuyến xe.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				return;
 			}
 
@@ -231,9 +231,9 @@ namespace QLBXMD.GUI.Admin
 					};
 
 					string result = _bus.Update(update);
-					MessageBox.Show(result, "Th�ng b�o", MessageBoxButtons.OK,
-						result.Contains("th�nh c�ng") ? MessageBoxIcon.Information : MessageBoxIcon.Error);
-					if (result.Contains("th�nh c�ng")) UCChuyenXe_Load(null, null);
+					MessageBox.Show(result, "Thông báo", MessageBoxButtons.OK,
+						result.Contains("thành công") ? MessageBoxIcon.Information : MessageBoxIcon.Error);
+					if (result.Contains("thành công")) UCChuyenXe_Load(null, null);
 				}
 			}
 		}
@@ -242,25 +242,25 @@ namespace QLBXMD.GUI.Admin
 		{
 			if (dgv.SelectedRows.Count == 0)
 			{
-				MessageBox.Show("Vui l?ng ch?n chuy?n xe c?n x�a.", "Th�ng b�o", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				MessageBox.Show("Vui lòng chọn chuyến xe cần xóa.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				return;
 			}
 			var r = dgv.SelectedRows[0];
 			if (r.Cells[0].Value == null)
 			{
-				MessageBox.Show("Vui l?ng ch?n chuy?n xe c?n x�a.", "Th�ng b�o", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				MessageBox.Show("Vui lòng chọn chuyến xe cần xóa.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				return;
 			}
 			int maChuyen = int.Parse(r.Cells[0].Value.ToString());
 			
-			// L?y th�ng tin �? hi?n th? trong c�u h?i x�c nh?n
+			// Lấy thông tin để hiển thị trong câu hỏi xác nhận
 			string xeName = r.Cells[1].Value?.ToString() ?? "N/A";
 			string tuyenName = r.Cells[2].Value?.ToString() ?? "N/A";
 			
-			// Hi?n th? dialog x�c nh?n x�a
+			// Hiển thị dialog xác nhận xóa
 			var confirmResult = MessageBox.Show(
-				$"B?n c� ch?c ch?n mu?n x�a chuy?n xe '{xeName} - {tuyenName}'?",
-				"X�c nh?n x�a",
+				$"Bạn có chắc chắn muốn xóa chuyến xe '{xeName} - {tuyenName}'?",
+				"Xác nhận xóa",
 				MessageBoxButtons.YesNo,
 				MessageBoxIcon.Question
 			);
@@ -268,9 +268,9 @@ namespace QLBXMD.GUI.Admin
 			if (confirmResult == DialogResult.Yes)
 			{
 				string result = _bus.Delete(maChuyen);
-				MessageBox.Show(result, "Th�ng b�o", MessageBoxButtons.OK,
-					result.Contains("th�nh c�ng") ? MessageBoxIcon.Information : MessageBoxIcon.Error);
-				if (result.Contains("th�nh c�ng")) 
+				MessageBox.Show(result, "Thông báo", MessageBoxButtons.OK,
+					result.Contains("thành công") ? MessageBoxIcon.Information : MessageBoxIcon.Error);
+				if (result.Contains("thành công")) 
 				{
 					UCChuyenXe_Load(null, null);
 				}

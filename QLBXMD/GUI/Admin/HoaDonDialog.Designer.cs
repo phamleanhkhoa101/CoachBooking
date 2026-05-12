@@ -1,4 +1,4 @@
-﻿namespace QLBXMD.GUI.Admin
+namespace QLBXMD.GUI.Admin
 {
 	partial class HoaDonDialog
 	{
@@ -50,6 +50,7 @@
             this.colChoNgoi = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colGiaVe = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.colNhaXe = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.colAction = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.pnlHeader = new System.Windows.Forms.Panel();
             this.lblHeader = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.numTongTien)).BeginInit();
@@ -264,7 +265,8 @@
             this.colNgayKhoiHanh,
             this.colChoNgoi,
             this.colGiaVe,
-            this.colNhaXe});
+            this.colNhaXe,
+            this.colAction});
             this.dgvDanhSachVe.Location = new System.Drawing.Point(42, 400);
             this.dgvDanhSachVe.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.dgvDanhSachVe.MultiSelect = false;
@@ -272,11 +274,13 @@
             this.dgvDanhSachVe.ReadOnly = true;
             this.dgvDanhSachVe.RowHeadersVisible = false;
             this.dgvDanhSachVe.RowHeadersWidth = 62;
-            this.dgvDanhSachVe.RowTemplate.Height = 28;
+            this.dgvDanhSachVe.RowTemplate.Height = 35;
             this.dgvDanhSachVe.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dgvDanhSachVe.Size = new System.Drawing.Size(876, 226);
             this.dgvDanhSachVe.TabIndex = 15;
             this.dgvDanhSachVe.Visible = false;
+            this.dgvDanhSachVe.CellClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.dgvDanhSachVe_CellClick);
+            this.dgvDanhSachVe.CellPainting += new System.Windows.Forms.DataGridViewCellPaintingEventHandler(this.dgvDanhSachVe_CellPainting);
             // 
             // colMaVe
             // 
@@ -319,6 +323,14 @@
             this.colNhaXe.MinimumWidth = 6;
             this.colNhaXe.Name = "colNhaXe";
             this.colNhaXe.ReadOnly = true;
+            // 
+            // colAction
+            // 
+            this.colAction.HeaderText = "Hành động";
+            this.colAction.MinimumWidth = 200;
+            this.colAction.Name = "colAction";
+            this.colAction.ReadOnly = true;
+            this.colAction.Width = 200;
             // 
             // pnlHeader
             // 
@@ -408,5 +420,6 @@
 		private System.Windows.Forms.DataGridViewTextBoxColumn colChoNgoi;
 		private System.Windows.Forms.DataGridViewTextBoxColumn colGiaVe;
 		private System.Windows.Forms.DataGridViewTextBoxColumn colNhaXe;
+		private System.Windows.Forms.DataGridViewTextBoxColumn colAction;
 	}
 }

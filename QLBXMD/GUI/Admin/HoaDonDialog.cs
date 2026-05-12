@@ -187,12 +187,12 @@ namespace QLBXMD.GUI.Admin
 					pnlHeader.BackColor = Color.FromArgb(33, 150, 243);
 					btnCancel.Text = "Hủy";
 					btnCancel.BackColor = Color.FromArgb(244, 67, 54);
-					btnPrimary.Location = new Point(350, 440);
-					btnCancel.Location = new Point(460, 440);
-					ClientSize = new Size(630, 515);
+					btnPrimary.Location = new Point(680, 590);
+					btnCancel.Location = new Point(780, 590);
+					ClientSize = new Size(900, 660);
 					txtMaHD.Enabled = false;
 					SetReadOnly(false);
-					ToggleTicketGrid(false);
+					ToggleTicketGrid(true);
 					break;
 
 				case HoaDonDialogMode.View:
@@ -564,6 +564,174 @@ namespace QLBXMD.GUI.Admin
 			SetupNumericUpDownValidation();
 			AdminGridTheme.Apply(dgvDanhSachVe);
 			_runtimeInitialized = true;
+		}
+
+		private void dgvDanhSachVe_CellPainting(object sender, DataGridViewCellPaintingEventArgs e)
+		{
+			if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
+
+			if (dgvDanhSachVe.Columns[e.ColumnIndex].Name == "colAction")
+			{
+				e.Paint(e.CellBounds, DataGridViewPaintParts.All & ~DataGridViewPaintParts.ContentForeground);
+
+				bool isPaid = TrangThaiValue == true;
+				bool canDelete = !isPaid && dgvDanhSachVe.Rows.Count > 1;
+				
+				bool canEdit = !isPaid;
+				string khStr = dgvDanhSachVe.Rows[e.RowIndex].Cells["colNgayKhoiHanh"].Value?.ToString();
+				if (DateTime.TryParseExact(khStr, "dd/MM/yyyy HH:mm", null, System.Globalization.DateTimeStyles.None, out DateTime ngayKhoiHanh))
+				{
+					if (DateTime.Now <= ngayKhoiHanh.AddMinutes(-30))
+					{
+						canEdit = true;
+					}
+				}
+
+				int buttonWidth = 60;
+				int buttonHeight = 25;
+				int spacing = 5;
+				int startX = e.CellBounds.Left + (e.CellBounds.Width - (buttonWidth * 2 + spacing)) / 2;
+				int startY = e.CellBounds.Top + (e.CellBounds.Height - buttonHeight) / 2;
+
+				// Nút Sửa (Yellow/Orange)
+				Rectangle rectSua = new Rectangle(startX, startY, buttonWidth, buttonHeight);
+				DrawActionButton(e.Graphics, rectSua, "Sửa", Color.FromArgb(255, 193, 7), QLBXMD.Properties.Resources.edit, canEdit);
+
+				// Nút Xóa (Red)
+				Rectangle rectXoa = new Rectangle(startX + buttonWidth + spacing, startY, buttonWidth, buttonHeight);
+				DrawActionButton(e.Graphics, rectXoa, "Xóa", Color.FromArgb(244, 67, 54), QLBXMD.Properties.Resources.delete, canDelete);
+
+				e.Handled = true;
+			}
+		}
+
+		private void DrawActionButton(Graphics g, Rectangle rect, string text, Color baseColor, Image icon, bool enabled)
+		{
+			Color backColor = enabled ? baseColor : Color.FromArgb(200, 200, 200);
+			using (SolidBrush brush = new SolidBrush(backColor))
+			{
+				g.FillRectangle(brush, rect);
+			}
+
+			if (icon != null)
+			{
+				int iconSize = 14;
+				g.DrawImage(icon, rect.X + 4, rect.Y + (rect.Height - iconSize) / 2, iconSize, iconSize);
+			}
+
+			using (Font font = new Font("Segoe UI", 8, FontStyle.Bold))
+			using (SolidBrush brush = new SolidBrush(Color.White))
+			{
+				g.DrawString(text, font, brush, rect.X + 20, rect.Y + (rect.Height - 14) / 2);
+			}
+		}
+
+		private void dgvDanhSachVe_CellClick(object sender, DataGridViewCellEventArgs e)
+		{
+			if (e.RowIndex < 0 || e.ColumnIndex < 0) return;
+
+			if (dgvDanhSachVe.Columns[e.ColumnIndex].Name == "colAction")
+			{
+				int buttonWidth = 60;
+				int spacing = 5;
+				int cellWidth = dgvDanhSachVe.Columns[e.ColumnIndex].Width;
+				int startX = (cellWidth - (buttonWidth * 2 + spacing)) / 2;
+
+				Point clickPoint = dgvDanhSachVe.PointToClient(Cursor.Position);
+				Rectangle cellRect = dgvDanhSachVe.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, false);
+				int localX = clickPoint.X - cellRect.Left;
+
+				bool isPaid = TrangThaiValue == true;
+				bool canEdit = !isPaid;
+				string khStr = dgvDanhSachVe.Rows[e.RowIndex].Cells["colNgayKhoiHanh"].Value?.ToString();
+				if (DateTime.TryParseExact(khStr, "dd/MM/yyyy HH:mm", null, System.Globalization.DateTimeStyles.None, out DateTime ngayKhoiHanh))
+				{
+					if (DateTime.Now <= ngayKhoiHanh.AddMinutes(-30))
+					{
+						canEdit = true;
+					}
+				}
+
+				if (localX >= startX && localX <= startX + buttonWidth)
+				{
+					// Action Sửa
+					if (!canEdit)
+					{
+						if (isPaid) MessageBox.Show("Chỉ được phép đổi ghế trước giờ khởi hành ít nhất 30 phút.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+						return;
+					}
+					HandleTicketAction(e.RowIndex, VeDialogMode.Edit);
+				}
+				else if (localX >= startX + buttonWidth + spacing && localX <= startX + buttonWidth * 2 + spacing)
+				{
+					// Action Xóa
+					if (isPaid || dgvDanhSachVe.Rows.Count <= 1) return;
+					DeleteTicket(e.RowIndex);
+				}
+			}
+		}
+
+		private void HandleTicketAction(int rowIndex, VeDialogMode mode)
+		{
+			int maVe = (int)dgvDanhSachVe.Rows[rowIndex].Cells["colMaVe"].Value;
+			using (var db = new BXMDEntities())
+			{
+				var ve = db.VeXes.Find(maVe);
+				if (ve == null) return;
+
+				using (var dialog = new VeDialog())
+				{
+					dialog.LoadData(ve.MaChuyen, ve.ChoNgoi, mode);
+
+					if (dialog.ShowDialog() == DialogResult.OK)
+					{
+						ve.ChoNgoi = dialog.ChoNgoiValue;
+						db.SaveChanges();
+						LoadVeXeByHoaDon(ve.MaHD);
+						RecalculateTotalAmount();
+					}
+				}
+			}
+		}
+
+		private void DeleteTicket(int rowIndex)
+		{
+			if (dgvDanhSachVe.Rows.Count <= 1)
+			{
+				MessageBox.Show("Không thể xóa. Mỗi hóa đơn phải có ít nhất 1 vé.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				return;
+			}
+
+			int maVe = (int)dgvDanhSachVe.Rows[rowIndex].Cells["colMaVe"].Value;
+			if (MessageBox.Show("Bạn có chắc chắn muốn xóa vé này?", "Xác nhận xóa", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+			{
+				using (var db = new BXMDEntities())
+				{
+					var ve = db.VeXes.Find(maVe);
+					if (ve != null)
+					{
+						int maHD = ve.MaHD;
+						db.VeXes.Remove(ve);
+						db.SaveChanges();
+						LoadVeXeByHoaDon(maHD);
+						RecalculateTotalAmount();
+					}
+				}
+			}
+		}
+
+		private void RecalculateTotalAmount()
+		{
+			decimal total = 0;
+			foreach (DataGridViewRow row in dgvDanhSachVe.Rows)
+			{
+				string valStr = row.Cells["colGiaVe"].Value?.ToString()?.Replace(",", "");
+				if (decimal.TryParse(valStr, out decimal giaVe))
+				{
+					total += giaVe;
+				}
+			}
+			numTongTien.Value = total;
 		}
 	}
 }

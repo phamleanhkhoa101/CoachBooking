@@ -328,6 +328,7 @@ namespace QLBXMD.GUI.Admin
 				dialog.NgayLapValue = existing.NgayLap;
 				dialog.TongTienValue = existing.TongTien ?? 0;
 				dialog.TrangThaiValue = existing.TrangThai;
+				dialog.LoadVeXeByHoaDon(existing.MaHD);
 
 				if (dialog.ShowDialog() == DialogResult.OK)
 				{

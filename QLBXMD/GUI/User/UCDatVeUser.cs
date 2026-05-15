@@ -10,7 +10,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Newtonsoft.Json; // ? ThÍm using
+using Newtonsoft.Json;
 
 namespace QLBXMD.GUI.User
 {
@@ -27,7 +27,7 @@ namespace QLBXMD.GUI.User
 		private string selectedDiemDen;
 		private DateTime selectedNgayDi;
 		private TaiKhoan currentUser;
-		private bool isLoadingData = false; // Flag ? tr·nh recursive calls
+		private bool isLoadingData = false;
 		#endregion
 
 		#region Constructor
@@ -46,21 +46,19 @@ namespace QLBXMD.GUI.User
 		#region Load Events
 		private void UCDatVeUser_Load(object sender, EventArgs e)
 		{
-			isLoadingData = true; // B?t ?u load
-			
+			isLoadingData = true;
+
 			LoadDiemDiDiemDen();
 			dtpNgayDi.Value = DateTime.Now;
-			cboGioDi.SelectedIndex = 0; // Ch?n "T?t c?"
-			
-			// ThÍm event handlers ? t? ?ng t?m chuy?n
+			cboGioDi.SelectedIndex = 0;
+
 			cboDiemDi.SelectedIndexChanged += CboDiemDi_SelectedIndexChanged;
 			cboDiemDen.SelectedIndexChanged += CboDiemDen_SelectedIndexChanged;
 			dtpNgayDi.ValueChanged += DtpNgayDi_ValueChanged;
 			cboGioDi.SelectedIndexChanged += CboGioDi_SelectedIndexChanged;
-			
-			isLoadingData = false; // K?t th˙c load
-			
-			// T?i chuy?n xe ngay khi v‡o
+
+			isLoadingData = false;
+
 			LoadChuyenXeAuto();
 		}
 
@@ -102,58 +100,50 @@ namespace QLBXMD.GUI.User
 						.OrderBy(d => d)
 						.ToList();
 
-					// ThÍm placeholder v‡o ?u danh s·ch
 					var diemDiList = new List<string>();
-					diemDiList.Add("-- Ch?n i?m i --");
+					diemDiList.Add("-- Ch·ªçn ƒëi·ªÉm ƒëi --");
 					diemDiList.AddRange(diemDi);
 
 					var diemDenList = new List<string>();
-					diemDenList.Add("-- Ch?n i?m ?n --");
+					diemDenList.Add("-- Ch·ªçn ƒëi·ªÉm ƒë·∫øn --");
 					diemDenList.AddRange(diemDen);
 
 					cboDiemDi.DataSource = diemDiList;
 					cboDiemDen.DataSource = diemDenList;
 
-					// Ch?n placeholder (index 0)
 					cboDiemDi.SelectedIndex = 0;
 					cboDiemDen.SelectedIndex = 0;
-					
-					System.Diagnostics.Debug.WriteLine($"–? t?i {diemDi.Count} i?m i v‡ {diemDen.Count} i?m ?n");
+
+					System.Diagnostics.Debug.WriteLine($"ƒê√£ t·∫£i {diemDi.Count} ƒëi·ªÉm ƒëi v√† {diemDen.Count} ƒëi·ªÉm ƒë·∫øn");
 				}
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show("L?i t?i d? li?u: " + ex.Message, "L?i", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show("L·ªói t·∫£i d·ªØ li·ªáu: " + ex.Message, "L·ªói", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
 		#endregion
 
-		#region B˝?c 1: T?m chuy?n xe
-		
+		#region B∆∞·ªõc 1: T√¨m chuy·∫øn xe
 		private void LoadChuyenXeAuto()
 		{
-			// L?y gi· tr? hi?n t?i
 			string diemDi = cboDiemDi.SelectedItem?.ToString();
 			string diemDen = cboDiemDen.SelectedItem?.ToString();
-			
-			// B? qua placeholder
+
 			if (diemDi != null && diemDi.StartsWith("--")) diemDi = null;
 			if (diemDen != null && diemDen.StartsWith("--")) diemDen = null;
-			
-			// N?u c? hai ?u tr?ng, hi?n th? t?t c? chuy?n xe
+
 			if (string.IsNullOrEmpty(diemDi) && string.IsNullOrEmpty(diemDen))
 			{
 				LoadChuyenXe(null, null);
 				return;
 			}
-			
-			// N?u ch? cÛ m?t trong hai
+
 			LoadChuyenXe(diemDi, diemDen);
 		}
-		
+
 		private void btnTimChuyen_Click(object sender, EventArgs e)
 		{
-			// Gi? l?i ? t˝ıng thÌch, nh˝ng gi? ch? g?i LoadChuyenXeAuto
 			LoadChuyenXeAuto();
 		}
 
@@ -162,51 +152,46 @@ namespace QLBXMD.GUI.User
 			try
 			{
 				selectedNgayDi = dtpNgayDi.Value.Date;
-				
+
 				using (var db = new BXMDEntities())
 				{
-					// L?y t?t c? chuy?n xe tr˝?c
 					var query = (from cx in db.ChuyenXes
-								join x in db.Xes on cx.MaXe equals x.MaXe
-								join nx in db.NhaXes on x.MaNX equals nx.MaNX
-								join lx in db.LoaiXes on x.MaLX equals lx.MaLX
-								join td in db.TuyenDuongs on cx.MaTuyen equals td.MaTuyen
-								where System.Data.Entity.DbFunctions.TruncateTime(cx.NgayGioKhoiHanh) == selectedNgayDi
-									  && cx.GiaVeThucTe.HasValue && cx.GiaVeThucTe > 0
-								select new
-								{
-									MaChuyen = cx.MaChuyen,
-									MaXe = x.MaXe,
-									MaLoaiXe = lx.MaLX,
-									KhoiHanh = cx.NgayGioKhoiHanh,
-									DenDuKien = cx.NgayGioDenDuKien,
-									TenNX = nx.TenNX,
-									TenLX = lx.TenLX,
-									SoCho = lx.SoCho,
-									GiaVe = cx.GiaVeThucTe.Value,
-									SoChoTrong = lx.SoCho - db.VeXes.Count(v => v.MaChuyen == cx.MaChuyen),
-									DiemDi = td.DiemDi,
-									DiemDen = td.DiemDen
-								}).ToList();
+								 join x in db.Xes on cx.MaXe equals x.MaXe
+								 join nx in db.NhaXes on x.MaNX equals nx.MaNX
+								 join lx in db.LoaiXes on x.MaLX equals lx.MaLX
+								 join td in db.TuyenDuongs on cx.MaTuyen equals td.MaTuyen
+								 where System.Data.Entity.DbFunctions.TruncateTime(cx.NgayGioKhoiHanh) == selectedNgayDi
+									   && cx.GiaVeThucTe.HasValue && cx.GiaVeThucTe > 0
+								 select new
+								 {
+									 MaChuyen = cx.MaChuyen,
+									 MaXe = x.MaXe,
+									 MaLoaiXe = lx.MaLX,
+									 KhoiHanh = cx.NgayGioKhoiHanh,
+									 DenDuKien = cx.NgayGioDenDuKien,
+									 TenNX = nx.TenNX,
+									 TenLX = lx.TenLX,
+									 SoCho = lx.SoCho,
+									 GiaVe = cx.GiaVeThucTe.Value,
+									 SoChoTrong = lx.SoCho - db.VeXes.Count(v => v.MaChuyen == cx.MaChuyen),
+									 DiemDi = td.DiemDi,
+									 DiemDen = td.DiemDen
+								 }).ToList();
 
-					// Debug: Ki?m tra s? l˝?ng chuy?n ban ?u
-					System.Diagnostics.Debug.WriteLine($"T?m th?y {query.Count} chuy?n xe ng‡y {selectedNgayDi:dd/MM/yyyy}");
+					System.Diagnostics.Debug.WriteLine($"T√¨m th·∫•y {query.Count} chuy·∫øn xe ng√†y {selectedNgayDi:dd/MM/yyyy}");
 
-					// L?c theo i?m i n?u cÛ
 					if (!string.IsNullOrEmpty(diemDi))
 					{
 						query = query.Where(r => r.DiemDi == diemDi).ToList();
-						System.Diagnostics.Debug.WriteLine($"Sau khi l?c i?m i '{diemDi}': {query.Count} chuy?n");
+						System.Diagnostics.Debug.WriteLine($"Sau khi l·ªçc ƒëi·ªÉm ƒëi '{diemDi}': {query.Count} chuy·∫øn");
 					}
-					
-					// L?c theo i?m ?n n?u cÛ
+
 					if (!string.IsNullOrEmpty(diemDen))
 					{
 						query = query.Where(r => r.DiemDen == diemDen).ToList();
-						System.Diagnostics.Debug.WriteLine($"Sau khi l?c i?m ?n '{diemDen}': {query.Count} chuy?n");
+						System.Diagnostics.Debug.WriteLine($"Sau khi l·ªçc ƒëi·ªÉm ƒë·∫øn '{diemDen}': {query.Count} chuy·∫øn");
 					}
 
-					// L?c theo gi? n?u khÙng ch?n "T?t c?"
 					if (cboGioDi.SelectedIndex > 0)
 					{
 						int gioIndex = cboGioDi.SelectedIndex;
@@ -215,89 +200,100 @@ namespace QLBXMD.GUI.User
 							int gio = r.KhoiHanh.Hour;
 							switch (gioIndex)
 							{
-								case 1: return gio >= 0 && gio < 6;   // 00:00 - 06:00
-								case 2: return gio >= 6 && gio < 12;  // 06:00 - 12:00
-								case 3: return gio >= 12 && gio < 18; // 12:00 - 18:00
-								case 4: return gio >= 18 && gio < 24; // 18:00 - 24:00
+								case 1: return gio >= 0 && gio < 6;
+								case 2: return gio >= 6 && gio < 12;
+								case 3: return gio >= 12 && gio < 18;
+								case 4: return gio >= 18 && gio < 24;
 								default: return true;
 							}
 						}).ToList();
-						System.Diagnostics.Debug.WriteLine($"Sau khi l?c gi?: {query.Count} chuy?n");
+						System.Diagnostics.Debug.WriteLine($"Sau khi l·ªçc gi·ªù: {query.Count} chuy·∫øn");
 					}
 
 					if (!query.Any())
 					{
-						// KhÙng hi?n thÙng b·o n?a, ch? ?n panel
-						System.Diagnostics.Debug.WriteLine("KhÙng cÛ chuy?n xe ph˘ h?p");
+						System.Diagnostics.Debug.WriteLine("Kh√¥ng c√≥ chuy·∫øn xe ph√π h·ª£p");
 						pnlResults.Visible = false;
 						return;
 					}
 
-					// L˝u thÙng tin ? d˘ng sau
 					if (!string.IsNullOrEmpty(diemDi)) selectedDiemDi = diemDi;
 					if (!string.IsNullOrEmpty(diemDen)) selectedDiemDen = diemDen;
 
-					// Hi?n th? panel tr˝?c ? tÌnh to·n layout ˙ng
 					pnlResults.Visible = true;
-					
-					// –?m b?o layout ˝?c update
+
 					pnlResults.PerformLayout();
 					flpChuyenXe.PerformLayout();
 					Application.DoEvents();
 
-					// Clear v‡ add cards
 					flpChuyenXe.Controls.Clear();
-					flpChuyenXe.SuspendLayout(); // T?m d?ng layout updates
-					
+					flpChuyenXe.SuspendLayout();
+
 					foreach (var item in query)
 					{
-						var card = CreateChuyenXeCard(item.MaChuyen, item.MaXe, item.MaLoaiXe, 
-							item.KhoiHanh, item.DenDuKien ?? item.KhoiHanh.AddHours(6), 
-							item.TenNX, item.TenLX, item.SoCho, item.SoChoTrong, item.GiaVe,
-							item.DiemDi, item.DiemDen);
+						var card = CreateChuyenXeCard(
+							item.MaChuyen,
+							item.MaXe,
+							item.MaLoaiXe,
+							item.KhoiHanh,
+							item.DenDuKien ?? item.KhoiHanh.AddHours(6),
+							item.TenNX,
+							item.TenLX,
+							item.SoCho,
+							item.SoChoTrong,
+							item.GiaVe,
+							item.DiemDi,
+							item.DiemDen);
 						flpChuyenXe.Controls.Add(card);
 					}
-					
-					flpChuyenXe.ResumeLayout(); // Resume layout updates
-					System.Diagnostics.Debug.WriteLine($"–? hi?n th? {query.Count} chuy?n xe");
+
+					flpChuyenXe.ResumeLayout();
+					System.Diagnostics.Debug.WriteLine($"ƒê√£ hi·ªÉn th·ªã {query.Count} chuy·∫øn xe");
 				}
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show("L?i t?i danh s·ch chuy?n xe: " + ex.Message + "\n\nStack trace: " + ex.StackTrace, "L?i", MessageBoxButtons.OK, MessageBoxIcon.Error);
-				System.Diagnostics.Debug.WriteLine($"L?i: {ex.Message}\n{ex.StackTrace}");
+				MessageBox.Show("L·ªói t·∫£i danh s√°ch chuy·∫øn xe: " + ex.Message + "\n\nStack trace: " + ex.StackTrace, "L·ªói", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				System.Diagnostics.Debug.WriteLine($"L·ªói: {ex.Message}\n{ex.StackTrace}");
 			}
 		}
 
-		private Panel CreateChuyenXeCard(int maChuyen, int maXe, int maLoaiXe, 
-			DateTime khoiHanh, DateTime denDuKien, string tenNX, string tenLX, 
-			int soCho, int soChoTrong, decimal giaVe, string diemDi, string diemDen)
+		private Panel CreateChuyenXeCard(
+			int maChuyen,
+			int maXe,
+			int maLoaiXe,
+			DateTime khoiHanh,
+			DateTime denDuKien,
+			string tenNX,
+			string tenLX,
+			int soCho,
+			int soChoTrong,
+			decimal giaVe,
+			string diemDi,
+			string diemDen)
 		{
-			// Dynamic width based on container - leave room for scrollbar
 			int cardWidth = flpChuyenXe.Width - 40;
-			if (cardWidth < 800) cardWidth = 800; // Minimum width
-			
+			if (cardWidth < 800) cardWidth = 800;
+
 			Panel card = new Panel
 			{
 				Width = cardWidth,
-				Height = 100, // Gi?m t? 140 xu?ng 100
+				Height = 100,
 				BorderStyle = BorderStyle.FixedSingle,
 				BackColor = Color.White,
 				Margin = new Padding(5, 5, 5, 10)
 			};
 
-			// Logo xe - nh? hın
 			Label lblBusIcon = new Label
 			{
-				Text = "??",
+				Text = "XE",
 				Location = new Point(10, 10),
-				Size = new Size(40, 40), // Gi?m t? 50x50 xu?ng 40x40
-				Font = new Font("Segoe UI", 20F), // Gi?m t? 24F xu?ng 20F
+				Size = new Size(40, 40),
+				Font = new Font("Segoe UI", 12F, FontStyle.Bold),
 				TextAlign = ContentAlignment.MiddleCenter,
 				BackColor = Color.FromArgb(240, 240, 240)
 			};
 
-			// TÍn nh‡ xe
 			Label lblTenNX = new Label
 			{
 				Text = tenNX,
@@ -305,35 +301,32 @@ namespace QLBXMD.GUI.User
 				AutoSize = false,
 				Width = 250,
 				Height = 22,
-				Font = new Font("Segoe UI", 10F, FontStyle.Bold), // Gi?m t? 11F xu?ng 10F
+				Font = new Font("Segoe UI", 10F, FontStyle.Bold),
 				ForeColor = Color.FromArgb(51, 51, 51)
 			};
 
-			// Lo?i xe
 			Label lblLoaiXe = new Label
 			{
-				Text = $"{tenLX} - {soCho} ch?",
+				Text = $"{tenLX} - {soCho} ch·ªó",
 				Location = new Point(60, 32),
 				AutoSize = false,
 				Width = 200,
 				Height = 16,
-				Font = new Font("Segoe UI", 8F), // Gi?m t? 8.5F xu?ng 8F
+				Font = new Font("Segoe UI", 8F),
 				ForeColor = Color.Gray
 			};
 
-			// Tuy?n ˝?ng: –i?m i ? –i?m ?n
 			Label lblTuyen = new Label
 			{
-				Text = $"{diemDi} ? {diemDen}",
+				Text = $"{diemDi} ‚Üí {diemDen}",
 				Location = new Point(60, 50),
 				AutoSize = false,
 				Width = 350,
 				Height = 18,
-				Font = new Font("Segoe UI", 8.5F, FontStyle.Bold), // Gi?m t? 9F xu?ng 8.5F
+				Font = new Font("Segoe UI", 8.5F, FontStyle.Bold),
 				ForeColor = Color.FromArgb(0, 150, 136)
 			};
 
-			// Gi? i
 			Label lblGioDi = new Label
 			{
 				Text = khoiHanh.ToString("HH:mm"),
@@ -341,23 +334,22 @@ namespace QLBXMD.GUI.User
 				AutoSize = false,
 				Width = 55,
 				Height = 22,
-				Font = new Font("Segoe UI", 12F, FontStyle.Bold), // Gi?m t? 13F xu?ng 12F
+				Font = new Font("Segoe UI", 12F, FontStyle.Bold),
 				ForeColor = Color.FromArgb(0, 150, 136)
 			};
 
 			Label lblMuiTen = new Label
 			{
-				Text = "?",
+				Text = "‚Üí",
 				Location = new Point(120, 70),
 				AutoSize = false,
 				Width = 20,
 				Height = 22,
-				Font = new Font("Segoe UI", 11F), // Gi?m t? 12F xu?ng 11F
+				Font = new Font("Segoe UI", 11F),
 				ForeColor = Color.Gray,
 				TextAlign = ContentAlignment.MiddleCenter
 			};
 
-			// Gi? ?n
 			Label lblGioDen = new Label
 			{
 				Text = denDuKien.ToString("HH:mm"),
@@ -365,11 +357,10 @@ namespace QLBXMD.GUI.User
 				AutoSize = false,
 				Width = 55,
 				Height = 22,
-				Font = new Font("Segoe UI", 12F, FontStyle.Bold), // Gi?m t? 13F xu?ng 12F
+				Font = new Font("Segoe UI", 12F, FontStyle.Bold),
 				ForeColor = Color.FromArgb(0, 150, 136)
 			};
 
-			// Ng‡y i
 			Label lblNgayDi = new Label
 			{
 				Text = khoiHanh.ToString("dd/MM/yyyy"),
@@ -377,61 +368,58 @@ namespace QLBXMD.GUI.User
 				AutoSize = false,
 				Width = 85,
 				Height = 16,
-				Font = new Font("Segoe UI", 8F), // Gi?m t? 8.5F xu?ng 8F
+				Font = new Font("Segoe UI", 8F),
 				ForeColor = Color.Gray
 			};
 
-			// S? ch? tr?ng
 			Label lblChoTrong = new Label
 			{
-				Text = soChoTrong > 0 ? $"C?n {soChoTrong} ch?" : "H?t ch?",
+				Text = soChoTrong > 0 ? $"C√≤n {soChoTrong} ch·ªó" : "H·∫øt ch·ªó",
 				Location = new Point(310, 73),
 				AutoSize = false,
 				Width = 100,
 				Height = 18,
-				Font = new Font("Segoe UI", 8F), // Gi?m t? 8.5F xu?ng 8F
+				Font = new Font("Segoe UI", 8F),
 				ForeColor = soChoTrong > 0 ? Color.Green : Color.Red
 			};
 
-			// Gi· vÈ (position from right)
 			Label lblGiaVe = new Label
 			{
-				Text = $"{giaVe:#,##0} VN–",
+				Text = $"{giaVe:#,##0} VNƒê",
 				Location = new Point(cardWidth - 260, 25),
 				AutoSize = false,
 				Width = 140,
 				Height = 28,
-				Font = new Font("Segoe UI", 12F, FontStyle.Bold), // Gi?m t? 13F xu?ng 12F
+				Font = new Font("Segoe UI", 12F, FontStyle.Bold),
 				ForeColor = Color.FromArgb(244, 67, 54),
 				TextAlign = ContentAlignment.MiddleRight
 			};
 
-			// Button ch?n (position from right)
 			Button btnChon = new Button
 			{
-				Text = "Ch?n chuy?n",
+				Text = "Ch·ªçn chuy·∫øn",
 				Location = new Point(cardWidth - 145, 60),
-				Size = new Size(125, 32), // Gi?m t? 135x35 xu?ng 125x32
+				Size = new Size(125, 32),
 				BackColor = Color.FromArgb(0, 150, 136),
 				ForeColor = Color.White,
 				FlatStyle = FlatStyle.Flat,
-				Font = new Font("Segoe UI", 9.5F, FontStyle.Bold), // Gi?m t? 10F xu?ng 9.5F
+				Font = new Font("Segoe UI", 9.5F, FontStyle.Bold),
 				Cursor = Cursors.Hand,
 				Enabled = soChoTrong > 0,
 				TabStop = true,
 				UseVisualStyleBackColor = false
 			};
 			btnChon.FlatAppearance.BorderSize = 0;
-			
-			// Capture variables
+
 			int capturedMaChuyen = maChuyen;
 			int capturedMaXe = maXe;
 			int capturedMaLoaiXe = maLoaiXe;
 			decimal capturedGiaVe = giaVe;
 			string capturedDiemDi = diemDi;
 			string capturedDiemDen = diemDen;
-			
-			btnChon.Click += (s, e) => {
+
+			btnChon.Click += (s, e) =>
+			{
 				try
 				{
 					selectedDiemDi = capturedDiemDi;
@@ -440,11 +428,10 @@ namespace QLBXMD.GUI.User
 				}
 				catch (Exception ex)
 				{
-					MessageBox.Show($"L?i ch?n chuy?n: {ex.Message}", "L?i", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					MessageBox.Show($"L·ªói ch·ªçn chuy·∫øn: {ex.Message}", "L·ªói", MessageBoxButtons.OK, MessageBoxIcon.Error);
 				}
 			};
 
-			// Add controls
 			card.Controls.Add(lblBusIcon);
 			card.Controls.Add(lblTenNX);
 			card.Controls.Add(lblLoaiXe);
@@ -459,8 +446,8 @@ namespace QLBXMD.GUI.User
 
 			btnChon.BringToFront();
 
-			// Hover effect
-			card.MouseEnter += (s, e) => {
+			card.MouseEnter += (s, e) =>
+			{
 				if (card.ClientRectangle.Contains(card.PointToClient(Cursor.Position)))
 				{
 					Point mousePos = card.PointToClient(Cursor.Position);
@@ -476,7 +463,7 @@ namespace QLBXMD.GUI.User
 		}
 		#endregion
 
-		#region B˝?c 2: Ch?n chuy?n xe v‡ hi?n th? sı ? gh?
+		#region B∆∞·ªõc 2: Ch·ªçn chuy·∫øn xe v√† hi·ªÉn th·ªã s∆° ƒë·ªì gh·∫ø
 		private void ChonChuyenXe(int maChuyen, int maXe, int maLoaiXe, decimal giaVe)
 		{
 			selectedMaChuyen = maChuyen;
@@ -485,8 +472,7 @@ namespace QLBXMD.GUI.User
 			selectedGiaVe = giaVe;
 
 			LoadSeatMap();
-			
-			// KhÙng hi?n pnlSeatInfo ngay, ch? hi?n khi ch?n gh?
+
 			pnlSeatInfo.Visible = true;
 			UpdateThongTinGhe();
 		}
@@ -500,20 +486,19 @@ namespace QLBXMD.GUI.User
 					var loaiXe = db.LoaiXes.FirstOrDefault(lx => lx.MaLX == selectedMaLoaiXe);
 					if (loaiXe == null)
 					{
-						MessageBox.Show($"KhÙng t?m th?y lo?i xe v?i MaLX = {selectedMaLoaiXe}", "L?i", MessageBoxButtons.OK, MessageBoxIcon.Error);
+						MessageBox.Show($"Kh√¥ng t√¨m th·∫•y lo·∫°i xe v·ªõi MaLX = {selectedMaLoaiXe}", "L·ªói", MessageBoxButtons.OK, MessageBoxIcon.Error);
 						return;
 					}
 
 					int soCho = loaiXe.SoCho;
 					if (soCho == 0)
 					{
-						MessageBox.Show("Lo?i xe cÛ s? ch? = 0", "L?i", MessageBoxButtons.OK, MessageBoxIcon.Error);
+						MessageBox.Show("Lo·∫°i xe c√≥ s·ªë ch·ªó = 0", "L·ªói", MessageBoxButtons.OK, MessageBoxIcon.Error);
 						return;
 					}
 
-					bool isGiuongNam = loaiXe.TenLX.ToLower().Contains("gi˝?ng");
+					bool isGiuongNam = loaiXe.TenLX.ToLower().Contains("gi∆∞·ªùng");
 
-					// L?y danh s·ch gh? ? ?t
 					bookedSeats = db.VeXes
 						.Where(v => v.MaChuyen == selectedMaChuyen)
 						.Select(v => v.ChoNgoi)
@@ -521,18 +506,16 @@ namespace QLBXMD.GUI.User
 
 					selectedSeats.Clear();
 
-					// Clear panels
 					flpTangDuoi.Controls.Clear();
 					flpTangTren.Controls.Clear();
 
 					if (isGiuongNam)
 					{
-						// Xe gi˝?ng n?m: 2 t?ng
-						lblLoaiGhe.Text = "Sı ? gi˝?ng n?m";
+						lblLoaiGhe.Text = "S∆° ƒë·ªì gi∆∞·ªùng n·∫±m";
 						gbTangDuoi.Visible = true;
 						gbTangTren.Visible = true;
-						gbTangDuoi.Text = "T?ng d˝?i";
-						gbTangTren.Text = "T?ng trÍn";
+						gbTangDuoi.Text = "T·∫ßng d∆∞·ªõi";
+						gbTangTren.Text = "T·∫ßng tr√™n";
 
 						int choMoiTang = soCho / 2;
 						CreateSeatButtons(flpTangDuoi, 1, choMoiTang);
@@ -540,11 +523,10 @@ namespace QLBXMD.GUI.User
 					}
 					else
 					{
-						// Xe gh? ng?i: 1 t?ng
-						lblLoaiGhe.Text = "Sı ? gh? ng?i";
+						lblLoaiGhe.Text = "S∆° ƒë·ªì gh·∫ø ng·ªìi";
 						gbTangDuoi.Visible = true;
 						gbTangTren.Visible = false;
-						gbTangDuoi.Text = "Sı ? gh?";
+						gbTangDuoi.Text = "S∆° ƒë·ªì gh·∫ø";
 
 						CreateSeatButtons(flpTangDuoi, 1, soCho);
 					}
@@ -555,7 +537,7 @@ namespace QLBXMD.GUI.User
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show($"L?i t?i sı ? gh?:\n{ex.Message}", "L?i", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				MessageBox.Show($"L·ªói t·∫£i s∆° ƒë·ªì gh·∫ø:\n{ex.Message}", "L·ªói", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
 
@@ -583,7 +565,6 @@ namespace QLBXMD.GUI.User
 
 				if (bookedSeats.Contains(i))
 				{
-					// Gh? ? ?t
 					btnSeat.BackColor = Color.FromArgb(220, 220, 220);
 					btnSeat.ForeColor = Color.Gray;
 					btnSeat.Enabled = false;
@@ -591,8 +572,7 @@ namespace QLBXMD.GUI.User
 				}
 				else
 				{
-					// Gh? tr?ng
-					btnSeat.BackColor = Color.FromArgb(0, 199, 174); // Xanh - tr?ng
+					btnSeat.BackColor = Color.FromArgb(0, 199, 174);
 					btnSeat.ForeColor = Color.White;
 					btnSeat.Click += BtnSeat_Click;
 				}
@@ -611,61 +591,55 @@ namespace QLBXMD.GUI.User
 
 			if (selectedSeats.Contains(seatNumber))
 			{
-				// B? ch?n - v? m‡u xanh l· (tr?ng)
 				selectedSeats.Remove(seatNumber);
 				btn.BackColor = Color.FromArgb(0, 199, 174);
 				btn.ForeColor = Color.White;
 			}
 			else
 			{
-				// Ch?n gh? - m‡u cam (ang ch?n)
 				selectedSeats.Add(seatNumber);
 				btn.BackColor = Color.FromArgb(245, 128, 37);
 				btn.ForeColor = Color.White;
 			}
 
 			UpdateThongTinGhe();
-			
-
 		}
 
 		private void UpdateThongTinGhe()
 		{
 			if (selectedSeats.Count > 0)
 			{
-				lblGheDaChon.Text = $"Gh? ? ch?n: {string.Join(", ", selectedSeats.OrderBy(s => s))}";
+				lblGheDaChon.Text = $"Gh·∫ø ƒë√£ ch·ªçn: {string.Join(", ", selectedSeats.OrderBy(s => s))}";
 				decimal tongTien = selectedSeats.Count * (selectedGiaVe ?? 0);
-				lblTongTien.Text = $"T?ng ti?n: {tongTien:#,##0} VN–";
+				lblTongTien.Text = $"T·ªïng ti·ªÅn: {tongTien:#,##0} VNƒê";
 				btnDatVe.Enabled = true;
 			}
 			else
 			{
-				lblGheDaChon.Text = "Gh? ? ch?n: Ch˝a ch?n";
-				lblTongTien.Text = "T?ng ti?n: 0 VN–";
+				lblGheDaChon.Text = "Gh·∫ø ƒë√£ ch·ªçn: Ch∆∞a ch·ªçn";
+				lblTongTien.Text = "T·ªïng ti·ªÅn: 0 VNƒê";
 				btnDatVe.Enabled = false;
 			}
 		}
 		#endregion
 
-		#region B˝?c 3: –?t vÈ
+		#region B∆∞·ªõc 3: ƒê·∫∑t v√©
 		private void btnDatVe_Click(object sender, EventArgs e)
 		{
 			if (!selectedMaChuyen.HasValue || selectedSeats.Count == 0)
 			{
-				MessageBox.Show("Vui l?ng ch?n chuy?n xe v‡ gh?.", "ThÙng b·o", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				MessageBox.Show("Vui l√≤ng ch·ªçn chuy·∫øn xe v√† gh·∫ø.", "Th√¥ng b√°o", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				return;
 			}
 
-			// L?y thÙng tin kh·ch h‡ng t? t‡i kho?n
 			if (currentUser == null)
 			{
-				MessageBox.Show("Vui l?ng „ng nh?p ? ?t vÈ.", "ThÙng b·o", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				MessageBox.Show("Vui l√≤ng ƒëƒÉng nh·∫≠p ƒë·ªÉ ƒë·∫∑t v√©.", "Th√¥ng b√°o", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				return;
 			}
 
 			try
 			{
-				// TÌnh t?ng ti?n tr˝?c
 				decimal tienTam = selectedSeats.Count * (selectedGiaVe ?? 0);
 				DateTime ngayKhoiHanh = DateTime.Now;
 				int maHD = 0;
@@ -678,20 +652,18 @@ namespace QLBXMD.GUI.User
 						ngayKhoiHanh = chuyenXe.NgayGioKhoiHanh;
 					}
 
-					// L?y thÙng tin kh·ch h‡ng
 					var khachHang = db.KhachHangs.FirstOrDefault(kh => kh.MaTK == currentUser.MaTK);
 					if (khachHang == null)
 					{
-						MessageBox.Show("KhÙng t?m th?y thÙng tin kh·ch h‡ng.", "L?i", MessageBoxButtons.OK, MessageBoxIcon.Error);
+						MessageBox.Show("Kh√¥ng t√¨m th·∫•y th√¥ng tin kh√°ch h√†ng.", "L·ªói", MessageBoxButtons.OK, MessageBoxIcon.Error);
 						return;
 					}
 
-					// ? Hi?n th? dialog x·c nh?n
 					using (var confirmDialog = new XacNhanDatVeUserDialog())
 					{
 						confirmDialog.TenKhachHang = khachHang.TenKH;
 						confirmDialog.SoDienThoai = khachHang.SDT;
-						confirmDialog.GioiTinh = khachHang.GioiTinh.HasValue && khachHang.GioiTinh.Value ? "Nam" : "N?";
+						confirmDialog.GioiTinh = khachHang.GioiTinh.HasValue && khachHang.GioiTinh.Value ? "Nam" : "N·ªØ";
 						confirmDialog.NamSinh = khachHang.NamSinh;
 						confirmDialog.DiemDi = selectedDiemDi;
 						confirmDialog.DiemDen = selectedDiemDen;
@@ -705,22 +677,20 @@ namespace QLBXMD.GUI.User
 							return;
 					}
 
-					// ? T?O H”A –’N (TongTien = 0, ? trigger tÌnh)
 					var hoaDon = new HoaDon
 					{
 						MaKH = khachHang.MaKH,
 						MaNV = null,
 						NgayLap = DateTime.Now,
-						TongTien = 0, // ? –? trigger t? tÌnh
-						TrangThai = false // Ch˝a thanh to·n
+						TongTien = 0,
+						TrangThai = false
 					};
 					db.HoaDons.Add(hoaDon);
 					db.SaveChanges();
 
 					maHD = hoaDon.MaHD;
-					Console.WriteLine($"? T?o hÛa ın: MaHD = {maHD}, TongTien ban ?u = {hoaDon.TongTien}");
+					Console.WriteLine($"T·∫°o h√≥a ƒë∆°n: MaHD = {maHD}, TongTien ban ƒë·∫ßu = {hoaDon.TongTien}");
 
-					// ? T?O V… XE (v?i GiaVe)
 					foreach (int soGhe in selectedSeats)
 					{
 						var ve = new VeXe
@@ -728,43 +698,38 @@ namespace QLBXMD.GUI.User
 							MaChuyen = selectedMaChuyen.Value,
 							ChoNgoi = soGhe,
 							MaHD = maHD,
-							GiaVe = selectedGiaVe.Value // ? L˝u gi· vÈ
+							GiaVe = selectedGiaVe.Value
 						};
 						db.VeXes.Add(ve);
 					}
 					db.SaveChanges();
-					Console.WriteLine($"? –? t?o {selectedSeats.Count} vÈ xe");
+					Console.WriteLine($"ƒê√£ t·∫°o {selectedSeats.Count} v√© xe");
 
-					// ? REFRESH ? l?y TongTien ? ˝?c trigger tÌnh
 					db.Entry(hoaDon).Reload();
-					Console.WriteLine($"? Sau khi refresh: TongTien = {hoaDon.TongTien}");
+					Console.WriteLine($"Sau khi refresh: TongTien = {hoaDon.TongTien}");
 
-					// ? X? l? thanh to·n MoMo (v?i TongTien ? ˙ng)
 					ProcessMoMoPayment(hoaDon.TongTien ?? tienTam, khachHang.MaKH, maHD);
 				}
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show($"L?i ?t vÈ: {ex.Message}", "L?i", MessageBoxButtons.OK, MessageBoxIcon.Error);
-				Console.WriteLine($"? Error: {ex.ToString()}");
+				MessageBox.Show($"L·ªói ƒë·∫∑t v√©: {ex.Message}", "L·ªói", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				Console.WriteLine($"Error: {ex}");
 			}
 		}
 
 		/// <summary>
-		/// X? l? thanh to·n MoMo
+		/// X·ª≠ l√Ω thanh to√°n MoMo
 		/// </summary>
 		private async void ProcessMoMoPayment(decimal amount, int maKH, int maHD)
 		{
 			try
 			{
-				// Hi?n th? loading
 				this.Cursor = Cursors.WaitCursor;
 
-				// T?o orderId unique
 				string orderId = $"HD{maHD}_{DateTime.Now:yyyyMMddHHmmss}";
 				string orderInfo = $"Thanh toan ve xe - Ma HD: {maHD}";
 
-				// T?o request thanh to·n MoMo
 				var momoService = new Services.MoMoPaymentService();
 				var response = await momoService.CreatePaymentRequest(
 					orderId,
@@ -776,32 +741,29 @@ namespace QLBXMD.GUI.User
 
 				if (response.ResultCode == 0)
 				{
-					// Th‡nh cÙng - M? tr?nh duy?t v?i PayUrl
 					MessageBox.Show(
-						"–ang chuy?n ?n trang thanh to·n MoMo...\n\n" +
-						"Vui l?ng ho‡n t?t thanh to·n trong tr?nh duy?t.\n" +
-						$"M? ın h‡ng: {orderId}",
-						"Thanh to·n MoMo",
+						"ƒêang chuy·ªÉn ƒë·∫øn trang thanh to√°n MoMo...\n\n" +
+						"Vui l√≤ng ho√†n t·∫•t thanh to√°n trong tr√¨nh duy·ªát.\n" +
+						$"M√£ ƒë∆°n h√†ng: {orderId}",
+						"Thanh to√°n MoMo",
 						MessageBoxButtons.OK,
 						MessageBoxIcon.Information
 					);
 
 					System.Diagnostics.Process.Start(response.PayUrl);
-					
-					// ? B?t ?u polling ? check tr?ng th·i
+
 					StartPollingPaymentStatus(orderId, maHD, amount);
 				}
 				else
 				{
-					// L?i - XÛa hÛa ın v‡ vÈ ? t?o
 					RollbackHoaDon(maHD);
-					
+
 					MessageBox.Show(
-						$"L?i t?o yÍu c?u thanh to·n MoMo:\n\n" +
-						$"M? l?i: {response.ResultCode}\n" +
-						$"ThÙng b·o: {response.Message}\n\n" +
-						$"Vui l?ng th? l?i ho?c liÍn h? qu?n tr? viÍn.",
-						"L?i thanh to·n",
+						$"L·ªói t·∫°o y√™u c·∫ßu thanh to√°n MoMo:\n\n" +
+						$"M√£ l·ªói: {response.ResultCode}\n" +
+						$"Th√¥ng b√°o: {response.Message}\n\n" +
+						$"Vui l√≤ng th·ª≠ l·∫°i ho·∫∑c li√™n h·ªá qu·∫£n tr·ªã vi√™n.",
+						"L·ªói thanh to√°n",
 						MessageBoxButtons.OK,
 						MessageBoxIcon.Error
 					);
@@ -811,70 +773,67 @@ namespace QLBXMD.GUI.User
 			{
 				this.Cursor = Cursors.Default;
 				MessageBox.Show(
-					$"L?i k?t n?i v?i MoMo:\n{ex.Message}\n\n" +
-					$"Vui l?ng ki?m tra k?t n?i internet v‡ th? l?i.",
-					"L?i",
+					$"L·ªói k·∫øt n·ªëi v·ªõi MoMo:\n{ex.Message}\n\n" +
+					$"Vui l√≤ng ki·ªÉm tra k·∫øt n·ªëi internet v√† th·ª≠ l·∫°i.",
+					"L·ªói",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Error
 				);
-				Console.WriteLine($"? MoMo Payment Error: {ex.ToString()}");
+				Console.WriteLine($"MoMo Payment Error: {ex}");
 			}
 		}
+
 		/// <summary>
-		/// ? Polling MoMo ? ki?m tra tr?ng th·i thanh to·n (khÙng c?n IPN)
+		/// Polling MoMo ƒë·ªÉ ki·ªÉm tra tr·∫°ng th√°i thanh to√°n
 		/// </summary>
 		private async void StartPollingPaymentStatus(string orderId, int maHD, decimal amount)
 		{
 			int attempt = 0;
-			const int maxAttempts = 24; // 24 l?n * 5s = 2 ph˙t
+			const int maxAttempts = 24;
 			const int delayMs = 5000;
 
 			while (attempt < maxAttempts)
 			{
 				attempt++;
 				await Task.Delay(delayMs);
-				
+
 				string status = await QueryMomoOrder(orderId);
 
 				if (status == "Success")
 				{
 					MessageBox.Show(
-						"? Thanh to·n MoMo th‡nh cÙng!\n\n" +
-						$"M? hÛa ın: {maHD}\n" +
-						$"S? ti?n: {amount:#,##0} VN–",
-						"Th‡nh cÙng",
+						$"Thanh to√°n MoMo th√†nh c√¥ng!\n\n" +
+						$"M√£ h√≥a ƒë∆°n: {maHD}\n" +
+						$"S·ªë ti·ªÅn: {amount:#,##0} VNƒê",
+						"Th√†nh c√¥ng",
 						MessageBoxButtons.OK,
 						MessageBoxIcon.Information
 					);
-					
+
 					UpdateHoaDonTrangThai(maHD, true, "MoMo");
-					
-					// ? Reset form sau khi th‡nh cÙng
 					ResetFormAfterPayment();
 					return;
 				}
 				else if (status == "Failed")
 				{
 					MessageBox.Show(
-						"? Thanh to·n MoMo th?t b?i ho?c b? h?y!\n\n" +
-						"HÛa ın v‡ vÈ ? ˝?c h?y.",
-						"Th?t b?i",
+						"Thanh to√°n MoMo th·∫•t b·∫°i ho·∫∑c b·ªã h·ªßy!\n\n" +
+						"H√≥a ƒë∆°n v√† v√© ƒë√£ ƒë∆∞·ª£c h·ªßy.",
+						"Th·∫•t b·∫°i",
 						MessageBoxButtons.OK,
 						MessageBoxIcon.Error
 					);
-					
+
 					RollbackHoaDon(maHD);
 					return;
 				}
 
-				// Log progress
 				Console.WriteLine($"[MoMo Polling] Attempt {attempt}/{maxAttempts} - Status: {status}");
 			}
 
-			// Timeout
 			MessageBox.Show(
-				"? H?t th?i gian ch? thanh to·n MoMo.\n\n" +
-				"Vui l?ng ki?m tra l?i tr?ng th·i ın h‡ng trong L?ch s? mua vÈ.",
+				"H·∫øt th·ªùi gian ch·ªù thanh to√°n MoMo.\n\n" +
+				"Vui l√≤ng ki·ªÉm tra l·∫°i tr·∫°ng th√°i ƒë∆°n h√†ng trong L·ªãch s·ª≠ mua v√©.",
 				"Timeout",
 				MessageBoxButtons.OK,
 				MessageBoxIcon.Warning
@@ -882,7 +841,7 @@ namespace QLBXMD.GUI.User
 		}
 
 		/// <summary>
-		/// ? G?i API Query c?a MoMo ? x·c minh ın h‡ng
+		/// G·ªçi API Query c·ªßa MoMo ƒë·ªÉ x√°c minh ƒë∆°n h√†ng
 		/// </summary>
 		private async Task<string> QueryMomoOrder(string orderId)
 		{
@@ -925,46 +884,39 @@ namespace QLBXMD.GUI.User
 
 					Console.WriteLine($"[MoMo Query] {orderId} => Code: {resultCode}, Message: {message}");
 
-					// ? MoMo result codes:
-					// 0 = Success (Giao d?ch th‡nh cÙng)
-					// 1000 = Transaction initiated (–ang ch? user x·c nh?n)
-					// 1006 = Transaction not found (Ch˝a cÛ trong h? th?ng)
-					// 1007 = Transaction pending (–ang x? l?)
-					// 9000 = Transaction failed/cancelled (Th?t b?i/h?y)
-					// Other = Error
-					
+					// 0 = Success
+					// 1000 = Transaction initiated
+					// 1006 = Transaction not found
+					// 1007 = Transaction pending
+					// 9000 = Transaction failed/cancelled
 					if (resultCode == 0)
 					{
 						return "Success";
 					}
 					else if (resultCode == 1000 || resultCode == 1006 || resultCode == 1007)
 					{
-						// ? 1000 = –ang ch? user thanh to·n ? Pending
 						return "Pending";
 					}
 					else if (resultCode == 9000 || resultCode == 1001)
 					{
-						// 9000 = User h?y giao d?ch
-						// 1001 = Giao d?ch th?t b?i
 						return "Failed";
 					}
 					else
 					{
-						// Unknown code ? Retry
-						Console.WriteLine($"?? Unknown MoMo code: {resultCode}");
+						Console.WriteLine($"Unknown MoMo code: {resultCode}");
 						return "Pending";
 					}
 				}
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine("? QueryMoMoOrder Error: " + ex.Message);
-				return "Pending"; // Retry on error
+				Console.WriteLine("QueryMoMoOrder Error: " + ex.Message);
+				return "Pending";
 			}
 		}
 
 		/// <summary>
-		/// ? C?p nh?t tr?ng th·i hÛa ın khi cÛ k?t qu? thanh to·n
+		/// C·∫≠p nh·∫≠t tr·∫°ng th√°i h√≥a ƒë∆°n khi c√≥ k·∫øt qu·∫£ thanh to√°n
 		/// </summary>
 		private void UpdateHoaDonTrangThai(int maHD, bool daThanhToan, string phuongThuc)
 		{
@@ -975,7 +927,7 @@ namespace QLBXMD.GUI.User
 					var hoaDon = db.HoaDons.FirstOrDefault(h => h.MaHD == maHD);
 					if (hoaDon == null)
 					{
-						Console.WriteLine($"? KhÙng t?m th?y hÛa ın #{maHD}");
+						Console.WriteLine($"Kh√¥ng t√¨m th·∫•y h√≥a ƒë∆°n #{maHD}");
 						return;
 					}
 
@@ -983,7 +935,6 @@ namespace QLBXMD.GUI.User
 
 					if (daThanhToan)
 					{
-						// T?o b?n ghi thanh to·n
 						var thanhToan = new ThanhToan
 						{
 							MaHD = maHD,
@@ -992,8 +943,8 @@ namespace QLBXMD.GUI.User
 							PhuongThuc = phuongThuc
 						};
 						db.ThanhToans.Add(thanhToan);
-						
-						Console.WriteLine($"? HÛa ın #{maHD} ? thanh to·n qua {phuongThuc}");
+
+						Console.WriteLine($"H√≥a ƒë∆°n #{maHD} ƒë√£ thanh to√°n qua {phuongThuc}");
 					}
 
 					db.SaveChanges();
@@ -1001,13 +952,13 @@ namespace QLBXMD.GUI.User
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show($"L?i c?p nh?t hÛa ın: {ex.Message}", "L?i", MessageBoxButtons.OK, MessageBoxIcon.Error);
-				Console.WriteLine($"? UpdateHoaDonTrangThai Error: {ex.Message}");
+				MessageBox.Show($"L·ªói c·∫≠p nh·∫≠t h√≥a ƒë∆°n: {ex.Message}", "L·ªói", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				Console.WriteLine($"UpdateHoaDonTrangThai Error: {ex.Message}");
 			}
 		}
 
 		/// <summary>
-		/// ? Rollback hÛa ın khi thanh to·n th?t b?i
+		/// Rollback h√≥a ƒë∆°n khi thanh to√°n th·∫•t b·∫°i
 		/// </summary>
 		private void RollbackHoaDon(int maHD)
 		{
@@ -1015,11 +966,9 @@ namespace QLBXMD.GUI.User
 			{
 				using (var db = new BXMDEntities())
 				{
-					// XÛa vÈ
 					var veXes = db.VeXes.Where(v => v.MaHD == maHD).ToList();
 					db.VeXes.RemoveRange(veXes);
 
-					// XÛa hÛa ın
 					var hoaDon = db.HoaDons.FirstOrDefault(h => h.MaHD == maHD);
 					if (hoaDon != null)
 					{
@@ -1027,38 +976,37 @@ namespace QLBXMD.GUI.User
 					}
 
 					db.SaveChanges();
-					Console.WriteLine($"? –? rollback hÛa ın #{maHD}");
+					Console.WriteLine($"ƒê√£ rollback h√≥a ƒë∆°n #{maHD}");
 				}
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"? RollbackHoaDon Error: {ex.Message}");
+				Console.WriteLine($"RollbackHoaDon Error: {ex.Message}");
 			}
 		}
 
 		/// <summary>
-		/// ? Reset form sau khi thanh to·n th‡nh cÙng
+		/// Reset form sau khi thanh to√°n th√†nh c√¥ng
 		/// </summary>
 		private void ResetFormAfterPayment()
 		{
 			try
 			{
 				ResetForm();
-				
-				// Reload l?i danh s·ch chuy?n xe
+
 				LoadChuyenXeAuto();
-				
+
 				MessageBox.Show(
-					"?? –?t vÈ th‡nh cÙng!\n\n" +
-					"B?n cÛ th? xem chi ti?t trong m?c 'L?ch s? mua vÈ'.",
-					"Th‡nh cÙng",
+					"ƒê·∫∑t v√© th√†nh c√¥ng!\n\n" +
+					"B·∫°n c√≥ th·ªÉ xem chi ti·∫øt trong m·ª•c 'L·ªãch s·ª≠ mua v√©'.",
+					"Th√†nh c√¥ng",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Information
 				);
 			}
 			catch (Exception ex)
 			{
-				Console.WriteLine($"? ResetFormAfterPayment Error: {ex.Message}");
+				Console.WriteLine($"ResetFormAfterPayment Error: {ex.Message}");
 			}
 		}
 		#endregion
@@ -1077,29 +1025,24 @@ namespace QLBXMD.GUI.User
 			pnlSeatMap.Visible = false;
 			pnlSeatInfo.Visible = false;
 
-			lblGheDaChon.Text = "Gh? ? ch?n: Ch˝a ch?n";
-			lblTongTien.Text = "T?ng ti?n: 0 VN–";
+			lblGheDaChon.Text = "Gh·∫ø ƒë√£ ch·ªçn: Ch∆∞a ch·ªçn";
+			lblTongTien.Text = "T·ªïng ti·ªÅn: 0 VNƒê";
 			btnDatVe.Enabled = false;
 		}
 		#endregion
 
-		#region Swap ?a i?m
+		#region Swap ƒë·ªãa ƒëi·ªÉm
 		private void btnSwap_Click(object sender, EventArgs e)
 		{
 			if (cboDiemDi.SelectedItem != null && cboDiemDen.SelectedItem != null)
 			{
-				string diemDi = cboDiemDi.SelectedItem.ToString();
-				string diemDen = cboDiemDen.SelectedItem.ToString();
-
-				// Swap c? khi cÛ placeholder (khÙng c?n ki?m tra)
 				var temp = cboDiemDi.SelectedItem;
 				cboDiemDi.SelectedItem = cboDiemDen.SelectedItem;
 				cboDiemDen.SelectedItem = temp;
-				
-				// LoadChuyenXeAuto s? ˝?c g?i t? ?ng qua SelectedIndexChanged event
 			}
 		}
 		#endregion
+
 		private string ComputeHmacSha256(string message, string secretKey)
 		{
 			var keyBytes = Encoding.UTF8.GetBytes(secretKey);

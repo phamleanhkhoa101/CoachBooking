@@ -84,6 +84,42 @@ namespace QLBXMD.GUI.Admin
 				MessageBox.Show("Lỗi tải dữ liệu: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
 			}
 		}
+
+		private void ClearSelectedTrip()
+		{
+			selectedMaChuyen = null;
+			selectedMaXe = null;
+			selectedMaLoaiXe = null;
+			selectedGiaVe = null;
+			selectedSeats.Clear();
+			bookedSeats.Clear();
+
+			flpTangDuoi.Controls.Clear();
+			flpTangTren.Controls.Clear();
+
+			pnlSeatMap.Visible = false;
+			pnlThongTinKH.Visible = false;
+
+			lblThongTinChuyen.Text = "Chưa chọn chuyến";
+			lblTongTien.Text = "Tổng: 0 VNĐ";
+		}
+
+		private bool IsTripDeparted(DateTime departureTime)
+		{
+			return departureTime <= DateTime.Now;
+		}
+
+		private void ShowTripDepartedMessage(DateTime departureTime)
+		{
+			MessageBox.Show(
+				$"Không thể đặt vé cho chuyến xe đã khởi hành hoặc đến giờ khởi hành.\n\n" +
+				$"Ngày khởi hành: {departureTime:dd/MM/yyyy HH:mm}\n" +
+				$"Hiện tại: {DateTime.Now:dd/MM/yyyy HH:mm}",
+				"Thông báo",
+				MessageBoxButtons.OK,
+				MessageBoxIcon.Warning
+			);
+		}
 		#endregion
 
 		#region Bước 1: Tìm chuyến xe
@@ -123,7 +159,7 @@ namespace QLBXMD.GUI.Admin
 								where td.DiemDi == selectedDiemDi
 									  && td.DiemDen == selectedDiemDen
 									  && System.Data.Entity.DbFunctions.TruncateTime(cx.NgayGioKhoiHanh) == selectedNgayDi
-									  //&& cx.NgayGioKhoiHanh > DateTime.Now // Chỉ hiển thị chuyến chưa khởi hành
+									  && cx.NgayGioKhoiHanh > DateTime.Now
 									  && cx.GiaVeThucTe.HasValue && cx.GiaVeThucTe > 0 // Chỉ lấy chuyến có giá vé
 								select new
 								{
@@ -160,10 +196,13 @@ namespace QLBXMD.GUI.Admin
 
 					if (!results.Any())
 					{
+						ClearSelectedTrip();
 						MessageBox.Show("Không tìm thấy chuyến xe phù hợp.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
 						pnlResults.Visible = false;
 						return;
 					}
+
+					ClearSelectedTrip();
 
 					// Setup DataGridView
 					dgvChuyenXe.Columns.Clear();
@@ -287,6 +326,18 @@ namespace QLBXMD.GUI.Admin
 				Console.WriteLine($"MaLoaiXe: {selectedMaLoaiXe}");
 				Console.WriteLine($"GiaVe: {selectedGiaVe}");
 
+				var khoiHanhCell = row.Cells["KhoiHanh"].Value;
+				if (khoiHanhCell != null && khoiHanhCell != DBNull.Value)
+				{
+					var ngayKhoiHanh = Convert.ToDateTime(khoiHanhCell);
+					if (IsTripDeparted(ngayKhoiHanh))
+					{
+						ShowTripDepartedMessage(ngayKhoiHanh);
+						LoadChuyenXe();
+						return;
+					}
+				}
+
 				// Validate giá vé
 				if (selectedGiaVe == 0)
 				{
@@ -312,6 +363,22 @@ namespace QLBXMD.GUI.Admin
 			{
 				using (var db = new BXMDEntities())
 				{
+					var chuyenXe = selectedMaChuyen.HasValue
+						? db.ChuyenXes.FirstOrDefault(cx => cx.MaChuyen == selectedMaChuyen.Value)
+						: null;
+					if (chuyenXe == null)
+					{
+						MessageBox.Show("Chuyến xe không tồn tại.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+						return;
+					}
+
+					if (IsTripDeparted(chuyenXe.NgayGioKhoiHanh))
+					{
+						ShowTripDepartedMessage(chuyenXe.NgayGioKhoiHanh);
+						LoadChuyenXe();
+						return;
+					}
+
 					// Lấy số chỗ và loại xe
 					var loaiXe = db.LoaiXes.FirstOrDefault(lx => lx.MaLX == selectedMaLoaiXe);
 					if (loaiXe == null) return;
@@ -615,14 +682,24 @@ namespace QLBXMD.GUI.Admin
 			decimal tienTam = selectedSeats.Count * selectedGiaVe.Value;
 
 			// Hiển thị dialog xác nhận với phương thức thanh toán
-			DateTime ngayKhoiHanh = DateTime.Now;
+			DateTime ngayKhoiHanh;
 			using (var db = new BXMDEntities())
 			{
-				var chuyenXe = db.ChuyenXes.FirstOrDefault(cx => cx.MaChuyen == selectedMaChuyen);
-				if (chuyenXe != null)
+				var chuyenXe = db.ChuyenXes.FirstOrDefault(cx => cx.MaChuyen == selectedMaChuyen.Value);
+				if (chuyenXe == null)
 				{
-					ngayKhoiHanh = chuyenXe.NgayGioKhoiHanh;
+					MessageBox.Show("Chuyến xe không tồn tại.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					return;
 				}
+
+				if (IsTripDeparted(chuyenXe.NgayGioKhoiHanh))
+				{
+					ShowTripDepartedMessage(chuyenXe.NgayGioKhoiHanh);
+					LoadChuyenXe();
+					return;
+				}
+
+				ngayKhoiHanh = chuyenXe.NgayGioKhoiHanh;
 			}
 
 			// Lấy phương thức thanh toán từ dialog
@@ -675,16 +752,10 @@ namespace QLBXMD.GUI.Admin
 					}
 
 					// 1.5. Kiểm tra ngày khởi hành phải lớn hơn hiện tại
-					if (chuyenXe.NgayGioKhoiHanh <= DateTime.Now)
+					if (IsTripDeparted(chuyenXe.NgayGioKhoiHanh))
 					{
-						MessageBox.Show(
-							$"Không thể đặt vé cho chuyến xe đã khởi hành hoặc sắp khởi hành.\n\n" +
-							$"Ngày khởi hành: {chuyenXe.NgayGioKhoiHanh:dd/MM/yyyy HH:mm}\n" +
-							$"Hiện tại: {DateTime.Now:dd/MM/yyyy HH:mm}",
-							"Lỗi",
-							MessageBoxButtons.OK,
-							MessageBoxIcon.Error
-						);
+						ShowTripDepartedMessage(chuyenXe.NgayGioKhoiHanh);
+						LoadChuyenXe();
 						return;
 					}
 
@@ -924,6 +995,26 @@ namespace QLBXMD.GUI.Admin
 						return;
 					}
 
+					if (IsTripDeparted(chuyenXe.NgayGioKhoiHanh))
+					{
+						ShowTripDepartedMessage(chuyenXe.NgayGioKhoiHanh);
+						LoadChuyenXe();
+						return;
+					}
+
+					if (!chuyenXe.GiaVeThucTe.HasValue || chuyenXe.GiaVeThucTe.Value <= 0)
+					{
+						MessageBox.Show(
+							$"Chuyến xe này chưa có giá vé hoặc giá vé = 0.\n\n" +
+							$"Mã chuyến: {chuyenXe.MaChuyen}\n" +
+							$"Vui lòng liên hệ quản trị viên để cập nhật giá vé.",
+							"Lỗi",
+							MessageBoxButtons.OK,
+							MessageBoxIcon.Error
+						);
+						return;
+					}
+
 					// Kiểm tra ghế trùng
 					var daDat = db.VeXes
 						.Where(v => v.MaChuyen == selectedMaChuyen && selectedSeats.Contains(v.ChoNgoi))
@@ -1014,59 +1105,24 @@ namespace QLBXMD.GUI.Admin
 
 				if (response.ResultCode == 0)
 				{
-					
-					// Thành công - Mở trình duyệt
 					MessageBox.Show(
-						$"Đã tạo đơn hàng tạm thời!\n\n" +
+						$"Đã tạo yêu cầu thanh toán MoMo.\n\n" +
 						$"Mã hóa đơn: {maHD}\n" +
-						$"Mã đơn MoMo: {orderId}\n\n" +
-						$"Đang chuyển đến trang thanh toán MoMo...\n" +
-						$"Vui lòng hoàn tất thanh toán trong trình duyệt.",
+						$"Mã đơn MoMo: {orderId}\n" +
+						$"Số tiền: {amount:#,##0} VNĐ\n\n" +
+						$"Sau khi đóng thông báo này, hệ thống sẽ mở trang thanh toán trong trình duyệt.",
 						"Thanh toán MoMo",
 						MessageBoxButtons.OK,
 						MessageBoxIcon.Information
 					);
 
-
-System.Diagnostics.Process.Start(response.PayUrl);
-
-					// Sau khi mở MoMo, bắt đầu Polling kiểm tra trạng thái
-					StartPollingPaymentStatus(orderId, maHD, amount);
-
-					// 3. CLEAR FORM NGAY SAU KHI TẠO ĐƠN
+					System.Diagnostics.Process.Start(response.PayUrl);
 					ResetForm();
-
-					MessageBox.Show(
-						"Hướng dẫn:\n\n" +
-						"1. Hoàn tất thanh toán trên MoMo\n" +
-						"2. Sau khi thanh toán thành công, hệ thống sẽ tự động cập nhật trạng thái\n" +
-						"3. Kiểm tra lại trong 'Quản lý vé' hoặc 'Lịch sử mua vé'\n\n" +
-						$"Mã hóa đơn: {maHD}\n" +
-						$"Trạng thái hiện tại: Chờ thanh toán",
-						"Thông báo",
-						MessageBoxButtons.OK,
-						MessageBoxIcon.Information
-					);
+					StartPollingPaymentStatus(orderId, maHD, amount);
 				}
 				else
 				{
-					// Lỗi - XÓA HÓA ĐƠN TẠM
-					using (var db = new BXMDEntities())
-					{
-						var hoaDonCancel = db.HoaDons.FirstOrDefault(h => h.MaHD == maHD);
-						if (hoaDonCancel != null)
-						{
-							// Xóa vé trước
-							var veXeCancel = db.VeXes.Where(v => v.MaHD == maHD).ToList();
-							db.VeXes.RemoveRange(veXeCancel);
-							
-							// Xóa hóa đơn
-							db.HoaDons.Remove(hoaDonCancel);
-							db.SaveChanges();
-							
-							Console.WriteLine($"Đã hủy hóa đơn tạm: MaHD = {maHD}");
-						}
-					}
+					RollbackTemporaryHoaDon(maHD);
 
 					MessageBox.Show(
 						$"Lỗi tạo yêu cầu thanh toán MoMo:\n\n" +
@@ -1101,30 +1157,52 @@ System.Diagnostics.Process.Start(response.PayUrl);
 			const int maxAttempts = 12; // 12 lần * 5s = 1 phút
 			const int delayMs = 5000;
 
-			MessageBox.Show("Đang chờ người dùng hoàn tất thanh toán MoMo...", "MoMo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
 			while (attempt < maxAttempts)
 			{
+				await Task.Delay(delayMs);
 				attempt++;
 				string status = await QueryMomoOrder(orderId);
 
 				if (status == "Success")
 				{
-					MessageBox.Show("Thanh toán MoMo thành công!", "MoMo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-					UpdateHoaDonTrangThai(maHD, true, "MoMo");
+					if (UpdateHoaDonTrangThai(maHD, true, "MoMo"))
+					{
+						MessageBox.Show(
+							$"Thanh toán MoMo thành công.\n\n" +
+							$"Mã hóa đơn: {maHD}\n" +
+							$"Số tiền: {amount:#,##0} VNĐ",
+							"MoMo",
+							MessageBoxButtons.OK,
+							MessageBoxIcon.Information
+						);
+					}
 					return;
 				}
 				else if (status == "Failed")
 				{
-					MessageBox.Show("Thanh toán MoMo thất bại hoặc bị hủy!", "MoMo", MessageBoxButtons.OK, MessageBoxIcon.Error);
-					UpdateHoaDonTrangThai(maHD, false, "MoMo");
+					if (UpdateHoaDonTrangThai(maHD, false, "MoMo"))
+					{
+						MessageBox.Show(
+							$"Thanh toán MoMo thất bại hoặc bị hủy.\n\n" +
+							$"Mã hóa đơn: {maHD}\n" +
+							$"Trạng thái hóa đơn hiện vẫn là chưa thanh toán.",
+							"MoMo",
+							MessageBoxButtons.OK,
+							MessageBoxIcon.Warning
+						);
+					}
 					return;
 				}
-
-				await Task.Delay(delayMs);
 			}
 
-			MessageBox.Show("Hết thời gian chờ thanh toán MoMo.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+			MessageBox.Show(
+				$"Hết thời gian chờ xác nhận thanh toán MoMo.\n\n" +
+				$"Mã hóa đơn: {maHD}\n" +
+				$"Bạn có thể kiểm tra lại trạng thái thanh toán sau.",
+				"Thông báo",
+				MessageBoxButtons.OK,
+				MessageBoxIcon.Warning
+			);
 		}
 
 		/// <summary>
@@ -1190,14 +1268,18 @@ System.Diagnostics.Process.Start(response.PayUrl);
 		/// <summary>
 		/// Cập nhật trạng thái hóa đơn khi có kết quả thanh toán
 		/// </summary>
-		private void UpdateHoaDonTrangThai(int maHD, bool daThanhToan, string phuongThuc)
+		private bool UpdateHoaDonTrangThai(int maHD, bool daThanhToan, string phuongThuc)
 		{
 			try
 			{
 				using (var db = new BXMDEntities())
 				{
 					var hoaDon = db.HoaDons.FirstOrDefault(h => h.MaHD == maHD);
-					if (hoaDon == null) return;
+					if (hoaDon == null)
+					{
+						MessageBox.Show($"Không tìm thấy hóa đơn #{maHD} để cập nhật.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+						return false;
+					}
 
 					hoaDon.TrangThai = daThanhToan;
 					hoaDon.TongTien = hoaDon.TongTien ?? 0;
@@ -1217,39 +1299,49 @@ System.Diagnostics.Process.Start(response.PayUrl);
 					db.SaveChanges();
 				}
 
-				if (daThanhToan)
-				{
-					MessageBox.Show(
-						$"Hóa đơn #{maHD} đã được cập nhật trạng thái: ĐÃ THANH TOÁN ({phuongThuc}).",
-						"Thành công",
-						MessageBoxButtons.OK,
-						MessageBoxIcon.Information
-					);
-				}
-				else
-				{
-					MessageBox.Show(
-						$"Hóa đơn #{maHD} đã được cập nhật: THANH TOÁN THẤT BẠI.",
-						"Thông báo",
-						MessageBoxButtons.OK,
-						MessageBoxIcon.Warning
-					);
-				}
+				return true;
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show("Lỗi cập nhật hóa đơn: " + ex.Message);
+				MessageBox.Show("Lỗi cập nhật hóa đơn: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				return false;
+			}
+		}
+
+		private void RollbackTemporaryHoaDon(int maHD)
+		{
+			if (maHD <= 0)
+			{
+				return;
+			}
+
+			try
+			{
+				using (var db = new BXMDEntities())
+				{
+					var hoaDonCancel = db.HoaDons.FirstOrDefault(h => h.MaHD == maHD);
+					if (hoaDonCancel == null)
+					{
+						return;
+					}
+
+					var veXeCancel = db.VeXes.Where(v => v.MaHD == maHD).ToList();
+					db.VeXes.RemoveRange(veXeCancel);
+					db.HoaDons.Remove(hoaDonCancel);
+					db.SaveChanges();
+				}
+
+				Console.WriteLine($"Đã hủy hóa đơn tạm: MaHD = {maHD}");
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"RollbackTemporaryHoaDon Error: {ex}");
 			}
 		}
 
 		private void ResetForm()
 		{
-			selectedMaChuyen = null;
-			selectedMaXe = null;
-			selectedMaLoaiXe = null;
-			selectedGiaVe = null;
-			selectedSeats.Clear();
-			bookedSeats.Clear();
+			ClearSelectedTrip();
 
 			txtTenKH.Clear();
 			txtSDT.Clear();
@@ -1266,11 +1358,6 @@ System.Diagnostics.Process.Start(response.PayUrl);
 			cboGioiTinh.BackColor = System.Drawing.Color.White;
 
 			pnlResults.Visible = false;
-			pnlSeatMap.Visible = false;
-			pnlThongTinKH.Visible = false;
-
-			lblThongTinChuyen.Text = "Chưa chọn chuyến";
-			lblTongTien.Text = "Tổng: 0 VNĐ";
 		}
 		private string ComputeHmacSha256(string message, string secretKey)
 		{

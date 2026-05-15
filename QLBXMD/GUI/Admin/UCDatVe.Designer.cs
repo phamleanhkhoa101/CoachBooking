@@ -96,7 +96,7 @@
             this.flowMain.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.flowMain.Name = "flowMain";
             this.flowMain.Padding = new System.Windows.Forms.Padding(18, 16, 18, 16);
-            this.flowMain.Size = new System.Drawing.Size(1201, 596);
+            this.flowMain.Size = new System.Drawing.Size(1257, 722);
             this.flowMain.TabIndex = 0;
             this.flowMain.WrapContents = false;
             // 
@@ -640,7 +640,7 @@
             this.Controls.Add(this.flowMain);
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Name = "UCDatVe";
-            this.Size = new System.Drawing.Size(1201, 596);
+            this.Size = new System.Drawing.Size(1257, 722);
             this.flowMain.ResumeLayout(false);
             this.flowMain.PerformLayout();
             this.pnlSearch.ResumeLayout(false);

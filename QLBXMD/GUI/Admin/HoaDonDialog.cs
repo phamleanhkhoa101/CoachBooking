@@ -590,15 +590,19 @@ namespace QLBXMD.GUI.Admin
 				int buttonWidth = 60;
 				int buttonHeight = 25;
 				int spacing = 5;
-				int startX = e.CellBounds.Left + (e.CellBounds.Width - (buttonWidth * 2 + spacing)) / 2;
+				int startX = e.CellBounds.Left + (e.CellBounds.Width - (buttonWidth * 3 + spacing * 2)) / 2;
 				int startY = e.CellBounds.Top + (e.CellBounds.Height - buttonHeight) / 2;
 
+				// Nút Gửi (Blue)
+				Rectangle rectGui = new Rectangle(startX, startY, buttonWidth, buttonHeight);
+				DrawActionButton(e.Graphics, rectGui, "Gửi", Color.FromArgb(33, 150, 243), null, true);
+
 				// Nút Sửa (Yellow/Orange)
-				Rectangle rectSua = new Rectangle(startX, startY, buttonWidth, buttonHeight);
+				Rectangle rectSua = new Rectangle(startX + buttonWidth + spacing, startY, buttonWidth, buttonHeight);
 				DrawActionButton(e.Graphics, rectSua, "Sửa", Color.FromArgb(255, 193, 7), QLBXMD.Properties.Resources.edit, canEdit);
 
 				// Nút Xóa (Red)
-				Rectangle rectXoa = new Rectangle(startX + buttonWidth + spacing, startY, buttonWidth, buttonHeight);
+				Rectangle rectXoa = new Rectangle(startX + (buttonWidth + spacing) * 2, startY, buttonWidth, buttonHeight);
 				DrawActionButton(e.Graphics, rectXoa, "Xóa", Color.FromArgb(244, 67, 54), QLBXMD.Properties.Resources.delete, canDelete);
 
 				e.Handled = true;
@@ -635,7 +639,7 @@ namespace QLBXMD.GUI.Admin
 				int buttonWidth = 60;
 				int spacing = 5;
 				int cellWidth = dgvDanhSachVe.Columns[e.ColumnIndex].Width;
-				int startX = (cellWidth - (buttonWidth * 2 + spacing)) / 2;
+				int startX = (cellWidth - (buttonWidth * 3 + spacing * 2)) / 2;
 
 				Point clickPoint = dgvDanhSachVe.PointToClient(Cursor.Position);
 				Rectangle cellRect = dgvDanhSachVe.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, false);
@@ -654,6 +658,11 @@ namespace QLBXMD.GUI.Admin
 
 				if (localX >= startX && localX <= startX + buttonWidth)
 				{
+					// Action Gửi
+					SendTicketZalo(e.RowIndex);
+				}
+				else if (localX >= startX + buttonWidth + spacing && localX <= startX + buttonWidth * 2 + spacing)
+				{
 					// Action Sửa
 					if (!canEdit)
 					{
@@ -662,7 +671,7 @@ namespace QLBXMD.GUI.Admin
 					}
 					HandleTicketAction(e.RowIndex, VeDialogMode.Edit);
 				}
-				else if (localX >= startX + buttonWidth + spacing && localX <= startX + buttonWidth * 2 + spacing)
+				else if (localX >= startX + (buttonWidth + spacing) * 2 && localX <= startX + (buttonWidth + spacing) * 2 + buttonWidth)
 				{
 					// Action Xóa
 					if (isPaid || dgvDanhSachVe.Rows.Count <= 1) return;
@@ -732,6 +741,40 @@ namespace QLBXMD.GUI.Admin
 				}
 			}
 			numTongTien.Value = total;
+		}
+		private void SendTicketZalo(int rowIndex)
+		{
+			int maVe = (int)dgvDanhSachVe.Rows[rowIndex].Cells["colMaVe"].Value;
+			using (var db = new BXMDEntities())
+			{
+				var ve = db.VeXes.Find(maVe);
+				if (ve == null) return;
+
+				var chuyen = db.ChuyenXes.Find(ve.MaChuyen);
+				var khach = db.KhachHangs.Find(ve.HoaDon.MaKH);
+				var xe = chuyen?.Xe;
+				var nhaXe = xe?.NhaXe;
+				var tuyen = chuyen?.TuyenDuong;
+
+				if (khach == null || string.IsNullOrEmpty(khach.SDT))
+				{
+					MessageBox.Show("Khách hàng không có số điện thoại.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					return;
+				}
+
+				try
+				{
+					var bmp = QLBXMD.GUI.Utils.VeXeRenderer.GenerateTicket(ve, chuyen, khach, nhaXe, tuyen);
+					Clipboard.SetImage(bmp);
+					
+					System.Diagnostics.Process.Start($"zalo://me?phone={khach.SDT}");
+					MessageBox.Show("Đã copy ảnh vé vào bộ nhớ tạm.\n\nHãy ấn Ctrl+V trong cửa sổ chat Zalo vừa được mở để gửi vé cho khách.", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+				}
+				catch (Exception ex)
+				{
+					MessageBox.Show("Không thể tạo hoặc gửi vé: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+				}
+			}
 		}
 	}
 }

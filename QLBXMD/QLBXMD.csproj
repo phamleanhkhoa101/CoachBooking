@@ -53,6 +53,9 @@
     </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
+    <Reference Include="QRCoder, Version=1.8.0.0, Culture=neutral, PublicKeyToken=c4ed5b9ae8358a28, processorArchitecture=MSIL">
+      <HintPath>..\packages\QRCoder.1.8.0\lib\net40\QRCoder.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
@@ -160,6 +163,7 @@
       <DependentUpon>BXMDEntities.tt</DependentUpon>
     </Compile>
     <Compile Include="GUI\Admin\AdminGridTheme.cs" />
+    <Compile Include="GUI\Utils\VeXeRenderer.cs" />
     <Compile Include="GUI\Admin\CapTaiKhoanDialog.cs">
       <SubType>Form</SubType>
     </Compile>

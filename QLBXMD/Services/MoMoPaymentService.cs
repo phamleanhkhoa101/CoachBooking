@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
@@ -154,6 +154,54 @@ namespace QLBXMD.Services
 				return false;
 			}
 		}
+		public async Task<MoMoQueryResponse> QueryPaymentStatus(string orderId)
+		{
+			try
+			{
+				var requestId = Guid.NewGuid().ToString();
+
+				var rawSignature =
+					"accessKey=" + AccessKey +
+					"&orderId=" + orderId +
+					"&partnerCode=" + PartnerCode +
+					"&requestId=" + requestId;
+
+				var signature = ComputeHmacSha256(rawSignature, SecretKey);
+
+				var requestBody = new
+				{
+					partnerCode = PartnerCode,
+					requestId = requestId,
+					orderId = orderId,
+					signature = signature,
+					lang = "vi"
+				};
+
+				using (var httpClient = new HttpClient())
+				{
+					httpClient.Timeout = TimeSpan.FromSeconds(30);
+
+					var json = JsonConvert.SerializeObject(requestBody);
+					var content = new StringContent(json, Encoding.UTF8, "application/json");
+					
+					var queryEndpoint = "https://test-payment.momo.vn/v2/gateway/api/query";
+					var response = await httpClient.PostAsync(queryEndpoint, content);
+					var responseContent = await response.Content.ReadAsStringAsync();
+
+					return JsonConvert.DeserializeObject<MoMoQueryResponse>(responseContent)
+						   ?? new MoMoQueryResponse();
+				}
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine("❌ MoMo Query Error: " + ex.Message);
+				return new MoMoQueryResponse
+				{
+					ResultCode = -1,
+					Message = "Lỗi kết nối MoMo: " + ex.Message
+				};
+			}
+		}
 	}
 
 	#region Response Models
@@ -187,6 +235,21 @@ namespace QLBXMD.Services
 		[JsonProperty("responseTime")] public long ResponseTime { get; set; }
 		[JsonProperty("extraData")] public string ExtraData { get; set; }
 		[JsonProperty("signature")] public string Signature { get; set; }
+	}
+
+	public class MoMoQueryResponse
+	{
+		[JsonProperty("partnerCode")] public string PartnerCode { get; set; }
+		[JsonProperty("orderId")] public string OrderId { get; set; }
+		[JsonProperty("requestId")] public string RequestId { get; set; }
+		[JsonProperty("extraData")] public string ExtraData { get; set; }
+		[JsonProperty("amount")] public long Amount { get; set; }
+		[JsonProperty("transId")] public long TransId { get; set; }
+		[JsonProperty("payType")] public string PayType { get; set; }
+		[JsonProperty("resultCode")] public int ResultCode { get; set; }
+		[JsonProperty("refundTrans")] public object RefundTrans { get; set; }
+		[JsonProperty("message")] public string Message { get; set; }
+		[JsonProperty("responseTime")] public long ResponseTime { get; set; }
 	}
 
 	#endregion

@@ -1,4 +1,4 @@
-﻿using QLBXMD.EF;
+using QLBXMD.EF;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -67,7 +67,7 @@ namespace QLBXMD.GUI.Admin
 		public string TrangThai
 		{
 			get => cbbTrangThai.SelectedItem?.ToString();
-			set => cbbTrangThai.SelectedItem = value;
+			set => cbbTrangThai.SelectedIndex = cbbTrangThai.FindStringExact(value);
 		}
 		public XeDialog()
 		{
@@ -112,6 +112,8 @@ namespace QLBXMD.GUI.Admin
         // Call this to make the dialog read-only / view-only and hide the primary action button
         public void SetReadOnlyMode()
         {
+			this.Text = "Xem Chi Tiết Xe";
+			Controls["pnlHeader"].Controls["lblHeader"].Text = "CHI TIẾT XE";
             // Hide primary (Thêm) button
             btnPrimary.Visible = false;
 
@@ -122,6 +124,13 @@ namespace QLBXMD.GUI.Admin
             cbbNhaXe.Enabled = false;
             cbbLoaiXe.Enabled = false;
             cbbTrangThai.Enabled = false;
+		}
+
+		public void SetEditMode()
+		{
+			this.Text = "Cập Nhật Xe";
+			Controls["pnlHeader"].Controls["lblHeader"].Text = "CẬP NHẬT XE";
+			btnPrimary.Text = "Lưu";
 		}
 		
 		private void btnThem_Click(object sender, EventArgs e)

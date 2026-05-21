@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -213,100 +213,8 @@ namespace QLBXMD.GUI.User
 				return;
 			}
 
-			// Hiển thị dialog chọn phương thức thanh toán
-			using (var dialog = new Form())
-			{
-				dialog.Text = "Chọn phương thức thanh toán";
-				dialog.Size = new Size(400, 200);
-				dialog.FormBorderStyle = FormBorderStyle.FixedDialog;
-				dialog.StartPosition = FormStartPosition.CenterParent;
-				dialog.MaximizeBox = false;
-				dialog.MinimizeBox = false;
-
-				var lblPrompt = new Label
-				{
-					Text = "Vui lòng chọn phương thức thanh toán:",
-					Location = new Point(20, 20),
-					Size = new Size(350, 30),
-					Font = new Font("Segoe UI", 10F)
-				};
-
-				var btnTienMat = new Button
-				{
-					Text = "💵 Tiền mặt",
-					Location = new Point(20, 60),
-					Size = new Size(150, 50),
-					BackColor = Color.FromArgb(76, 175, 80),
-					ForeColor = Color.White,
-					FlatStyle = FlatStyle.Flat,
-					Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-					Cursor = Cursors.Hand
-				};
-				btnTienMat.FlatAppearance.BorderSize = 0;
-				btnTienMat.MouseEnter += (s, ev) => btnTienMat.BackColor = Color.FromArgb(96, 195, 100);
-				btnTienMat.MouseLeave += (s, ev) => btnTienMat.BackColor = Color.FromArgb(76, 175, 80);
-				btnTienMat.MouseDown += (s, ev) => btnTienMat.BackColor = Color.FromArgb(56, 155, 60);
-				btnTienMat.MouseUp += (s, ev) => btnTienMat.BackColor = Color.FromArgb(96, 195, 100);
-				btnTienMat.Click += (s, ev) => { dialog.Tag = "Tiền mặt"; dialog.DialogResult = DialogResult.OK; };
-
-				var btnMoMo = new Button
-				{
-					Text = "📱 MoMo",
-					Location = new Point(210, 60),
-					Size = new Size(150, 50),
-					BackColor = Color.FromArgb(163, 26, 92),
-					ForeColor = Color.White,
-					FlatStyle = FlatStyle.Flat,
-					Font = new Font("Segoe UI", 10F, FontStyle.Bold),
-					Cursor = Cursors.Hand
-				};
-				btnMoMo.FlatAppearance.BorderSize = 0;
-				btnMoMo.MouseEnter += (s, ev) => btnMoMo.BackColor = Color.FromArgb(183, 46, 112);
-				btnMoMo.MouseLeave += (s, ev) => btnMoMo.BackColor = Color.FromArgb(163, 26, 92);
-				btnMoMo.MouseDown += (s, ev) => btnMoMo.BackColor = Color.FromArgb(143, 6, 72);
-				btnMoMo.MouseUp += (s, ev) => btnMoMo.BackColor = Color.FromArgb(183, 46, 112);
-				btnMoMo.Click += (s, ev) => { dialog.Tag = "MoMo"; dialog.DialogResult = DialogResult.OK; };
-
-				var btnHuy = new Button
-				{
-					Text = "Hủy",
-					Location = new Point(140, 120),
-					Size = new Size(100, 35),
-					BackColor = Color.Gray,
-					ForeColor = Color.White,
-					FlatStyle = FlatStyle.Flat,
-					Font = new Font("Segoe UI", 9F),
-					Cursor = Cursors.Hand
-				};
-				btnHuy.FlatAppearance.BorderSize = 0;
-				btnHuy.MouseEnter += (s, ev) => btnHuy.BackColor = Color.FromArgb(120, 120, 120);
-				btnHuy.MouseLeave += (s, ev) => btnHuy.BackColor = Color.Gray;
-				btnHuy.MouseDown += (s, ev) => btnHuy.BackColor = Color.FromArgb(80, 80, 80);
-				btnHuy.MouseUp += (s, ev) => btnHuy.BackColor = Color.FromArgb(120, 120, 120);
-				btnHuy.Click += (s, ev) => { dialog.DialogResult = DialogResult.Cancel; };
-
-				dialog.Controls.Add(lblPrompt);
-				dialog.Controls.Add(btnTienMat);
-				dialog.Controls.Add(btnMoMo);
-				dialog.Controls.Add(btnHuy);
-
-				if (dialog.ShowDialog() != DialogResult.OK)
-					return;
-
-				string phuongThuc = dialog.Tag?.ToString();
-				if (string.IsNullOrEmpty(phuongThuc))
-					return;
-
-				// Xử lý thanh toán theo phương thức
-				if (phuongThuc == "MoMo")
-				{
-					await ProcessMoMoPayment();
-				}
-				else // Tiền mặt
-				{
-					ProcessCashPayment();
-				}
-			}
+			// Xử lý thanh toán MoMo trực tiếp, bỏ lựa chọn tiền mặt
+			await ProcessMoMoPayment();
 		}
 
 		private async Task ProcessMoMoPayment()
@@ -338,27 +246,59 @@ namespace QLBXMD.GUI.User
 				if (response.ResultCode == 0)
 				{
 					// Thành công - Mở trình duyệt với PayUrl
-					MessageBox.Show(
-						"Đang chuyển đến trang thanh toán MoMo...\n\n" +
-						"Vui lòng hoàn tất thanh toán trong trình duyệt.\n" +
-						$"Mã đơn hàng: {orderId}",
-						"Thanh toán MoMo",
-						MessageBoxButtons.OK,
-						MessageBoxIcon.Information
-					);
-
 					System.Diagnostics.Process.Start(response.PayUrl);
 
-					MessageBox.Show(
-						"⚠️ Lưu ý:\n" +
-						"- Sau khi thanh toán thành công trên MoMo, vui lòng quay lại ứng dụng.\n" +
-						"- Hệ thống sẽ tự động xác nhận và cập nhật trạng thái đơn hàng.\n" +
-						"- Nếu có vấn đề, vui lòng liên hệ quản trị viên.\n\n" +
+					var confirmResult = MessageBox.Show(
+						"Đang chuyển đến trang thanh toán MoMo...\n\n" +
+						"Sau khi thanh toán thành công trên trình duyệt, vui lòng nhấn 'OK' để hệ thống kiểm tra và cập nhật trạng thái đơn hàng.\n" +
 						$"Mã đơn hàng: {orderId}",
-						"Hướng dẫn",
-						MessageBoxButtons.OK,
+						"Xác nhận thanh toán MoMo",
+						MessageBoxButtons.OKCancel,
 						MessageBoxIcon.Information
 					);
+
+					if (confirmResult == DialogResult.OK)
+					{
+						this.Cursor = Cursors.WaitCursor;
+						var queryResponse = await momoService.QueryPaymentStatus(orderId);
+						this.Cursor = Cursors.Default;
+
+						if (queryResponse.ResultCode == 0) // Thành công
+						{
+							using (var db = new BXMDEntities())
+							{
+								var hoaDonDb = db.HoaDons.FirstOrDefault(hd => hd.MaHD == maHD);
+								if (hoaDonDb != null && hoaDonDb.TrangThai != true)
+								{
+									// Tạo bản ghi thanh toán
+									var thanhToan = new ThanhToan
+									{
+										MaHD = hoaDonDb.MaHD,
+										TongTien = hoaDonDb.TongTien ?? 0,
+										NgayTT = DateTime.Now,
+										PhuongThuc = "MoMo"
+									};
+									db.ThanhToans.Add(thanhToan);
+
+									// Cập nhật trạng thái hóa đơn
+									hoaDonDb.TrangThai = true;
+									db.SaveChanges();
+
+									MessageBox.Show("Thanh toán thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
+									LoadChiTietHoaDon();
+								}
+							}
+						}
+						else
+						{
+							MessageBox.Show(
+								$"Giao dịch chưa hoàn tất hoặc thất bại.\n\nMã lỗi: {queryResponse.ResultCode}\nThông báo: {queryResponse.Message}\n\nVui lòng thử lại sau hoặc liên hệ hỗ trợ.",
+								"Kiểm tra thanh toán",
+								MessageBoxButtons.OK,
+								MessageBoxIcon.Warning
+							);
+						}
+					}
 				}
 				else
 				{
@@ -366,7 +306,7 @@ namespace QLBXMD.GUI.User
 						$"Lỗi tạo yêu cầu thanh toán MoMo:\n\n" +
 						$"Mã lỗi: {response.ResultCode}\n" +
 						$"Thông báo: {response.Message}\n\n" +
-						$"Vui lòng thử lại hoặc chọn phương thức thanh toán khác.",
+						$"Vui lòng thử lại sau.",
 						"Lỗi thanh toán",
 						MessageBoxButtons.OK,
 						MessageBoxIcon.Error
@@ -384,79 +324,6 @@ namespace QLBXMD.GUI.User
 					MessageBoxIcon.Error
 				);
 				Console.WriteLine($"❌ MoMo Payment Error: {ex.ToString()}");
-			}
-		}
-
-		private void ProcessCashPayment()
-		{
-			try
-			{
-				var confirmResult = MessageBox.Show(
-					$"Xác nhận thanh toán bằng tiền mặt?\n\n" +
-					$"Mã hóa đơn: #{hoaDon.MaHD}\n" +
-					$"Số tiền: {hoaDon.TongTien:#,##0} VNĐ",
-					"Xác nhận thanh toán",
-					MessageBoxButtons.YesNo,
-					MessageBoxIcon.Question
-				);
-
-				if (confirmResult != DialogResult.Yes)
-					return;
-
-				using (var db = new BXMDEntities())
-				{
-					var hoaDonDb = db.HoaDons.FirstOrDefault(hd => hd.MaHD == maHD);
-					if (hoaDonDb == null)
-					{
-						MessageBox.Show("Không tìm thấy hóa đơn.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-						return;
-					}
-
-					if (hoaDonDb.TrangThai == true)
-					{
-						MessageBox.Show("Hóa đơn đã được thanh toán.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-						return;
-					}
-
-					// Tạo bản ghi thanh toán
-					var thanhToan = new ThanhToan
-					{
-						MaHD = hoaDonDb.MaHD,
-						TongTien = hoaDonDb.TongTien ?? 0,
-						NgayTT = DateTime.Now,
-						PhuongThuc = "Tiền mặt"
-					};
-					db.ThanhToans.Add(thanhToan);
-
-					// Cập nhật trạng thái hóa đơn
-					hoaDonDb.TrangThai = true;
-
-					db.SaveChanges();
-
-					MessageBox.Show(
-						$"Thanh toán thành công!\n\n" +
-						$"Mã hóa đơn: #{hoaDonDb.MaHD}\n" +
-						$"Số tiền: {hoaDonDb.TongTien:#,##0} VNĐ\n" +
-						$"Phương thức: Tiền mặt\n" +
-						$"Thời gian: {DateTime.Now:dd/MM/yyyy HH:mm}",
-						"Thanh toán thành công",
-						MessageBoxButtons.OK,
-						MessageBoxIcon.Information
-					);
-
-					// Reload lại thông tin
-					LoadChiTietHoaDon();
-				}
-			}
-			catch (Exception ex)
-			{
-				MessageBox.Show(
-					$"Lỗi thanh toán:\n{ex.Message}",
-					"Lỗi",
-					MessageBoxButtons.OK,
-					MessageBoxIcon.Error
-				);
-				Console.WriteLine($"❌ Cash Payment Error: {ex.ToString()}");
 			}
 		}
 

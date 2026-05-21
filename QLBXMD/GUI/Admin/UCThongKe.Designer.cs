@@ -83,7 +83,7 @@
             this.pnlTop.Location = new System.Drawing.Point(0, 0);
             this.pnlTop.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.pnlTop.Name = "pnlTop";
-            this.pnlTop.Size = new System.Drawing.Size(1326, 48);
+            this.pnlTop.Size = new System.Drawing.Size(1499, 48);
             this.pnlTop.TabIndex = 0;
             // 
             // lblTitle
@@ -110,7 +110,7 @@
             this.pnlFilter.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.pnlFilter.Name = "pnlFilter";
             this.pnlFilter.Padding = new System.Windows.Forms.Padding(18, 8, 18, 8);
-            this.pnlFilter.Size = new System.Drawing.Size(1326, 56);
+            this.pnlFilter.Size = new System.Drawing.Size(1499, 56);
             this.pnlFilter.TabIndex = 1;
             // 
             // btnThongKe
@@ -181,7 +181,7 @@
             this.pnlStats.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.pnlStats.Name = "pnlStats";
             this.pnlStats.Padding = new System.Windows.Forms.Padding(18, 8, 18, 8);
-            this.pnlStats.Size = new System.Drawing.Size(1326, 115);
+            this.pnlStats.Size = new System.Drawing.Size(1499, 115);
             this.pnlStats.TabIndex = 2;
             // 
             // pnlStat4
@@ -291,7 +291,7 @@
             this.pnlStat1.Location = new System.Drawing.Point(21, 12);
             this.pnlStat1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.pnlStat1.Name = "pnlStat1";
-            this.pnlStat1.Size = new System.Drawing.Size(267, 93);
+            this.pnlStat1.Size = new System.Drawing.Size(298, 93);
             this.pnlStat1.TabIndex = 0;
             // 
             // lblDoanhThu
@@ -327,17 +327,18 @@
             this.pnlCharts.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.pnlCharts.Name = "pnlCharts";
             this.pnlCharts.Padding = new System.Windows.Forms.Padding(18, 16, 18, 16);
-            this.pnlCharts.Size = new System.Drawing.Size(1326, 517);
+            this.pnlCharts.Size = new System.Drawing.Size(1499, 656);
             this.pnlCharts.TabIndex = 3;
             // 
             // chartTuyenDuong
             // 
+            this.chartTuyenDuong.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
             chartArea1.Name = "ChartArea1";
             this.chartTuyenDuong.ChartAreas.Add(chartArea1);
-            this.chartTuyenDuong.Dock = System.Windows.Forms.DockStyle.Fill;
             legend1.Name = "Legend1";
             this.chartTuyenDuong.Legends.Add(legend1);
-            this.chartTuyenDuong.Location = new System.Drawing.Point(588, 16);
+            this.chartTuyenDuong.Location = new System.Drawing.Point(547, 18);
             this.chartTuyenDuong.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.chartTuyenDuong.Name = "chartTuyenDuong";
             series1.ChartArea = "ChartArea1";
@@ -345,7 +346,7 @@
             series1.Legend = "Legend1";
             series1.Name = "Series1";
             this.chartTuyenDuong.Series.Add(series1);
-            this.chartTuyenDuong.Size = new System.Drawing.Size(436, 485);
+            this.chartTuyenDuong.Size = new System.Drawing.Size(520, 624);
             this.chartTuyenDuong.TabIndex = 1;
             this.chartTuyenDuong.Text = "chart2";
             // 
@@ -353,7 +354,6 @@
             // 
             chartArea2.Name = "ChartArea1";
             this.chartDoanhThu.ChartAreas.Add(chartArea2);
-            this.chartDoanhThu.Dock = System.Windows.Forms.DockStyle.Left;
             legend2.Name = "Legend1";
             this.chartDoanhThu.Legends.Add(legend2);
             this.chartDoanhThu.Location = new System.Drawing.Point(18, 16);
@@ -363,25 +363,26 @@
             series2.Legend = "Legend1";
             series2.Name = "Series1";
             this.chartDoanhThu.Series.Add(series2);
-            this.chartDoanhThu.Size = new System.Drawing.Size(570, 485);
+            this.chartDoanhThu.Size = new System.Drawing.Size(523, 485);
             this.chartDoanhThu.TabIndex = 0;
             this.chartDoanhThu.Text = "chart1";
             // 
             // chartNhaXe
             // 
+            this.chartNhaXe.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             chartArea3.Name = "ChartArea1";
             this.chartNhaXe.ChartAreas.Add(chartArea3);
-            this.chartNhaXe.Dock = System.Windows.Forms.DockStyle.Right;
             legend3.Name = "Legend1";
             this.chartNhaXe.Legends.Add(legend3);
-            this.chartNhaXe.Location = new System.Drawing.Point(1024, 16);
+            this.chartNhaXe.Location = new System.Drawing.Point(1106, 36);
             this.chartNhaXe.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.chartNhaXe.Name = "chartNhaXe";
             series3.ChartArea = "ChartArea1";
             series3.Legend = "Legend1";
             series3.Name = "Series1";
             this.chartNhaXe.Series.Add(series3);
-            this.chartNhaXe.Size = new System.Drawing.Size(284, 485);
+            this.chartNhaXe.Size = new System.Drawing.Size(372, 485);
             this.chartNhaXe.TabIndex = 2;
             this.chartNhaXe.Text = "chartNhaXe";
             // 
@@ -397,7 +398,7 @@
             this.Controls.Add(this.pnlTop);
             this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Name = "UCThongKe";
-            this.Size = new System.Drawing.Size(1326, 736);
+            this.Size = new System.Drawing.Size(1499, 875);
             this.Load += new System.EventHandler(this.UCThongKe_Load);
             this.pnlTop.ResumeLayout(false);
             this.pnlTop.PerformLayout();

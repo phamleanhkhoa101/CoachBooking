@@ -33,7 +33,7 @@ namespace QLBXMD.GUI.Admin
 						NhaXe = xe.NhaXe.TenNX,
 						LoaiXe = xe.LoaiXe.TenLX,
 						SoCho = xe.LoaiXe.SoCho.ToString(),
-						TrangThai = xe.TrangThai == true ? "Ho?t ?ng" : "Ng?ng ho?t ?ng"
+						TrangThai = xe.TrangThai == true ? "Ho·∫°t ƒë·ªông" : "Ng·ª´ng ho·∫°t ƒë·ªông"
 					}).ToList<dynamic>();
 			LoadData(data);
 			initCbb();
@@ -42,12 +42,13 @@ namespace QLBXMD.GUI.Admin
 
 		private void initCbb()
 		{
-			cbbLoai.Items.Add("T?t c?");
-			cbbLoai.Items.Add("M? xe");
-			cbbLoai.Items.Add("Bi?n s? xe");
-			cbbLoai.Items.Add("Nh‡ xe");
-			cbbLoai.Items.Add("Lo?i xe");
-			cbbLoai.Items.Add("Tr?ng th·i");
+			cbbLoai.Items.Clear();
+			cbbLoai.Items.Add("T·∫•t c·∫£");
+			cbbLoai.Items.Add("M√£ xe");
+			cbbLoai.Items.Add("Bi·ªÉn s·ªë xe");
+			cbbLoai.Items.Add("Nh√† xe");
+			cbbLoai.Items.Add("Lo·∫°i xe");
+			cbbLoai.Items.Add("Tr·∫°ng th√°i");
 			cbbLoai.SelectedIndex = 0;
 		}
 
@@ -171,7 +172,7 @@ namespace QLBXMD.GUI.Admin
 		{
 			using (var dialog = new XeDialog())
 			{
-				dialog.Text = "ThÍm Xe M?i";
+				dialog.Text = "Th√™m Xe M·ªõi";
 				dialog.Controls["txtMaXe"].Enabled = false;
 
 				if (dialog.ShowDialog() == DialogResult.OK)
@@ -181,14 +182,14 @@ namespace QLBXMD.GUI.Admin
 						BienSoXe = dialog.BienSoXe,
 						MaNX = dialog.MaNhaXe ?? 0,
 						MaLX = dialog.MaLoaiXe.Value,
-						TrangThai = dialog.TrangThai == "Ho?t ?ng" ? true : false
+						TrangThai = dialog.TrangThai == "Ho·∫°t ƒë·ªông" ? true : false
 					};
 
 					string result = _xeBUS.Add(xe);
-					MessageBox.Show(result, "ThÙng b·o", MessageBoxButtons.OK,
-						result.Contains("th‡nh cÙng") ? MessageBoxIcon.Information : MessageBoxIcon.Error);
+					MessageBox.Show(result, "Th√¥ng b√°o", MessageBoxButtons.OK,
+						result.Contains("th√†nh c√¥ng") ? MessageBoxIcon.Information : MessageBoxIcon.Error);
 
-					if (result.Contains("th‡nh cÙng"))
+					if (result.Contains("th√†nh c√¥ng"))
 					{
 						UCXe_Load(null, null);
 					}
@@ -214,7 +215,7 @@ namespace QLBXMD.GUI.Admin
 				dialog.BienSoXe = xe.BienSoXe;
 				dialog.MaNhaXe = xe.MaNX;
 				dialog.MaLoaiXe = xe.MaLX;
-				dialog.TrangThai = xe.TrangThai == true ? "Ho?t ?ng" : "Ng?ng ho?t ?ng";
+				dialog.TrangThai = xe.TrangThai == true ? "Ho·∫°t ƒë·ªông" : "Ng·ª´ng ho·∫°t ƒë·ªông";
 
 				dialog.Controls["btnPrimary"].Enabled = false;
 				dialog.Controls["txtMaXe"].Enabled = false;
@@ -245,8 +246,9 @@ namespace QLBXMD.GUI.Admin
 				dialog.BienSoXe = xe.BienSoXe;
 				dialog.MaNhaXe = xe.MaNX;
 				dialog.MaLoaiXe = xe.MaLX;
-				dialog.TrangThai = xe.TrangThai == true ? "Ho?t ?ng" : "Ng?ng ho?t ?ng";
+				dialog.TrangThai = xe.TrangThai == true ? "Ho·∫°t ƒë·ªông" : "Ng·ª´ng ho·∫°t ƒë·ªông";
 				dialog.Controls["txtMaXe"].Enabled = false;
+				dialog.SetEditMode();
 
 				if (dialog.ShowDialog() == DialogResult.OK)
 				{
@@ -256,14 +258,14 @@ namespace QLBXMD.GUI.Admin
 						BienSoXe = dialog.BienSoXe,
 						MaNX = dialog.MaNhaXe ?? 0,
 						MaLX = dialog.MaLoaiXe.Value,
-						TrangThai = dialog.TrangThai == "Ho?t ?ng" ? true : false
+						TrangThai = dialog.TrangThai == "Ho·∫°t ƒë·ªông" ? true : false
 					};
 
 					string result = _xeBUS.Update(xeUpdate);
-					MessageBox.Show(result, "ThÙng b·o", MessageBoxButtons.OK,
-						result.Contains("th‡nh cÙng") ? MessageBoxIcon.Information : MessageBoxIcon.Error);
+					MessageBox.Show(result, "Th√¥ng b√°o", MessageBoxButtons.OK,
+						result.Contains("th√†nh c√¥ng") ? MessageBoxIcon.Information : MessageBoxIcon.Error);
 
-					if (result.Contains("th‡nh cÙng"))
+					if (result.Contains("th√†nh c√¥ng"))
 					{
 						UCXe_Load(null, null);
 					}
@@ -275,7 +277,7 @@ namespace QLBXMD.GUI.Admin
 		{
 			if (dgv.SelectedRows.Count == 0)
 			{
-				MessageBox.Show("Vui l?ng ch?n xe c?n xÛa.", "ThÙng b·o", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				MessageBox.Show("Vui l√≤ng ch·ªçn xe c·∫ßn x√≥a.", "Th√¥ng b√°o", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				return;
 			}
 
@@ -283,7 +285,7 @@ namespace QLBXMD.GUI.Admin
 
 			if (selectedRow.Cells[0].Value == null)
 			{
-				MessageBox.Show("Vui l?ng ch?n xe c?n xÛa.", "ThÙng b·o", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				MessageBox.Show("Vui l√≤ng ch·ªçn xe c·∫ßn x√≥a.", "Th√¥ng b√°o", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				return;
 			}
 
@@ -291,8 +293,8 @@ namespace QLBXMD.GUI.Admin
 			string bienSoXe = selectedRow.Cells[1].Value.ToString();
 
 			DialogResult confirmResult = MessageBox.Show(
-				$"B?n cÛ ch?c ch?n mu?n xÛa xe '{bienSoXe}' khÙng?",
-				"X·c nh?n xÛa",
+				$"B·∫°n c√≥ ch·∫Øc ch·∫Øn mu·ªën x√≥a xe '{bienSoXe}' kh√¥ng?",
+				"X√°c nh·∫≠n x√≥a",
 				MessageBoxButtons.YesNo,
 				MessageBoxIcon.Question
 			);
@@ -300,10 +302,10 @@ namespace QLBXMD.GUI.Admin
 			if (confirmResult == DialogResult.Yes)
 			{
 				string result = _xeBUS.Delete(int.Parse(maXe));
-				MessageBox.Show(result, "ThÙng b·o", MessageBoxButtons.OK,
-					result.Contains("th‡nh cÙng") ? MessageBoxIcon.Information : MessageBoxIcon.Error);
+				MessageBox.Show(result, "Th√¥ng b√°o", MessageBoxButtons.OK,
+					result.Contains("th√†nh c√¥ng") ? MessageBoxIcon.Information : MessageBoxIcon.Error);
 
-				if (result.Contains("th‡nh cÙng"))
+				if (result.Contains("th√†nh c√¥ng"))
 				{
 					UCXe_Load(null, null);
 				}

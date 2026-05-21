@@ -81,7 +81,7 @@
             // 
             // btnHienMatKhau
             // 
-            this.btnHienMatKhau.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.btnHienMatKhau.BackColor = System.Drawing.Color.Transparent;
             this.btnHienMatKhau.FlatAppearance.BorderSize = 0;
             resources.ApplyResources(this.btnHienMatKhau, "btnHienMatKhau");
             this.btnHienMatKhau.Image = global::QLBXMD.Properties.Resources.show_pass;
@@ -118,7 +118,7 @@
             // 
             // btnHienMatKhau2
             // 
-            this.btnHienMatKhau2.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.btnHienMatKhau2.BackColor = System.Drawing.Color.Transparent;
             this.btnHienMatKhau2.FlatAppearance.BorderSize = 0;
             resources.ApplyResources(this.btnHienMatKhau2, "btnHienMatKhau2");
             this.btnHienMatKhau2.Image = global::QLBXMD.Properties.Resources.show_pass;

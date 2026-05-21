@@ -70,12 +70,12 @@
             this.panel2.Controls.Add(this.guna2PictureBox1);
             this.panel2.Controls.Add(this.linkLabel1);
             this.panel2.Controls.Add(this.label2);
-            this.panel2.Controls.Add(this.txtMatKhau);
             this.panel2.Controls.Add(this.btnHienMatKhau);
             this.panel2.Controls.Add(this.label1);
             this.panel2.Controls.Add(this.txtTenDangNhap);
             this.panel2.Controls.Add(this.btnDangNhap);
             this.panel2.Controls.Add(this.linkDangKy);
+            this.panel2.Controls.Add(this.txtMatKhau);
             this.panel2.Location = new System.Drawing.Point(12, 80);
             this.panel2.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.panel2.Name = "panel2";
@@ -143,7 +143,7 @@
             // 
             // btnHienMatKhau
             // 
-            this.btnHienMatKhau.BackColor = System.Drawing.Color.WhiteSmoke;
+            this.btnHienMatKhau.BackColor = System.Drawing.Color.Transparent;
             this.btnHienMatKhau.FlatAppearance.BorderSize = 0;
             this.btnHienMatKhau.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.btnHienMatKhau.Image = global::QLBXMD.Properties.Resources.show_pass;

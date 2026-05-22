@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -404,9 +404,9 @@ namespace QLBXMD.GUI.Admin
 				return false;
 			}
 
-			if (txtMatKhau.Text.Length < 6)
+			if (!QLBXMD.Utils.Validation.IsValidMatKhau(txtMatKhau.Text))
 			{
-				MessageBox.Show("Mật khẩu phải có ít nhất 6 ký tự.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				MessageBox.Show("Mật khẩu phải từ 6 ký tự trở lên, bao gồm chữ thường, chữ hoa, số và ký tự đặc biệt.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
 				txtMatKhau.Focus();
 				return false;
 			}

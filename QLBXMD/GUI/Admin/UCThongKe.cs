@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -19,6 +19,7 @@ namespace QLBXMD.GUI.Admin
 			InitializeComponent();
 			SetupDateTimePickers();
 			SetupCharts();
+			SetupComboBox();
 		}
 
 		private void SetupDateTimePickers()
@@ -26,6 +27,15 @@ namespace QLBXMD.GUI.Admin
 			// Mặc định: từ đầu tháng đến ngày hiện tại
 			dtpTuNgay.Value = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
 			dtpDenNgay.Value = DateTime.Now;
+		}
+
+		private void SetupComboBox()
+		{
+			cboLoaiBaoCao.Items.Clear();
+			cboLoaiBaoCao.Items.Add("Báo cáo doanh thu theo ngày");
+			cboLoaiBaoCao.Items.Add("Hiệu suất hoạt động của Nhà xe");
+			cboLoaiBaoCao.Items.Add("Hiệu suất hoạt động của Tuyến đường");
+			cboLoaiBaoCao.SelectedIndex = 0;
 		}
 
 		private void SetupCharts()
@@ -118,14 +128,21 @@ namespace QLBXMD.GUI.Admin
 						.Count();
 					lblSoVeValue.Text = soVe.ToString();
 
-					// 5. Biểu đồ doanh thu theo ngày
+					// 5. Doanh thu trung bình trên mỗi vé (KPI mới)
+					decimal trungBinhVe = soVe > 0 ? (tongDoanhThu / soVe) : 0;
+					lblTrungBinhVeValue.Text = trungBinhVe.ToString("#,##0") + " VNĐ";
+
+					// 6. Biểu đồ doanh thu theo ngày
 					LoadDoanhThuChart(db, tuNgay, denNgay);
 
-					// 6. Biểu đồ tuyến đường
+					// 7. Biểu đồ tuyến đường
 					LoadTuyenDuongChart(db, tuNgay, denNgay);
 
-					// 7. Biểu đồ nhà xe
+					// 8. Biểu đồ nhà xe
 					LoadNhaXeChart(db, tuNgay, denNgay);
+					
+					// 9. Báo cáo chi tiết dạng bảng
+					LoadDetailedReport();
 				}
 			}
 			catch (Exception ex)
@@ -305,6 +322,287 @@ namespace QLBXMD.GUI.Admin
 
 			chartNhaXe.Series.Add(series);
 			chartNhaXe.ChartAreas[0].Area3DStyle.Enable3D = false;
+		}
+
+		// ================= BÁO CÁO CHI TIẾT DẠNG BẢNG =================
+
+		private void cboLoaiBaoCao_SelectedIndexChanged(object sender, EventArgs e)
+		{
+			LoadDetailedReport();
+		}
+
+		private void LoadDetailedReport()
+		{
+			try
+			{
+				DateTime tuNgay = dtpTuNgay.Value.Date;
+				DateTime denNgay = dtpDenNgay.Value.Date.AddDays(1).AddSeconds(-1);
+
+				using (var db = new BXMDEntities())
+				{
+					int selectedIndex = cboLoaiBaoCao.SelectedIndex;
+					switch (selectedIndex)
+					{
+						case 0:
+							LoadDailyReport(db, tuNgay, denNgay);
+							break;
+						case 1:
+							LoadOperatorReport(db, tuNgay, denNgay);
+							break;
+						case 2:
+							LoadRouteReport(db, tuNgay, denNgay);
+							break;
+					}
+					AdminGridTheme.Apply(dgvChiTiet);
+				}
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show($"Lỗi khi tải báo cáo chi tiết:\n{ex.Message}", "Lỗi", 
+					MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
+
+		private void LoadDailyReport(BXMDEntities db, DateTime tuNgay, DateTime denNgay)
+		{
+			var dailyData = db.HoaDons
+				.Where(h => h.TrangThai == true && h.NgayLap >= tuNgay && h.NgayLap <= denNgay)
+				.GroupBy(h => System.Data.Entity.DbFunctions.TruncateTime(h.NgayLap))
+				.Select(g => new
+				{
+					Ngay = g.Key,
+					SoHoaDon = g.Count(),
+					SoVe = g.SelectMany(h => h.VeXes).Count(),
+					DoanhThu = g.Sum(h => h.TongTien) ?? 0
+				})
+				.OrderBy(x => x.Ngay)
+				.ToList()
+				.Select(x => new
+				{
+					Ngay = x.Ngay.HasValue ? x.Ngay.Value.ToString("dd/MM/yyyy") : "",
+					SoHoaDon = x.SoHoaDon,
+					SoVe = x.SoVe,
+					DoanhThu = x.DoanhThu,
+					DoanhThuTB = x.SoVe > 0 ? (x.DoanhThu / x.SoVe) : 0
+				})
+				.ToList();
+
+			dgvChiTiet.DataSource = dailyData;
+			
+			if (dgvChiTiet.Columns.Count > 0)
+			{
+				dgvChiTiet.Columns["Ngay"].HeaderText = "Ngày";
+				dgvChiTiet.Columns["SoHoaDon"].HeaderText = "Số hóa đơn";
+				dgvChiTiet.Columns["SoVe"].HeaderText = "Số vé bán";
+				dgvChiTiet.Columns["DoanhThu"].HeaderText = "Doanh thu";
+				dgvChiTiet.Columns["DoanhThu"].DefaultCellStyle.Format = "#,##0 VNĐ";
+				dgvChiTiet.Columns["DoanhThuTB"].HeaderText = "Doanh thu TB/Vé";
+				dgvChiTiet.Columns["DoanhThuTB"].DefaultCellStyle.Format = "#,##0 VNĐ";
+			}
+		}
+
+		private void LoadOperatorReport(BXMDEntities db, DateTime tuNgay, DateTime denNgay)
+		{
+			// 1. Lấy tất cả chuyến đi và tổng ghế trong khoảng thời gian theo nhà xe
+			var operatorTrips = db.ChuyenXes
+				.Where(cx => cx.NgayGioKhoiHanh >= tuNgay && cx.NgayGioKhoiHanh <= denNgay)
+				.GroupBy(cx => cx.Xe.NhaXe.MaNX)
+				.Select(g => new
+				{
+					MaNX = g.Key,
+					SoChuyen = g.Count(),
+					TongGhe = g.Sum(cx => (int?)cx.Xe.LoaiXe.SoCho) ?? 0
+				})
+				.ToList();
+
+			// 2. Lấy số lượng vé bán và doanh thu theo nhà xe
+			var operatorSales = db.VeXes
+				.Where(v => v.HoaDon.TrangThai == true && v.HoaDon.NgayLap >= tuNgay && v.HoaDon.NgayLap <= denNgay)
+				.GroupBy(v => v.ChuyenXe.Xe.NhaXe.MaNX)
+				.Select(g => new
+				{
+					MaNX = g.Key,
+					TenNX = g.FirstOrDefault().ChuyenXe.Xe.NhaXe.TenNX,
+					SoVe = g.Count(),
+					DoanhThu = g.Sum(v => (decimal?)v.GiaVe) ?? 0
+				})
+				.ToList();
+
+			// 3. Kết hợp 2 nguồn dữ liệu trong bộ nhớ để tính Tỷ lệ lấp đầy ghế %
+			var operatorData = (from s in operatorSales
+								join t in operatorTrips on s.MaNX equals t.MaNX into joined
+								from t in joined.DefaultIfEmpty()
+								select new
+								{
+									TenNX = s.TenNX,
+									SoChuyen = t != null ? t.SoChuyen : 0,
+									SoVe = s.SoVe,
+									DoanhThu = s.DoanhThu,
+									TyLeLapDay = (t != null && t.TongGhe > 0) 
+										? ((double)s.SoVe / t.TongGhe * 100) 
+										: 0
+								})
+								.OrderByDescending(x => x.DoanhThu)
+								.ToList()
+								.Select(x => new
+								{
+									TenNX = x.TenNX,
+									SoChuyen = x.SoChuyen,
+									SoVe = x.SoVe,
+									DoanhThu = x.DoanhThu,
+									TyLeLapDay = x.TyLeLapDay.ToString("0.0") + "%"
+								})
+								.ToList();
+
+			dgvChiTiet.DataSource = operatorData;
+
+			if (dgvChiTiet.Columns.Count > 0)
+			{
+				dgvChiTiet.Columns["TenNX"].HeaderText = "Tên nhà xe";
+				dgvChiTiet.Columns["SoChuyen"].HeaderText = "Số chuyến xe";
+				dgvChiTiet.Columns["SoVe"].HeaderText = "Số vé bán";
+				dgvChiTiet.Columns["DoanhThu"].HeaderText = "Doanh thu";
+				dgvChiTiet.Columns["DoanhThu"].DefaultCellStyle.Format = "#,##0 VNĐ";
+				dgvChiTiet.Columns["TyLeLapDay"].HeaderText = "Tỷ lệ lấp đầy ghế";
+			}
+		}
+
+		private void LoadRouteReport(BXMDEntities db, DateTime tuNgay, DateTime denNgay)
+		{
+			// 1. Lấy số chuyến xe theo tuyến đường trong khoảng thời gian
+			var routeTrips = db.ChuyenXes
+				.Where(cx => cx.NgayGioKhoiHanh >= tuNgay && cx.NgayGioKhoiHanh <= denNgay)
+				.GroupBy(cx => cx.MaTuyen)
+				.Select(g => new
+				{
+					MaTuyen = g.Key,
+					SoChuyen = g.Count()
+				})
+				.ToList();
+
+			// 2. Lấy số lượng vé bán và doanh thu theo tuyến đường
+			var routeSales = db.VeXes
+				.Where(v => v.HoaDon.TrangThai == true && v.HoaDon.NgayLap >= tuNgay && v.HoaDon.NgayLap <= denNgay)
+				.GroupBy(v => v.ChuyenXe.MaTuyen)
+				.Select(g => new
+				{
+					MaTuyen = g.Key,
+					DiemDi = g.FirstOrDefault().ChuyenXe.TuyenDuong.DiemDi,
+					DiemDen = g.FirstOrDefault().ChuyenXe.TuyenDuong.DiemDen,
+					SoVe = g.Count(),
+					DoanhThu = g.Sum(v => (decimal?)v.GiaVe) ?? 0
+				})
+				.ToList();
+
+			// 3. Kết hợp trong bộ nhớ
+			var routeData = (from s in routeSales
+							 join t in routeTrips on s.MaTuyen equals t.MaTuyen into joined
+							 from t in joined.DefaultIfEmpty()
+							 select new
+							 {
+								 TuyenDuong = $"{s.DiemDi} - {s.DiemDen}",
+								 SoChuyen = t != null ? t.SoChuyen : 0,
+								 SoVe = s.SoVe,
+								 DoanhThu = s.DoanhThu
+							 })
+							 .OrderByDescending(x => x.DoanhThu)
+							 .ToList();
+
+			dgvChiTiet.DataSource = routeData;
+
+			if (dgvChiTiet.Columns.Count > 0)
+			{
+				dgvChiTiet.Columns["TuyenDuong"].HeaderText = "Tuyến đường";
+				dgvChiTiet.Columns["SoChuyen"].HeaderText = "Số chuyến khai thác";
+				dgvChiTiet.Columns["SoVe"].HeaderText = "Số vé bán";
+				dgvChiTiet.Columns["DoanhThu"].HeaderText = "Doanh thu";
+				dgvChiTiet.Columns["DoanhThu"].DefaultCellStyle.Format = "#,##0 VNĐ";
+			}
+		}
+
+		private void btnExportCSV_Click(object sender, EventArgs e)
+		{
+			string prefix = "BaoCaoThongKe";
+			int selectedIndex = cboLoaiBaoCao.SelectedIndex;
+			switch (selectedIndex)
+			{
+				case 0:
+					prefix = "DoanhThuTheoNgay";
+					break;
+				case 1:
+					prefix = "HieuSuatNhaXe";
+					break;
+				case 2:
+					prefix = "HieuSuatTuyenDuong";
+					break;
+			}
+			ExportDataGridViewToCSV(dgvChiTiet, prefix);
+		}
+
+		private void ExportDataGridViewToCSV(DataGridView dgv, string fileNamePrefix)
+		{
+			if (dgv.Rows.Count == 0)
+			{
+				MessageBox.Show("Không có dữ liệu để xuất báo cáo chi tiết.", "Thông báo", 
+					MessageBoxButtons.OK, MessageBoxIcon.Information);
+				return;
+			}
+
+			try
+			{
+				SaveFileDialog saveDialog = new SaveFileDialog
+				{
+					Filter = "CSV files (*.csv)|*.csv|All files (*.*)|*.*",
+					FileName = $"{fileNamePrefix}_{DateTime.Now:yyyyMMdd_HHmmss}.csv",
+					Title = "Xuất báo cáo chi tiết thống kê"
+				};
+
+				if (saveDialog.ShowDialog() == DialogResult.OK)
+				{
+					using (var writer = new System.IO.StreamWriter(saveDialog.FileName, false, System.Text.Encoding.UTF8))
+					{
+						// Viết BOM UTF-8 để Excel mở hiển thị đúng tiếng Việt có dấu
+						writer.Write('\uFEFF');
+
+						// Header
+						var headers = new List<string>();
+						foreach (DataGridViewColumn col in dgv.Columns)
+						{
+							headers.Add(EscapeCSV(col.HeaderText));
+						}
+						writer.WriteLine(string.Join(",", headers));
+
+						// Data rows
+						foreach (DataGridViewRow row in dgv.Rows)
+						{
+							if (row.IsNewRow) continue;
+							var cells = new List<string>();
+							foreach (DataGridViewCell cell in row.Cells)
+							{
+								cells.Add(EscapeCSV(cell.Value?.ToString() ?? ""));
+							}
+							writer.WriteLine(string.Join(",", cells));
+						}
+					}
+
+					MessageBox.Show($"Xuất báo cáo thành công!\nĐường dẫn: {saveDialog.FileName}", "Thành công", 
+						MessageBoxButtons.OK, MessageBoxIcon.Information);
+				}
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show($"Lỗi khi xuất báo cáo:\n{ex.Message}", "Lỗi", 
+					MessageBoxButtons.OK, MessageBoxIcon.Error);
+			}
+		}
+
+		private string EscapeCSV(string text)
+		{
+			if (text.Contains(",") || text.Contains("\"") || text.Contains("\r") || text.Contains("\n"))
+			{
+				return $"\"{text.Replace("\"", "\"\"")}\"";
+			}
+			return text;
 		}
 	}
 }

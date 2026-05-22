@@ -1,4 +1,4 @@
-﻿using QLBXMD.DAO;
+using QLBXMD.DAO;
 using QLBXMD.EF;
 using QLBXMD.Utils;
 using QLBXMD.GUI;
@@ -37,7 +37,7 @@ namespace QLBXMD.BUS
 			}
 			if (!Validation.IsValidMatKhau(matKhau))
 			{
-				return "Mật khẩu phải lớn hơn 8 ký tự, bao gồm chữ thường, chữ hoa, số và ký tự đặc biệt";
+				return "Mật khẩu phải từ 6 ký tự trở lên, bao gồm chữ thường, chữ hoa, số và ký tự đặc biệt.";
 			}
 			if (!matKhau.Equals(matKhau2))
 			{
@@ -143,7 +143,7 @@ namespace QLBXMD.BUS
 				return "Vui lòng nhập mật khẩu.";
 
 			if (!Validation.IsValidMatKhau(matKhau))
-				return "Mật khẩu phải lớn hơn 8 ký tự, bao gồm chữ thường, chữ hoa, số và ký tự đặc biệt.";
+				return "Mật khẩu phải từ 6 ký tự trở lên, bao gồm chữ thường, chữ hoa, số và ký tự đặc biệt.";
 
 			if (tk.MaQuyen == null || tk.MaQuyen == 0)
 				return "Vui lòng chọn quyền.";

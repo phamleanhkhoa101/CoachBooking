@@ -187,9 +187,12 @@ namespace QLBXMD.GUI.Admin
 					pnlHeader.BackColor = Color.FromArgb(33, 150, 243);
 					btnCancel.Text = "Hủy";
 					btnCancel.BackColor = Color.FromArgb(244, 67, 54);
+					ClientSize = new Size(900, 660);
+					dgvDanhSachVe.Height = 160;
 					btnPrimary.Location = new Point(680, 590);
 					btnCancel.Location = new Point(780, 590);
-					ClientSize = new Size(900, 660);
+					btnPrimary.BringToFront();
+					btnCancel.BringToFront();
 					txtMaHD.Enabled = false;
 					SetReadOnly(false);
 					ToggleTicketGrid(true);
@@ -201,9 +204,11 @@ namespace QLBXMD.GUI.Admin
 					btnPrimary.Visible = false;
 					btnCancel.Text = "Đóng";
 					btnCancel.BackColor = Color.FromArgb(158, 158, 158);
-					btnCancel.Location = new Point(780, 590);
-					pnlHeader.BackColor = Color.FromArgb(158, 158, 158);
 					ClientSize = new Size(900, 660);
+					dgvDanhSachVe.Height = 160;
+					btnCancel.Location = new Point(780, 590);
+					btnCancel.BringToFront();
+					pnlHeader.BackColor = Color.FromArgb(158, 158, 158);
 					SetReadOnly(true);
 					ToggleTicketGrid(true);
 					break;
@@ -374,14 +379,25 @@ namespace QLBXMD.GUI.Admin
 			};
 		}
 
+		private int _savedKhachHangIndex = -1;
+		private int _savedNhanVienIndex = -1;
+		private int _savedTrangThaiIndex = -1;
+		private DateTime _savedNgayLapValue = DateTime.Now;
+		private decimal _savedTongTienValue = 0;
+
 		private void SetReadOnly(bool readOnly)
 		{
-			txtMaHD.Enabled = !readOnly;
-			cbbKhachHang.Enabled = !readOnly;
-			cbbNhanVien.Enabled = !readOnly;
-			dtpNgayLap.Enabled = !readOnly;
-			numTongTien.Enabled = !readOnly;
-			cbbTrangThai.Enabled = !readOnly;
+			txtMaHD.ReadOnly = true;
+			txtMaHD.Enabled = true;
+
+			cbbKhachHang.Enabled = true;
+			cbbNhanVien.Enabled = true;
+			dtpNgayLap.Enabled = true;
+			numTongTien.Enabled = true;
+			cbbTrangThai.Enabled = true;
+
+			numTongTien.ReadOnly = readOnly;
+			numTongTien.Increment = readOnly ? 0 : 10000;
 
 			cbbKhachHang.TabStop = !readOnly;
 			cbbNhanVien.TabStop = !readOnly;
@@ -391,6 +407,12 @@ namespace QLBXMD.GUI.Admin
 
 			if (readOnly)
 			{
+				_savedKhachHangIndex = cbbKhachHang.SelectedIndex;
+				_savedNhanVienIndex = cbbNhanVien.SelectedIndex;
+				_savedTrangThaiIndex = cbbTrangThai.SelectedIndex;
+				_savedNgayLapValue = dtpNgayLap.Value;
+				_savedTongTienValue = numTongTien.Value;
+
 				txtMaHD.BackColor = Color.WhiteSmoke;
 				cbbKhachHang.BackColor = Color.WhiteSmoke;
 				cbbNhanVien.BackColor = Color.WhiteSmoke;
@@ -563,6 +585,28 @@ namespace QLBXMD.GUI.Admin
 			SetupButtonEffects();
 			SetupNumericUpDownValidation();
 			AdminGridTheme.Apply(dgvDanhSachVe);
+
+			cbbKhachHang.KeyDown += ComboBox_KeyDown_ReadOnly;
+			cbbKhachHang.KeyPress += ComboBox_KeyPress_ReadOnly;
+			cbbKhachHang.DropDown += ComboBox_DropDown_ReadOnly;
+			cbbKhachHang.SelectedIndexChanged += ComboBox_SelectedIndexChanged_ReadOnly;
+
+			cbbNhanVien.KeyDown += ComboBox_KeyDown_ReadOnly;
+			cbbNhanVien.KeyPress += ComboBox_KeyPress_ReadOnly;
+			cbbNhanVien.DropDown += ComboBox_DropDown_ReadOnly;
+			cbbNhanVien.SelectedIndexChanged += ComboBox_SelectedIndexChanged_ReadOnly;
+
+			cbbTrangThai.KeyDown += ComboBox_KeyDown_ReadOnly;
+			cbbTrangThai.KeyPress += ComboBox_KeyPress_ReadOnly;
+			cbbTrangThai.DropDown += ComboBox_DropDown_ReadOnly;
+			cbbTrangThai.SelectedIndexChanged += ComboBox_SelectedIndexChanged_ReadOnly;
+
+			dtpNgayLap.KeyDown += DateTimePicker_KeyDown_ReadOnly;
+			dtpNgayLap.KeyPress += DateTimePicker_KeyPress_ReadOnly;
+			dtpNgayLap.ValueChanged += DateTimePicker_ValueChanged_ReadOnly;
+
+			numTongTien.ValueChanged += NumericUpDown_ValueChanged_ReadOnly;
+
 			_runtimeInitialized = true;
 		}
 
@@ -590,19 +634,15 @@ namespace QLBXMD.GUI.Admin
 				int buttonWidth = 60;
 				int buttonHeight = 25;
 				int spacing = 5;
-				int startX = e.CellBounds.Left + (e.CellBounds.Width - (buttonWidth * 3 + spacing * 2)) / 2;
+				int startX = e.CellBounds.Left + (e.CellBounds.Width - (buttonWidth * 2 + spacing)) / 2;
 				int startY = e.CellBounds.Top + (e.CellBounds.Height - buttonHeight) / 2;
 
-				// Nút Gửi (Blue)
-				Rectangle rectGui = new Rectangle(startX, startY, buttonWidth, buttonHeight);
-				DrawActionButton(e.Graphics, rectGui, "Gửi", Color.FromArgb(33, 150, 243), null, true);
-
 				// Nút Sửa (Yellow/Orange)
-				Rectangle rectSua = new Rectangle(startX + buttonWidth + spacing, startY, buttonWidth, buttonHeight);
+				Rectangle rectSua = new Rectangle(startX, startY, buttonWidth, buttonHeight);
 				DrawActionButton(e.Graphics, rectSua, "Sửa", Color.FromArgb(255, 193, 7), QLBXMD.Properties.Resources.edit, canEdit);
 
 				// Nút Xóa (Red)
-				Rectangle rectXoa = new Rectangle(startX + (buttonWidth + spacing) * 2, startY, buttonWidth, buttonHeight);
+				Rectangle rectXoa = new Rectangle(startX + buttonWidth + spacing, startY, buttonWidth, buttonHeight);
 				DrawActionButton(e.Graphics, rectXoa, "Xóa", Color.FromArgb(244, 67, 54), QLBXMD.Properties.Resources.delete, canDelete);
 
 				e.Handled = true;
@@ -639,7 +679,7 @@ namespace QLBXMD.GUI.Admin
 				int buttonWidth = 60;
 				int spacing = 5;
 				int cellWidth = dgvDanhSachVe.Columns[e.ColumnIndex].Width;
-				int startX = (cellWidth - (buttonWidth * 3 + spacing * 2)) / 2;
+				int startX = (cellWidth - (buttonWidth * 2 + spacing)) / 2;
 
 				Point clickPoint = dgvDanhSachVe.PointToClient(Cursor.Position);
 				Rectangle cellRect = dgvDanhSachVe.GetCellDisplayRectangle(e.ColumnIndex, e.RowIndex, false);
@@ -658,11 +698,6 @@ namespace QLBXMD.GUI.Admin
 
 				if (localX >= startX && localX <= startX + buttonWidth)
 				{
-					// Action Gửi
-					SendTicketZalo(e.RowIndex);
-				}
-				else if (localX >= startX + buttonWidth + spacing && localX <= startX + buttonWidth * 2 + spacing)
-				{
 					// Action Sửa
 					if (!canEdit)
 					{
@@ -671,7 +706,7 @@ namespace QLBXMD.GUI.Admin
 					}
 					HandleTicketAction(e.RowIndex, VeDialogMode.Edit);
 				}
-				else if (localX >= startX + (buttonWidth + spacing) * 2 && localX <= startX + (buttonWidth + spacing) * 2 + buttonWidth)
+				else if (localX >= startX + buttonWidth + spacing && localX <= startX + buttonWidth * 2 + spacing)
 				{
 					// Action Xóa
 					if (isPaid || dgvDanhSachVe.Rows.Count <= 1) return;
@@ -742,37 +777,120 @@ namespace QLBXMD.GUI.Admin
 			}
 			numTongTien.Value = total;
 		}
-		private void SendTicketZalo(int rowIndex)
+
+		private void ComboBox_KeyDown_ReadOnly(object sender, KeyEventArgs e)
 		{
-			int maVe = (int)dgvDanhSachVe.Rows[rowIndex].Cells["colMaVe"].Value;
-			using (var db = new BXMDEntities())
+			if (Mode == HoaDonDialogMode.View)
 			{
-				var ve = db.VeXes.Find(maVe);
-				if (ve == null) return;
+				e.Handled = true;
+				e.SuppressKeyPress = true;
+			}
+		}
 
-				var chuyen = db.ChuyenXes.Find(ve.MaChuyen);
-				var khach = db.KhachHangs.Find(ve.HoaDon.MaKH);
-				var xe = chuyen?.Xe;
-				var nhaXe = xe?.NhaXe;
-				var tuyen = chuyen?.TuyenDuong;
+		private void ComboBox_KeyPress_ReadOnly(object sender, KeyPressEventArgs e)
+		{
+			if (Mode == HoaDonDialogMode.View)
+			{
+				e.Handled = true;
+			}
+		}
 
-				if (khach == null || string.IsNullOrEmpty(khach.SDT))
+		private void ComboBox_DropDown_ReadOnly(object sender, EventArgs e)
+		{
+			if (Mode == HoaDonDialogMode.View)
+			{
+				ComboBox cbb = sender as ComboBox;
+				if (cbb != null)
 				{
-					MessageBox.Show("Khách hàng không có số điện thoại.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
-					return;
+					cbb.BeginInvoke(new Action(() => cbb.DroppedDown = false));
 				}
+			}
+		}
 
-				try
+		private void ComboBox_SelectedIndexChanged_ReadOnly(object sender, EventArgs e)
+		{
+			if (Mode == HoaDonDialogMode.View)
+			{
+				ComboBox cbb = sender as ComboBox;
+				if (cbb == cbbKhachHang)
 				{
-					var bmp = QLBXMD.GUI.Utils.VeXeRenderer.GenerateTicket(ve, chuyen, khach, nhaXe, tuyen);
-					Clipboard.SetImage(bmp);
-					
-					System.Diagnostics.Process.Start($"zalo://me?phone={khach.SDT}");
-					MessageBox.Show("Đã copy ảnh vé vào bộ nhớ tạm.\n\nHãy ấn Ctrl+V trong cửa sổ chat Zalo vừa được mở để gửi vé cho khách.", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+					if (cbbKhachHang.Focused)
+					{
+						cbbKhachHang.SelectedIndex = _savedKhachHangIndex;
+					}
+					else
+					{
+						_savedKhachHangIndex = cbbKhachHang.SelectedIndex;
+					}
 				}
-				catch (Exception ex)
+				else if (cbb == cbbNhanVien)
 				{
-					MessageBox.Show("Không thể tạo hoặc gửi vé: " + ex.Message, "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					if (cbbNhanVien.Focused)
+					{
+						cbbNhanVien.SelectedIndex = _savedNhanVienIndex;
+					}
+					else
+					{
+						_savedNhanVienIndex = cbbNhanVien.SelectedIndex;
+					}
+				}
+				else if (cbb == cbbTrangThai)
+				{
+					if (cbbTrangThai.Focused)
+					{
+						cbbTrangThai.SelectedIndex = _savedTrangThaiIndex;
+					}
+					else
+					{
+						_savedTrangThaiIndex = cbbTrangThai.SelectedIndex;
+					}
+				}
+			}
+		}
+
+		private void DateTimePicker_KeyDown_ReadOnly(object sender, KeyEventArgs e)
+		{
+			if (Mode == HoaDonDialogMode.View)
+			{
+				e.Handled = true;
+				e.SuppressKeyPress = true;
+			}
+		}
+
+		private void DateTimePicker_KeyPress_ReadOnly(object sender, KeyPressEventArgs e)
+		{
+			if (Mode == HoaDonDialogMode.View)
+			{
+				e.Handled = true;
+			}
+		}
+
+		private void DateTimePicker_ValueChanged_ReadOnly(object sender, EventArgs e)
+		{
+			if (Mode == HoaDonDialogMode.View)
+			{
+				if (dtpNgayLap.Focused)
+				{
+					dtpNgayLap.Value = _savedNgayLapValue;
+				}
+				else
+				{
+					_savedNgayLapValue = dtpNgayLap.Value;
+				}
+			}
+		}
+
+		private void NumericUpDown_ValueChanged_ReadOnly(object sender, EventArgs e)
+		{
+			if (Mode == HoaDonDialogMode.View)
+			{
+				if (numTongTien.Focused)
+				{
+					numTongTien.Value = _savedTongTienValue;
+				}
+				else
+				{
+					_savedTongTienValue = numTongTien.Value;
 				}
 			}
 		}

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -336,6 +336,9 @@ namespace QLBXMD.GUI.Admin
 				dialog.SelectedMaNX = selectedItem.MaNX;
 				dialog.SelectedMaLX = selectedItem.MaLX;
 				dialog.SelectedMaTuyen = selectedItem.MaTuyen;
+				
+				// Khóa tổ hợp thông tin nhà xe, loại xe, tuyến đường
+				dialog.LockCombination();
 				
 				if (dialog.ShowDialog() == DialogResult.OK)
 				{

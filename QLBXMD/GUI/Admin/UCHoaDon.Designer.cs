@@ -1,4 +1,4 @@
-﻿namespace QLBXMD.GUI.Admin
+namespace QLBXMD.GUI.Admin
 {
 	partial class UCHoaDon
 	{
@@ -29,10 +29,10 @@
 		private void InitializeComponent()
 		{
             this.panel1 = new System.Windows.Forms.Panel();
-            this.btnXoa = new System.Windows.Forms.Button();
             this.btnSua = new System.Windows.Forms.Button();
             this.btnXem = new System.Windows.Forms.Button();
             this.btnThem = new System.Windows.Forms.Button();
+            this.btnExportPdf = new System.Windows.Forms.Button();
             this.lblVeXe = new System.Windows.Forms.Label();
             this.dgvVeXe = new System.Windows.Forms.DataGridView();
             this.cbbLoai = new System.Windows.Forms.ComboBox();
@@ -51,7 +51,7 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.panel1.AutoScroll = true;
-            this.panel1.Controls.Add(this.btnXoa);
+            this.panel1.Controls.Add(this.btnExportPdf);
             this.panel1.Controls.Add(this.btnSua);
             this.panel1.Controls.Add(this.btnXem);
             this.panel1.Controls.Add(this.btnThem);
@@ -67,24 +67,7 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(1185, 766);
             this.panel1.TabIndex = 12;
-            // 
-            // btnXoa
-            // 
-            this.btnXoa.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnXoa.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(220)))), ((int)(((byte)(53)))), ((int)(((byte)(69)))));
-            this.btnXoa.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
-            this.btnXoa.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.btnXoa.ForeColor = System.Drawing.Color.White;
-            this.btnXoa.Image = global::QLBXMD.Properties.Resources.delete;
-            this.btnXoa.Location = new System.Drawing.Point(1012, 80);
-            this.btnXoa.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
-            this.btnXoa.Name = "btnXoa";
-            this.btnXoa.Size = new System.Drawing.Size(158, 40);
-            this.btnXoa.TabIndex = 14;
-            this.btnXoa.Text = "Hủy hóa đơn";
-            this.btnXoa.TextImageRelation = System.Windows.Forms.TextImageRelation.ImageBeforeText;
-            this.btnXoa.UseVisualStyleBackColor = false;
-            this.btnXoa.Click += new System.EventHandler(this.btnXoa_Click);
+
             // 
             // btnSua
             // 
@@ -142,7 +125,24 @@
             this.btnThem.Visible = false;
             this.btnThem.Click += new System.EventHandler(this.btnThem_Click);
             // 
+            // btnExportPdf
+            // 
+            this.btnExportPdf.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.btnExportPdf.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(13)))), ((int)(((byte)(148)))), ((int)(((byte)(136)))));
+            this.btnExportPdf.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnExportPdf.Font = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.btnExportPdf.ForeColor = System.Drawing.Color.White;
+            this.btnExportPdf.Location = new System.Drawing.Point(1012, 80);
+            this.btnExportPdf.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.btnExportPdf.Name = "btnExportPdf";
+            this.btnExportPdf.Size = new System.Drawing.Size(161, 40);
+            this.btnExportPdf.TabIndex = 14;
+            this.btnExportPdf.Text = "Xuất hóa đơn";
+            this.btnExportPdf.UseVisualStyleBackColor = false;
+            this.btnExportPdf.Click += new System.EventHandler(this.btnExportPdf_Click);
+            // 
             // lblVeXe
+
             // 
             this.lblVeXe.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.lblVeXe.AutoSize = true;
@@ -257,9 +257,9 @@
 		private System.Windows.Forms.DataGridView dgvVe;
 		private System.Windows.Forms.Label lblVeXe;
 		private System.Windows.Forms.DataGridView dgvVeXe;
-		private System.Windows.Forms.Button btnXoa;
 		private System.Windows.Forms.Button btnSua;
 		private System.Windows.Forms.Button btnXem;
 		private System.Windows.Forms.Button btnThem;
+		private System.Windows.Forms.Button btnExportPdf;
 	}
 }

@@ -164,6 +164,7 @@
     </Compile>
     <Compile Include="GUI\Admin\AdminGridTheme.cs" />
     <Compile Include="GUI\Utils\VeXeRenderer.cs" />
+    <Compile Include="GUI\Utils\HoaDonRenderer.cs" />
     <Compile Include="GUI\Admin\CapTaiKhoanDialog.cs">
       <SubType>Form</SubType>
     </Compile>

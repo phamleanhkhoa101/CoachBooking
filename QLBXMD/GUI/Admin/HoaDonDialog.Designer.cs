@@ -170,6 +170,7 @@ namespace QLBXMD.GUI.Admin
             this.btnCancel.UseVisualStyleBackColor = false;
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
+            // 
             // label1
             // 
             this.label1.AutoSize = true;

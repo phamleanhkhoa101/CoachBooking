@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -132,6 +132,21 @@ namespace QLBXMD.GUI.Admin
 			cbbTuyen.DataSource = items?.ToList();
 			cbbTuyen.DisplayMember = "Value";
 			cbbTuyen.ValueMember = "Key";
+		}
+
+		public void LockCombination()
+		{
+			cbbNhaXe.Enabled = false;
+			cbbLoaiXe.Enabled = false;
+			cbbTuyen.Enabled = false;
+			
+			cbbNhaXe.BackColor = Color.WhiteSmoke;
+			cbbLoaiXe.BackColor = Color.WhiteSmoke;
+			cbbTuyen.BackColor = Color.WhiteSmoke;
+			
+			cbbNhaXe.TabStop = false;
+			cbbLoaiXe.TabStop = false;
+			cbbTuyen.TabStop = false;
 		}
 
 		public void SetMode(GiaVeDialogMode mode)

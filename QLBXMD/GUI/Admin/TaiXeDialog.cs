@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Drawing;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
@@ -17,7 +17,30 @@ namespace QLBXMD.GUI.Admin
 		public string CCCD { get => txtCCCD.Text; set => txtCCCD.Text = value; }
 		public string SDT { get => txtSDT.Text; set => txtSDT.Text = value; }
 		public string DiaChi { get => txtDiaChi.Text; set => txtDiaChi.Text = value; }
-		public string BangLai { get => txtBangLai.Text; set => txtBangLai.Text = value; }
+		public string BangLai
+		{
+			get => cbbBangLai.SelectedItem?.ToString() ?? "";
+			set
+			{
+				int index = cbbBangLai.FindStringExact(value);
+				if (index >= 0)
+				{
+					cbbBangLai.SelectedIndex = index;
+				}
+				else
+				{
+					if (!string.IsNullOrEmpty(value))
+					{
+						cbbBangLai.Items.Add(value);
+						cbbBangLai.SelectedItem = value;
+					}
+					else
+					{
+						cbbBangLai.SelectedIndex = -1;
+					}
+				}
+			}
+		}
 		public DateTime NgayCapValue { get => dtpNgayCap.Value; set => dtpNgayCap.Value = value; }
 
 		public bool? GioiTinhValue
@@ -52,6 +75,12 @@ namespace QLBXMD.GUI.Admin
 			}
 		}
 
+		private int _savedGioiTinhIndex = -1;
+		private int _savedBangLaiIndex = -1;
+		private int _savedTrangThaiIndex = -1;
+		private DateTime _savedNamSinhValue = DateTime.Now;
+		private DateTime _savedNgayCapValue = DateTime.Now;
+
 		public TaiXeDialog()
 		{
 			InitializeComponent();
@@ -61,6 +90,39 @@ namespace QLBXMD.GUI.Admin
 			cbbTrangThai.SelectedIndex = 0;
 			SetupButtonEffects();
 			SetupNumericValidation();
+
+			cbbGioiTinh.KeyDown += ComboBox_KeyDown_ReadOnly;
+			cbbGioiTinh.KeyPress += ComboBox_KeyPress_ReadOnly;
+			cbbGioiTinh.DropDown += ComboBox_DropDown_ReadOnly;
+			cbbGioiTinh.SelectedIndexChanged += ComboBox_SelectedIndexChanged_ReadOnly;
+
+			cbbBangLai.KeyDown += ComboBox_KeyDown_ReadOnly;
+			cbbBangLai.KeyPress += ComboBox_KeyPress_ReadOnly;
+			cbbBangLai.DropDown += ComboBox_DropDown_ReadOnly;
+			cbbBangLai.SelectedIndexChanged += ComboBox_SelectedIndexChanged_ReadOnly;
+
+			cbbTrangThai.KeyDown += ComboBox_KeyDown_ReadOnly;
+			cbbTrangThai.KeyPress += ComboBox_KeyPress_ReadOnly;
+			cbbTrangThai.DropDown += ComboBox_DropDown_ReadOnly;
+			cbbTrangThai.SelectedIndexChanged += ComboBox_SelectedIndexChanged_ReadOnly;
+
+			dtpNamSinh.KeyDown += DateTimePicker_KeyDown_ReadOnly;
+			dtpNamSinh.KeyPress += DateTimePicker_KeyPress_ReadOnly;
+			dtpNamSinh.ValueChanged += DateTimePicker_ValueChanged_ReadOnly;
+
+			dtpNgayCap.KeyDown += DateTimePicker_KeyDown_ReadOnly;
+			dtpNgayCap.KeyPress += DateTimePicker_KeyPress_ReadOnly;
+			dtpNgayCap.ValueChanged += DateTimePicker_ValueChanged_ReadOnly;
+
+			this.Load += TaiXeDialog_Load;
+		}
+
+		private void TaiXeDialog_Load(object sender, EventArgs e)
+		{
+			if (Mode == TaiXeDialogMode.View)
+			{
+				SetReadOnly(true);
+			}
 		}
 
 		private void SetupButtonEffects()
@@ -166,7 +228,7 @@ namespace QLBXMD.GUI.Admin
 					btnPrimary.Visible = false;
 					btnCancel.Text = "Đóng";
 					btnCancel.BackColor = Color.FromArgb(158, 158, 158);
-					btnCancel.Location = new Point(460, 685);
+					btnCancel.Location = new Point(460, 575);
 					pnlHeader.BackColor = Color.FromArgb(158, 158, 158);
 					lblMaTX.Visible = true;
 					txtMaTX.Visible = true;
@@ -177,16 +239,21 @@ namespace QLBXMD.GUI.Admin
 
 		private void SetReadOnly(bool ro)
 		{
-			txtMaTX.Enabled = !ro;
+			txtMaTX.ReadOnly = true;
+			txtMaTX.Enabled = true;
 			txtTenTX.ReadOnly = ro;
-			dtpNamSinh.Enabled = !ro;
+			txtTenTX.Enabled = true;
+			dtpNamSinh.Enabled = true;
 			txtCCCD.ReadOnly = ro;
-			cbbGioiTinh.Enabled = !ro;
+			txtCCCD.Enabled = true;
+			cbbGioiTinh.Enabled = true;
 			txtSDT.ReadOnly = ro;
+			txtSDT.Enabled = true;
 			txtDiaChi.ReadOnly = ro;
-			txtBangLai.ReadOnly = ro;
-			dtpNgayCap.Enabled = !ro;
-			cbbTrangThai.Enabled = !ro;
+			txtDiaChi.Enabled = true;
+			cbbBangLai.Enabled = true;
+			dtpNgayCap.Enabled = true;
+			cbbTrangThai.Enabled = true;
 
 			txtTenTX.TabStop = !ro;
 			dtpNamSinh.TabStop = !ro;
@@ -194,13 +261,19 @@ namespace QLBXMD.GUI.Admin
 			cbbGioiTinh.TabStop = !ro;
 			txtSDT.TabStop = !ro;
 			txtDiaChi.TabStop = !ro;
-			txtBangLai.TabStop = !ro;
+			cbbBangLai.TabStop = !ro;
 			dtpNgayCap.TabStop = !ro;
 			cbbTrangThai.TabStop = !ro;
 
 			// Thay đổi màu nền khi readonly
 			if (ro)
 			{
+				_savedGioiTinhIndex = cbbGioiTinh.SelectedIndex;
+				_savedBangLaiIndex = cbbBangLai.SelectedIndex;
+				_savedTrangThaiIndex = cbbTrangThai.SelectedIndex;
+				_savedNamSinhValue = dtpNamSinh.Value;
+				_savedNgayCapValue = dtpNgayCap.Value;
+
 				txtMaTX.BackColor = Color.WhiteSmoke;
 				txtTenTX.BackColor = Color.WhiteSmoke;
 				dtpNamSinh.BackColor = Color.WhiteSmoke;
@@ -208,7 +281,7 @@ namespace QLBXMD.GUI.Admin
 				cbbGioiTinh.BackColor = Color.WhiteSmoke;
 				txtSDT.BackColor = Color.WhiteSmoke;
 				txtDiaChi.BackColor = Color.WhiteSmoke;
-				txtBangLai.BackColor = Color.WhiteSmoke;
+				cbbBangLai.BackColor = Color.WhiteSmoke;
 				dtpNgayCap.BackColor = Color.WhiteSmoke;
 				cbbTrangThai.BackColor = Color.WhiteSmoke;
 			}
@@ -221,7 +294,7 @@ namespace QLBXMD.GUI.Admin
 				cbbGioiTinh.BackColor = Color.White;
 				txtSDT.BackColor = Color.White;
 				txtDiaChi.BackColor = Color.White;
-				txtBangLai.BackColor = Color.White;
+				cbbBangLai.BackColor = Color.White;
 				dtpNgayCap.BackColor = Color.White;
 				cbbTrangThai.BackColor = Color.White;
 			}
@@ -452,36 +525,16 @@ namespace QLBXMD.GUI.Admin
 			}
 
 			// Kiểm tra bằng lái
-			if (string.IsNullOrWhiteSpace(txtBangLai.Text))
+			if (string.IsNullOrWhiteSpace(BangLai))
 			{
 				MessageBox.Show(
-					"Vui lòng nhập số bằng lái.\n\nBằng lái là thông tin bắt buộc cho tài xế.",
+					"Vui lòng chọn hạng bằng lái.\n\nBằng lái là thông tin bắt buộc cho tài xế.",
 					"Thông báo",
 					MessageBoxButtons.OK,
 					MessageBoxIcon.Warning
 				);
-				txtBangLai.Focus();
+				cbbBangLai.Focus();
 				return false;
-			}
-
-			// Kiểm tra định dạng bằng lái (ví dụ: B1, B2, C, D, E, F...)
-			string bangLai = txtBangLai.Text.Trim().ToUpper();
-			if (!Regex.IsMatch(bangLai, @"^[A-F][0-9]?$"))
-			{
-				var result = MessageBox.Show(
-					$"Hạng bằng lái '{txtBangLai.Text}' có vẻ không đúng định dạng.\n\n" +
-					"Hạng bằng lái hợp lệ: A1, A2, B1, B2, C, D, E, F, FB2, FC...\n" +
-					"Bạn có chắc chắn muốn tiếp tục?",
-					"Xác nhận bằng lái",
-					MessageBoxButtons.YesNo,
-					MessageBoxIcon.Question
-				);
-				
-				if (result != DialogResult.Yes)
-				{
-					txtBangLai.Focus();
-					return false;
-				}
 			}
 
 			// Kiểm tra ngày cấp bằng lái
@@ -530,6 +583,123 @@ namespace QLBXMD.GUI.Admin
 			}
 
 			return true;
+		}
+
+		private void ComboBox_KeyDown_ReadOnly(object sender, KeyEventArgs e)
+		{
+			if (Mode == TaiXeDialogMode.View)
+			{
+				e.Handled = true;
+				e.SuppressKeyPress = true;
+			}
+		}
+
+		private void ComboBox_KeyPress_ReadOnly(object sender, KeyPressEventArgs e)
+		{
+			if (Mode == TaiXeDialogMode.View)
+			{
+				e.Handled = true;
+			}
+		}
+
+		private void ComboBox_DropDown_ReadOnly(object sender, EventArgs e)
+		{
+			if (Mode == TaiXeDialogMode.View)
+			{
+				ComboBox cbb = sender as ComboBox;
+				if (cbb != null)
+				{
+					cbb.BeginInvoke(new Action(() => cbb.DroppedDown = false));
+				}
+			}
+		}
+
+		private void ComboBox_SelectedIndexChanged_ReadOnly(object sender, EventArgs e)
+		{
+			if (Mode == TaiXeDialogMode.View)
+			{
+				ComboBox cbb = sender as ComboBox;
+				if (cbb == cbbGioiTinh)
+				{
+					if (cbbGioiTinh.Focused)
+					{
+						cbbGioiTinh.SelectedIndex = _savedGioiTinhIndex;
+					}
+					else
+					{
+						_savedGioiTinhIndex = cbbGioiTinh.SelectedIndex;
+					}
+				}
+				else if (cbb == cbbBangLai)
+				{
+					if (cbbBangLai.Focused)
+					{
+						cbbBangLai.SelectedIndex = _savedBangLaiIndex;
+					}
+					else
+					{
+						_savedBangLaiIndex = cbbBangLai.SelectedIndex;
+					}
+				}
+				else if (cbb == cbbTrangThai)
+				{
+					if (cbbTrangThai.Focused)
+					{
+						cbbTrangThai.SelectedIndex = _savedTrangThaiIndex;
+					}
+					else
+					{
+						_savedTrangThaiIndex = cbbTrangThai.SelectedIndex;
+					}
+				}
+			}
+		}
+
+		private void DateTimePicker_KeyDown_ReadOnly(object sender, KeyEventArgs e)
+		{
+			if (Mode == TaiXeDialogMode.View)
+			{
+				e.Handled = true;
+				e.SuppressKeyPress = true;
+			}
+		}
+
+		private void DateTimePicker_KeyPress_ReadOnly(object sender, KeyPressEventArgs e)
+		{
+			if (Mode == TaiXeDialogMode.View)
+			{
+				e.Handled = true;
+			}
+		}
+
+		private void DateTimePicker_ValueChanged_ReadOnly(object sender, EventArgs e)
+		{
+			if (Mode == TaiXeDialogMode.View)
+			{
+				DateTimePicker dtp = sender as DateTimePicker;
+				if (dtp == dtpNamSinh)
+				{
+					if (dtpNamSinh.Focused)
+					{
+						dtpNamSinh.Value = _savedNamSinhValue;
+					}
+					else
+					{
+						_savedNamSinhValue = dtpNamSinh.Value;
+					}
+				}
+				else if (dtp == dtpNgayCap)
+				{
+					if (dtpNgayCap.Focused)
+					{
+						dtpNgayCap.Value = _savedNgayCapValue;
+					}
+					else
+					{
+						_savedNgayCapValue = dtpNgayCap.Value;
+					}
+				}
+			}
 		}
 	}
 }

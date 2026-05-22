@@ -1,4 +1,4 @@
-﻿using QLBXMD.EF;
+using QLBXMD.EF;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,8 +29,13 @@ namespace QLBXMD.DAO
 			if (existingTX != null)
 			{
 				existingTX.TenTX = tx.TenTX;
+				existingTX.NamSinh = tx.NamSinh;
+				existingTX.CCCD = tx.CCCD;
+				existingTX.GioiTinh = tx.GioiTinh;
 				existingTX.SDT = tx.SDT;
 				existingTX.DiaChi = tx.DiaChi;
+				existingTX.BangLai = tx.BangLai;
+				existingTX.NgayCap = tx.NgayCap;
 				existingTX.TrangThai = tx.TrangThai;
 				db.SaveChanges();
 			}

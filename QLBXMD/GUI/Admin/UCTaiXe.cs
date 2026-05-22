@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
@@ -85,9 +85,13 @@ namespace QLBXMD.GUI.Admin
 			cbbLoai.Items.Add("Tất cả");
 			cbbLoai.Items.Add("Mã tài xế");
 			cbbLoai.Items.Add("Tên tài xế");
+			cbbLoai.Items.Add("Năm sinh");
 			cbbLoai.Items.Add("CCCD");
+			cbbLoai.Items.Add("Giới tính");
 			cbbLoai.Items.Add("Số điện thoại");
+			cbbLoai.Items.Add("Địa chỉ");
 			cbbLoai.Items.Add("Bằng lái");
+			cbbLoai.Items.Add("Ngày cấp");
 			cbbLoai.Items.Add("Trạng thái");
 			cbbLoai.SelectedIndex = 0;
 			cbbLoai.SelectedIndexChanged += cbbLoai_SelectedIndexChanged;
@@ -307,16 +311,28 @@ namespace QLBXMD.GUI.Admin
 				case 2: // Tên tài xế
 					filtered = _data.Where(x => (x.TenTX ?? "").ToLowerInvariant().Contains(keyword)).ToList(); 
 					break;
-				case 3: // CCCD
+				case 3: // Năm sinh
+					filtered = _data.Where(x => (x.NamSinh ?? "").ToLowerInvariant().Contains(keyword)).ToList(); 
+					break;
+				case 4: // CCCD
 					filtered = _data.Where(x => (x.CCCD ?? "").ToLowerInvariant().Contains(keyword)).ToList(); 
 					break;
-				case 4: // Số điện thoại
+				case 5: // Giới tính
+					filtered = _data.Where(x => (x.GioiTinh ?? "").ToLowerInvariant().Contains(keyword)).ToList(); 
+					break;
+				case 6: // Số điện thoại
 					filtered = _data.Where(x => (x.SDT ?? "").ToLowerInvariant().Contains(keyword)).ToList(); 
 					break;
-				case 5: // Bằng lái
+				case 7: // Địa chỉ
+					filtered = _data.Where(x => (x.DiaChi ?? "").ToLowerInvariant().Contains(keyword)).ToList(); 
+					break;
+				case 8: // Bằng lái
 					filtered = _data.Where(x => (x.BangLai ?? "").ToLowerInvariant().Contains(keyword)).ToList(); 
 					break;
-				case 6: // Trạng thái
+				case 9: // Ngày cấp
+					filtered = _data.Where(x => (x.NgayCap ?? "").ToLowerInvariant().Contains(keyword)).ToList(); 
+					break;
+				case 10: // Trạng thái
 					filtered = _data.Where(x => (x.TrangThai ?? "").ToLowerInvariant().Contains(keyword)).ToList(); 
 					break;
 				default: // Tất cả
@@ -324,9 +340,13 @@ namespace QLBXMD.GUI.Admin
 					{ 
 						x.MaTX.ToString(), 
 						x.TenTX, 
+						x.NamSinh,
 						x.CCCD, 
+						x.GioiTinh,
 						x.SDT, 
+						x.DiaChi,
 						x.BangLai, 
+						x.NgayCap,
 						x.TrangThai 
 					}
 					.Any(v => (v ?? string.Empty).ToLowerInvariant().Contains(keyword))).ToList();

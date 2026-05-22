@@ -25,7 +25,6 @@ namespace QLBXMD.GUI.Admin
 		{
 			InitializeComponent();
 			btnXem.Text = "Xem chi ti\u1ebft";
-			btnXoa.Text = "H\u1ee7y h\u00f3a \u0111\u01a1n";
 			this.Load += UCHoaDon_Load;
 			this.dgvVe.SelectionChanged += Dgv_SelectionChanged;
 		}
@@ -354,68 +353,7 @@ namespace QLBXMD.GUI.Admin
 			}
 		}
 
-		private void btnXoa_Click(object sender, EventArgs e)
-		{
-			if (dgvVe.SelectedRows.Count == 0 || dgvVe.SelectedRows[0].Cells[0].Value == null)
-			{
-				MessageBox.Show("Vui l\u00f2ng ch\u1ecdn h\u00f3a \u0111\u01a1n c\u1ea7n h\u1ee7y.", "Th\u00f4ng b\u00e1o", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-				return;
-			}
 
-			int maHD = int.Parse(dgvVe.SelectedRows[0].Cells[0].Value.ToString());
-			HoaDonActionState actionState = GetHoaDonActionState(maHD);
-			if (!actionState.Exists)
-			{
-				MessageBox.Show("Kh\u00f4ng t\u00ecm th\u1ea5y h\u00f3a \u0111\u01a1n.", "L\u1ed7i", MessageBoxButtons.OK, MessageBoxIcon.Error);
-				return;
-			}
-
-			if (!actionState.CanCancel)
-			{
-				MessageBox.Show(
-					actionState.CancelBlockedReason ?? "H\u00f3a \u0111\u01a1n n\u00e0y kh\u00f4ng th\u1ec3 h\u1ee7y.",
-					"Kh\u00f4ng th\u1ec3 h\u1ee7y h\u00f3a \u0111\u01a1n",
-					MessageBoxButtons.OK,
-					MessageBoxIcon.Information);
-				return;
-			}
-
-			string lyDoHuy = PromptCancelReason(maHD);
-			if (string.IsNullOrWhiteSpace(lyDoHuy))
-			{
-				return;
-			}
-
-			var r = dgvVe.SelectedRows[0];
-			string khachHang = r.Cells[1].Value != null ? r.Cells[1].Value.ToString() : "N/A";
-			string nhanVien = r.Cells[2].Value != null ? r.Cells[2].Value.ToString() : "N/A";
-			string ngayLap = r.Cells[3].Value != null ? r.Cells[3].Value.ToString() : "N/A";
-			string tongTien = r.Cells[4].Value != null ? r.Cells[4].Value.ToString() : "N/A";
-
-			var confirmResult = MessageBox.Show(
-				"B\u1ea1n c\u00f3 ch\u1eafc ch\u1eafn mu\u1ed1n h\u1ee7y h\u00f3a \u0111\u01a1n?\n\n" +
-				"Kh\u00e1ch h\u00e0ng: " + khachHang + "\n" +
-				"Nh\u00e2n vi\u00ean: " + nhanVien + "\n" +
-				"Ng\u00e0y l\u1eadp: " + ngayLap + "\n" +
-				"T\u1ed5ng ti\u1ec1n: " + tongTien + " VN\u0110\n" +
-				"L\u00fd do h\u1ee7y: " + lyDoHuy,
-				"X\u00e1c nh\u1eadn h\u1ee7y h\u00f3a \u0111\u01a1n",
-				MessageBoxButtons.YesNo,
-				MessageBoxIcon.Question
-			);
-
-			if (confirmResult == DialogResult.Yes)
-			{
-				string result = CancelHoaDon(maHD, lyDoHuy);
-				MessageBox.Show(result, "Th\u00f4ng b\u00e1o", MessageBoxButtons.OK,
-					result.Contains("th\u00e0nh c\u00f4ng") ? MessageBoxIcon.Information : MessageBoxIcon.Error);
-
-				if (result.Contains("th\u00e0nh c\u00f4ng"))
-				{
-					UCHoaDon_Load(null, null);
-				}
-			}
-		}
 
 		private void Filter()
 		{
@@ -483,7 +421,7 @@ namespace QLBXMD.GUI.Admin
 		{
 			btnXem.Enabled = enabled;
 			btnSua.Enabled = enabled;
-			btnXoa.Enabled = enabled;
+			btnExportPdf.Enabled = enabled;
 		}
 
 		private int? GetSelectedMaHD()
@@ -552,125 +490,36 @@ namespace QLBXMD.GUI.Admin
 			HoaDonActionState actionState = GetHoaDonActionState(maHD.Value);
 			btnXem.Enabled = actionState.Exists;
 			btnSua.Enabled = actionState.Exists && actionState.CanEdit;
-			btnXoa.Enabled = actionState.Exists && actionState.CanEdit;
+			btnExportPdf.Enabled = actionState.Exists;
 		}
 
-		private string PromptCancelReason(int maHD)
+		private void btnExportPdf_Click(object sender, EventArgs e)
 		{
-			using (var form = new Form())
-			using (var lblTitle = new Label())
-			using (var txtReason = new TextBox())
-			using (var btnOk = new Button())
-			using (var btnCancel = new Button())
+			int? maHD = GetSelectedMaHD();
+			if (!maHD.HasValue)
 			{
-				form.Text = "L\u00fd do h\u1ee7y h\u00f3a \u0111\u01a1n";
-				form.FormBorderStyle = FormBorderStyle.FixedDialog;
-				form.StartPosition = FormStartPosition.CenterParent;
-				form.MinimizeBox = false;
-				form.MaximizeBox = false;
-				form.ShowInTaskbar = false;
-				form.ClientSize = new Size(500, 230);
-
-				lblTitle.AutoSize = false;
-				lblTitle.Location = new Point(16, 16);
-				lblTitle.Size = new Size(468, 50);
-				lblTitle.Text = "Nh\u1eadp l\u00fd do h\u1ee7y cho h\u00f3a \u0111\u01a1n #" + maHD + ".\r\nTh\u00f4ng tin n\u00e0y l\u00e0 b\u1eaft bu\u1ed9c tr\u01b0\u1edbc khi thao t\u00e1c.";
-
-				txtReason.Location = new Point(20, 72);
-				txtReason.Multiline = true;
-				txtReason.ScrollBars = ScrollBars.Vertical;
-				txtReason.Size = new Size(460, 100);
-
-				btnOk.Text = "X\u00e1c nh\u1eadn";
-				btnOk.Location = new Point(286, 184);
-				btnOk.Size = new Size(90, 30);
-				btnOk.DialogResult = DialogResult.None;
-				btnOk.Click += (sender, e) =>
-				{
-					if (string.IsNullOrWhiteSpace(txtReason.Text))
-					{
-						MessageBox.Show(
-							"Vui l\u00f2ng nh\u1eadp l\u00fd do h\u1ee7y h\u00f3a \u0111\u01a1n.",
-							"Thi\u1ebfu th\u00f4ng tin",
-							MessageBoxButtons.OK,
-							MessageBoxIcon.Warning);
-						txtReason.Focus();
-						return;
-					}
-
-					form.DialogResult = DialogResult.OK;
-					form.Close();
-				};
-
-				btnCancel.Text = "\u0110\u00f3ng";
-				btnCancel.Location = new Point(390, 184);
-				btnCancel.Size = new Size(90, 30);
-				btnCancel.DialogResult = DialogResult.Cancel;
-
-				form.Controls.Add(lblTitle);
-				form.Controls.Add(txtReason);
-				form.Controls.Add(btnOk);
-				form.Controls.Add(btnCancel);
-				form.AcceptButton = btnOk;
-				form.CancelButton = btnCancel;
-
-				return form.ShowDialog(this) == DialogResult.OK
-					? txtReason.Text.Trim()
-					: null;
+				MessageBox.Show("Vui lòng chọn một hóa đơn để xuất.", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+				return;
 			}
-		}
 
-		private string CancelHoaDon(int maHD, string lyDoHuy)
-		{
-			try
+			// Kiểm tra trạng thái thanh toán từ Database
+			using (var db = new BXMDEntities())
 			{
-				using (var db = new BXMDEntities())
+				var hd = db.HoaDons.FirstOrDefault(h => h.MaHD == maHD.Value);
+				if (hd == null)
 				{
-					var hoaDon = db.HoaDons.FirstOrDefault(hd => hd.MaHD == maHD);
-					if (hoaDon == null)
-					{
-						return "Kh\u00f4ng t\u00ecm th\u1ea5y h\u00f3a \u0111\u01a1n.";
-					}
-
-					if (hoaDon.TrangThai == true)
-					{
-						return "H\u00f3a \u0111\u01a1n \u0111\u00e3 thanh to\u00e1n ch\u1ec9 \u0111\u01b0\u1ee3c xem chi ti\u1ebft. Kh\u00f4ng th\u1ec3 h\u1ee7y.";
-					}
-
-					bool hasStartedTrip = db.VeXes
-						.Where(v => v.MaHD == maHD)
-						.Any(v => v.ChuyenXe != null && v.ChuyenXe.NgayGioKhoiHanh <= DateTime.Now);
-
-					if (hasStartedTrip)
-					{
-						return "Kh\u00f4ng th\u1ec3 h\u1ee7y h\u00f3a \u0111\u01a1n khi chuy\u1ebfn xe \u0111\u00e3 ch\u1ea1y ho\u1eb7c \u0111ang di\u1ec5n ra.";
-					}
-
-					var thanhToans = db.ThanhToans.Where(tt => tt.MaHD == maHD).ToList();
-					if (thanhToans.Count > 0)
-					{
-						db.ThanhToans.RemoveRange(thanhToans);
-					}
-
-					var veXes = db.VeXes.Where(v => v.MaHD == maHD).ToList();
-					if (veXes.Count > 0)
-					{
-						db.VeXes.RemoveRange(veXes);
-					}
-
-					db.HoaDons.Remove(hoaDon);
-					db.SaveChanges();
+					MessageBox.Show("Không tìm thấy dữ liệu hóa đơn.", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+					return;
 				}
 
-				System.Diagnostics.Debug.WriteLine(
-					string.Format("Huy hoa don #{0}. Ly do: {1}", maHD, lyDoHuy));
+				if (hd.TrangThai != true)
+				{
+					MessageBox.Show("Chỉ hóa đơn đã thanh toán mới có thể xuất hóa đơn!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+					return;
+				}
+			}
 
-				return "H\u1ee7y h\u00f3a \u0111\u01a1n th\u00e0nh c\u00f4ng.";
-			}
-			catch (Exception ex)
-			{
-				return "H\u1ee7y h\u00f3a \u0111\u01a1n th\u1ea5t b\u1ea1i: " + ex.Message;
-			}
+			QLBXMD.GUI.Utils.HoaDonRenderer.ExportToPdf(maHD.Value);
 		}
 	}
 }

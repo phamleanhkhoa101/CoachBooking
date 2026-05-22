@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -21,7 +21,7 @@ namespace QLBXMD.Utils
 		}
 		public static bool IsValidMatKhau(string matKhau)
 		{
-			if (matKhau.Length < 8) return false;
+			if (string.IsNullOrEmpty(matKhau) || matKhau.Length < 6) return false;
 
 			bool hasUpper = matKhau.Any(char.IsUpper);
 			bool hasLower = matKhau.Any(char.IsLower);

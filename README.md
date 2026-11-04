@@ -8,7 +8,7 @@ repo để đối chiếu; hệ thống mới chạy độc lập trong `backend
 
 | Thành phần | Công nghệ | Thư mục |
 |---|---|---|
-| Backend | Java 21, Spring Boot 3.3, Spring Data JPA, Spring Security (JWT), Maven | `backend/` |
+| Backend | Java 25, Spring Boot 3.5, Spring Data JPA, Spring Security (JWT), Gradle 9.1 (wrapper) | `backend/` |
 | Frontend | React 18, TypeScript, Vite, React Router | `frontend/` |
 | Cơ sở dữ liệu | PostgreSQL 16, khởi tạo bằng script SQL | `db/init/` |
 | Hạ tầng | Docker Compose (db + backend + frontend) | `docker-compose.yml` |
@@ -53,19 +53,40 @@ Tài khoản được tạo bằng BCrypt ở lần khởi động backend đầ
 
 ## Chạy khi phát triển (không dùng container cho backend/frontend)
 
+Yêu cầu: JDK 25 cho backend (`java -version` phải là 25). Gradle 9.1.0 được wrapper
+tự tải về, không cần cài Gradle.
+
+Repo không chứa `backend/gradle/wrapper/gradle-wrapper.jar` (file nhị phân). Nếu thiếu,
+sinh một lần bằng Docker trước khi dùng `gradlew`:
+
+```bash
+docker run --rm -v "${PWD}/backend:/home/gradle/project" -w /home/gradle/project \
+  gradle:9.1.0-jdk25 gradle wrapper --gradle-version 9.1.0
+```
+
 ```bash
 # 1. Chỉ dựng PostgreSQL
 docker compose up -d db
 
 # 2. Backend (http://localhost:8080)
 cd backend
-mvn spring-boot:run
+./gradlew bootRun        # Windows: gradlew.bat bootRun
 
 # 3. Frontend (http://localhost:5173)
 cd frontend
 npm install
 npm run dev
 ```
+
+Đóng gói backend:
+
+```bash
+cd backend
+./gradlew clean bootJar   # build/libs/qlbxmd-backend-1.0.0.jar
+```
+
+Build Docker không cần `gradlew`/wrapper jar: image `gradle:9.1.0-jdk25` được dùng
+trực tiếp trong `backend/Dockerfile`.
 
 Biến môi trường backend có thể ghi đè trực tiếp:
 

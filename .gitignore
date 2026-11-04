@@ -369,6 +369,11 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 .mvn/timing.properties
 
+# Gradle
+.gradle/
+/backend/build/
+!/backend/gradle/wrapper/gradle-wrapper.jar
+
 # Node / Vite
 dist/
 dist-ssr/

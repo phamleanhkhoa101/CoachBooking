@@ -1,8 +1,8 @@
 # QLBXMD — Hệ thống bán vé xe bến xe miền Đông
 
-Bản viết lại của ứng dụng desktop C# (`QLBXMD/`, WinForms + EF6 + SQL Server) sang
-**Spring Boot 3 + React + PostgreSQL**. Toàn bộ mã C# cũ vẫn được giữ nguyên trong
-repo để đối chiếu; hệ thống mới chạy độc lập trong `backend/` và `frontend/`.
+Bản viết lại của ứng dụng desktop C# (WinForms + EF6 + SQL Server) sang
+**Spring Boot 3 + React + PostgreSQL**. Mã nguồn C# cũ đã được gỡ khỏi repo;
+hệ thống hiện tại nằm trong `backend/` và `frontend/`.
 
 ## Kiến trúc
 
@@ -139,4 +139,4 @@ doanh thu và tuyến phổ biến.
 
 - Thanh toán MoMo và callback (theo yêu cầu tạm bỏ).
 - Gửi email thật qua SMTP.
-- Bộ kiểm thử tự động cho nghiệp vụ (bản C# cũng chỉ có test rỗng).
+- Bộ kiểm thử tự động cho nghiệp vụ.

@@ -1,5 +1,12 @@
 package com.coachbooking.web;
 
+import com.coachbooking.common.ApiException;
+import com.coachbooking.common.Validators;
+import com.coachbooking.domain.TaiKhoan;
+import com.coachbooking.repo.KhachHangRepository;
+import com.coachbooking.repo.NhanVienRepository;
+import com.coachbooking.repo.QuyenRepository;
+import com.coachbooking.repo.TaiKhoanRepository;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -16,118 +23,114 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import com.coachbooking.common.ApiException;
-import com.coachbooking.common.Validators;
-import com.coachbooking.domain.TaiKhoan;
-import com.coachbooking.repo.KhachHangRepository;
-import com.coachbooking.repo.NhanVienRepository;
-import com.coachbooking.repo.QuyenRepository;
-import com.coachbooking.repo.TaiKhoanRepository;
 
 @RestController
 @RequestMapping("/api/tai-khoan")
 @PreAuthorize("hasRole('Admin')")
 public class TaiKhoanController {
 
-    private final TaiKhoanRepository taiKhoanRepository;
-    private final QuyenRepository quyenRepository;
-    private final NhanVienRepository nhanVienRepository;
-    private final KhachHangRepository khachHangRepository;
-    private final PasswordEncoder passwordEncoder;
+  private final TaiKhoanRepository taiKhoanRepository;
+  private final QuyenRepository quyenRepository;
+  private final NhanVienRepository nhanVienRepository;
+  private final KhachHangRepository khachHangRepository;
+  private final PasswordEncoder passwordEncoder;
 
-    public TaiKhoanController(TaiKhoanRepository taiKhoanRepository,
-                              QuyenRepository quyenRepository,
-                              NhanVienRepository nhanVienRepository,
-                              KhachHangRepository khachHangRepository,
-                              PasswordEncoder passwordEncoder) {
-        this.taiKhoanRepository = taiKhoanRepository;
-        this.quyenRepository = quyenRepository;
-        this.nhanVienRepository = nhanVienRepository;
-        this.khachHangRepository = khachHangRepository;
-        this.passwordEncoder = passwordEncoder;
+  public TaiKhoanController(
+      TaiKhoanRepository taiKhoanRepository,
+      QuyenRepository quyenRepository,
+      NhanVienRepository nhanVienRepository,
+      KhachHangRepository khachHangRepository,
+      PasswordEncoder passwordEncoder) {
+    this.taiKhoanRepository = taiKhoanRepository;
+    this.quyenRepository = quyenRepository;
+    this.nhanVienRepository = nhanVienRepository;
+    this.khachHangRepository = khachHangRepository;
+    this.passwordEncoder = passwordEncoder;
+  }
+
+  @GetMapping
+  public List<TaiKhoan> list() {
+    return taiKhoanRepository.findAll();
+  }
+
+  @GetMapping("/{id}")
+  public TaiKhoan get(@PathVariable Integer id) {
+    return taiKhoanRepository
+        .findById(id)
+        .orElseThrow(() -> ApiException.notFound("Tài khoản không tồn tại."));
+  }
+
+  @PostMapping
+  public TaiKhoan create(@Valid @RequestBody CreateRequest request) {
+    String tenDangNhap = request.tenDangNhap().trim();
+    if (tenDangNhap.length() < 6) {
+      throw ApiException.badRequest("Tên đăng nhập phải có ít nhất 6 ký tự.");
+    }
+    Validators.requirePassword(request.matKhau());
+    if (taiKhoanRepository.existsByTenDangNhap(tenDangNhap)) {
+      throw ApiException.conflict("Tên đăng nhập đã được sử dụng.");
+    }
+    if (taiKhoanRepository.existsByEmail(request.email().trim())) {
+      throw ApiException.conflict("Email đã được sử dụng.");
+    }
+    if (!quyenRepository.existsById(request.maQuyen())) {
+      throw ApiException.notFound("Quyền không tồn tại.");
     }
 
-    @GetMapping
-    public List<TaiKhoan> list() {
-        return taiKhoanRepository.findAll();
-    }
+    TaiKhoan taiKhoan = new TaiKhoan();
+    taiKhoan.setTenDangNhap(tenDangNhap);
+    taiKhoan.setEmail(request.email().trim());
+    taiKhoan.setMatKhau(passwordEncoder.encode(request.matKhau()));
+    taiKhoan.setMaQuyen(request.maQuyen());
+    taiKhoan.setTrangThai(request.trangThai() == null || request.trangThai());
+    return taiKhoanRepository.save(taiKhoan);
+  }
 
-    @GetMapping("/{id}")
-    public TaiKhoan get(@PathVariable Integer id) {
-        return taiKhoanRepository.findById(id)
-                .orElseThrow(() -> ApiException.notFound("Tài khoản không tồn tại."));
+  @PutMapping("/{id}")
+  public TaiKhoan update(@PathVariable Integer id, @Valid @RequestBody UpdateRequest request) {
+    TaiKhoan taiKhoan = get(id);
+    if (!quyenRepository.existsById(request.maQuyen())) {
+      throw ApiException.notFound("Quyền không tồn tại.");
     }
-
-    @PostMapping
-    public TaiKhoan create(@Valid @RequestBody CreateRequest request) {
-        String tenDangNhap = request.tenDangNhap().trim();
-        if (tenDangNhap.length() < 6) {
-            throw ApiException.badRequest("Tên đăng nhập phải có ít nhất 6 ký tự.");
-        }
-        Validators.requirePassword(request.matKhau());
-        if (taiKhoanRepository.existsByTenDangNhap(tenDangNhap)) {
-            throw ApiException.conflict("Tên đăng nhập đã được sử dụng.");
-        }
-        if (taiKhoanRepository.existsByEmail(request.email().trim())) {
-            throw ApiException.conflict("Email đã được sử dụng.");
-        }
-        if (!quyenRepository.existsById(request.maQuyen())) {
-            throw ApiException.notFound("Quyền không tồn tại.");
-        }
-
-        TaiKhoan taiKhoan = new TaiKhoan();
-        taiKhoan.setTenDangNhap(tenDangNhap);
-        taiKhoan.setEmail(request.email().trim());
-        taiKhoan.setMatKhau(passwordEncoder.encode(request.matKhau()));
-        taiKhoan.setMaQuyen(request.maQuyen());
-        taiKhoan.setTrangThai(request.trangThai() == null || request.trangThai());
-        return taiKhoanRepository.save(taiKhoan);
+    if (!taiKhoan.getEmail().equalsIgnoreCase(request.email().trim())
+        && taiKhoanRepository.existsByEmail(request.email().trim())) {
+      throw ApiException.conflict("Email đã được sử dụng.");
     }
-
-    @PutMapping("/{id}")
-    public TaiKhoan update(@PathVariable Integer id, @Valid @RequestBody UpdateRequest request) {
-        TaiKhoan taiKhoan = get(id);
-        if (!quyenRepository.existsById(request.maQuyen())) {
-            throw ApiException.notFound("Quyền không tồn tại.");
-        }
-        if (!taiKhoan.getEmail().equalsIgnoreCase(request.email().trim())
-                && taiKhoanRepository.existsByEmail(request.email().trim())) {
-            throw ApiException.conflict("Email đã được sử dụng.");
-        }
-        taiKhoan.setEmail(request.email().trim());
-        taiKhoan.setMaQuyen(request.maQuyen());
-        if (request.trangThai() != null) {
-            taiKhoan.setTrangThai(request.trangThai());
-        }
-        if (!Validators.isBlank(request.matKhau())) {
-            Validators.requirePassword(request.matKhau());
-            taiKhoan.setMatKhau(passwordEncoder.encode(request.matKhau()));
-        }
-        return taiKhoanRepository.save(taiKhoan);
+    taiKhoan.setEmail(request.email().trim());
+    taiKhoan.setMaQuyen(request.maQuyen());
+    if (request.trangThai() != null) {
+      taiKhoan.setTrangThai(request.trangThai());
     }
-
-    @DeleteMapping("/{id}")
-    public Map<String, String> delete(@PathVariable Integer id) {
-        TaiKhoan taiKhoan = get(id);
-        if (nhanVienRepository.existsByMaTk(id) || khachHangRepository.existsByMaTk(id)) {
-            throw ApiException.conflict("Không thể xóa tài khoản đang gắn với nhân viên hoặc khách hàng.");
-        }
-        taiKhoanRepository.delete(taiKhoan);
-        return Map.of("message", "Xóa tài khoản thành công.");
+    if (!Validators.isBlank(request.matKhau())) {
+      Validators.requirePassword(request.matKhau());
+      taiKhoan.setMatKhau(passwordEncoder.encode(request.matKhau()));
     }
+    return taiKhoanRepository.save(taiKhoan);
+  }
 
-    public record CreateRequest(
-            @NotBlank(message = "Vui lòng nhập tên đăng nhập.") String tenDangNhap,
-            @NotBlank(message = "Vui lòng nhập email.") @Email(message = "Email không đúng định dạng.") String email,
-            @NotBlank(message = "Vui lòng nhập mật khẩu.") String matKhau,
-            @NotNull(message = "Vui lòng chọn quyền.") Integer maQuyen,
-            Boolean trangThai) {
+  @DeleteMapping("/{id}")
+  public Map<String, String> delete(@PathVariable Integer id) {
+    TaiKhoan taiKhoan = get(id);
+    if (nhanVienRepository.existsByMaTk(id) || khachHangRepository.existsByMaTk(id)) {
+      throw ApiException.conflict(
+          "Không thể xóa tài khoản đang gắn với nhân viên hoặc khách hàng.");
     }
+    taiKhoanRepository.delete(taiKhoan);
+    return Map.of("message", "Xóa tài khoản thành công.");
+  }
 
-    public record UpdateRequest(
-            @NotBlank(message = "Vui lòng nhập email.") @Email(message = "Email không đúng định dạng.") String email,
-            String matKhau,
-            @NotNull(message = "Vui lòng chọn quyền.") Integer maQuyen,
-            Boolean trangThai) {
-    }
+  public record CreateRequest(
+      @NotBlank(message = "Vui lòng nhập tên đăng nhập.") String tenDangNhap,
+      @NotBlank(message = "Vui lòng nhập email.") @Email(message = "Email không đúng định dạng.")
+          String email,
+      @NotBlank(message = "Vui lòng nhập mật khẩu.") String matKhau,
+      @NotNull(message = "Vui lòng chọn quyền.") Integer maQuyen,
+      Boolean trangThai) {}
+
+  public record UpdateRequest(
+      @NotBlank(message = "Vui lòng nhập email.") @Email(message = "Email không đúng định dạng.")
+          String email,
+      String matKhau,
+      @NotNull(message = "Vui lòng chọn quyền.") Integer maQuyen,
+      Boolean trangThai) {}
 }

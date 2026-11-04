@@ -1,0 +1,25 @@
+#!/bin/sh
+#
+# Gradle wrapper bootstrap. Cần gradle/wrapper/gradle-wrapper.jar (file nhị phân
+# do Gradle sinh ra). Nếu thiếu, xem hướng dẫn trong README để tạo một lần.
+
+APP_HOME=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P)
+WRAPPER_JAR="$APP_HOME/gradle/wrapper/gradle-wrapper.jar"
+
+if [ ! -f "$WRAPPER_JAR" ]; then
+    echo "Không tìm thấy gradle/wrapper/gradle-wrapper.jar." >&2
+    echo "Tạo một lần bằng Docker:" >&2
+    echo "  docker run --rm -v \"$APP_HOME:/home/gradle/project\" -w /home/gradle/project gradle:9.1.0-jdk25 gradle wrapper --gradle-version 9.1.0" >&2
+    exit 1
+fi
+
+if [ -n "$JAVA_HOME" ] && [ -x "$JAVA_HOME/bin/java" ]; then
+    JAVACMD="$JAVA_HOME/bin/java"
+else
+    JAVACMD=java
+fi
+
+exec "$JAVACMD" $DEFAULT_JVM_OPTS $JAVA_OPTS $GRADLE_OPTS \
+    "-Dorg.gradle.appname=gradlew" \
+    -classpath "$WRAPPER_JAR" \
+    org.gradle.wrapper.GradleWrapperMain "$@"

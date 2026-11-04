@@ -10,7 +10,7 @@ repo để đối chiếu; hệ thống mới chạy độc lập trong `backend
 |---|---|---|
 | Backend | Java 25, Spring Boot 3.5, Spring Data JPA, Spring Security (JWT), Gradle 9.1 (wrapper) | `backend/` |
 | Frontend | React 18, TypeScript, Vite, React Router | `frontend/` |
-| Cơ sở dữ liệu | PostgreSQL 16, khởi tạo bằng script SQL | `db/init/` |
+| Cơ sở dữ liệu | PostgreSQL 16, migration bằng Flyway | `backend/src/main/resources/db/migration/` |
 | Hạ tầng | Docker Compose (db + backend + frontend) | `docker-compose.yml` |
 
 Luồng dữ liệu: React gọi `/api/**` → nginx (container frontend) chuyển tiếp tới
@@ -31,13 +31,18 @@ docker compose up --build
 | Health check | http://localhost:8080/actuator/health |
 | PostgreSQL | localhost:5432 |
 
-Dữ liệu mẫu (danh mục, bảng giá, chuyến xe 14 ngày kể từ ngày khởi tạo) được nạp tự
-động ở lần đầu container `db` khởi động. Muốn nạp lại từ đầu:
+Backend tự chạy Flyway khi khởi động: `V1__init_schema.sql` tạo schema,
+`V2__seed_data.sql` nạp danh mục, bảng giá và chuyến xe 14 ngày kể từ ngày chạy.
+Muốn nạp lại từ đầu:
 
 ```bash
 docker compose down -v
 docker compose up --build
 ```
+
+Nếu volume `db-data` được tạo bởi bộ script `db/init` cũ (không có bảng
+`flyway_schema_history`), Flyway sẽ đánh dấu schema đang có là phiên bản 2 thay vì
+chạy lại migration; dữ liệu cũ được giữ nguyên.
 
 ## Tài khoản demo
 

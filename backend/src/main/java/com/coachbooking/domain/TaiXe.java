@@ -10,114 +10,114 @@ import java.time.LocalDate;
 @Entity
 public class TaiXe {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer maTx;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Integer maTx;
 
-    @Column(length = 100)
-    private String tenTx;
+  @Column(length = 100)
+  private String tenTx;
 
-    @Column(nullable = false)
-    private LocalDate namSinh;
+  @Column(nullable = false)
+  private LocalDate namSinh;
 
-    @Column(nullable = false, unique = true, length = 12)
-    private String cccd;
+  @Column(nullable = false, unique = true, length = 12)
+  private String cccd;
 
-    @Column(nullable = false)
-    private Boolean gioiTinh = false;
+  @Column(nullable = false)
+  private Boolean gioiTinh = false;
 
-    @Column(nullable = false, unique = true, length = 11)
-    private String sdt;
+  @Column(nullable = false, unique = true, length = 11)
+  private String sdt;
 
-    @Column(nullable = false, length = 100)
-    private String diaChi;
+  @Column(nullable = false, length = 100)
+  private String diaChi;
 
-    @Column(nullable = false, length = 5)
-    private String bangLai;
+  @Column(nullable = false, length = 5)
+  private String bangLai;
 
-    @Column(nullable = false)
-    private LocalDate ngayCap;
+  @Column(nullable = false)
+  private LocalDate ngayCap;
 
-    @Column(nullable = false)
-    private Boolean trangThai = true;
+  @Column(nullable = false)
+  private Boolean trangThai = true;
 
-    public Integer getMaTx() {
-        return maTx;
-    }
+  public Integer getMaTx() {
+    return maTx;
+  }
 
-    public void setMaTx(Integer maTx) {
-        this.maTx = maTx;
-    }
+  public void setMaTx(Integer maTx) {
+    this.maTx = maTx;
+  }
 
-    public String getTenTx() {
-        return tenTx;
-    }
+  public String getTenTx() {
+    return tenTx;
+  }
 
-    public void setTenTx(String tenTx) {
-        this.tenTx = tenTx;
-    }
+  public void setTenTx(String tenTx) {
+    this.tenTx = tenTx;
+  }
 
-    public LocalDate getNamSinh() {
-        return namSinh;
-    }
+  public LocalDate getNamSinh() {
+    return namSinh;
+  }
 
-    public void setNamSinh(LocalDate namSinh) {
-        this.namSinh = namSinh;
-    }
+  public void setNamSinh(LocalDate namSinh) {
+    this.namSinh = namSinh;
+  }
 
-    public String getCccd() {
-        return cccd;
-    }
+  public String getCccd() {
+    return cccd;
+  }
 
-    public void setCccd(String cccd) {
-        this.cccd = cccd;
-    }
+  public void setCccd(String cccd) {
+    this.cccd = cccd;
+  }
 
-    public Boolean getGioiTinh() {
-        return gioiTinh;
-    }
+  public Boolean getGioiTinh() {
+    return gioiTinh;
+  }
 
-    public void setGioiTinh(Boolean gioiTinh) {
-        this.gioiTinh = gioiTinh;
-    }
+  public void setGioiTinh(Boolean gioiTinh) {
+    this.gioiTinh = gioiTinh;
+  }
 
-    public String getSdt() {
-        return sdt;
-    }
+  public String getSdt() {
+    return sdt;
+  }
 
-    public void setSdt(String sdt) {
-        this.sdt = sdt;
-    }
+  public void setSdt(String sdt) {
+    this.sdt = sdt;
+  }
 
-    public String getDiaChi() {
-        return diaChi;
-    }
+  public String getDiaChi() {
+    return diaChi;
+  }
 
-    public void setDiaChi(String diaChi) {
-        this.diaChi = diaChi;
-    }
+  public void setDiaChi(String diaChi) {
+    this.diaChi = diaChi;
+  }
 
-    public String getBangLai() {
-        return bangLai;
-    }
+  public String getBangLai() {
+    return bangLai;
+  }
 
-    public void setBangLai(String bangLai) {
-        this.bangLai = bangLai;
-    }
+  public void setBangLai(String bangLai) {
+    this.bangLai = bangLai;
+  }
 
-    public LocalDate getNgayCap() {
-        return ngayCap;
-    }
+  public LocalDate getNgayCap() {
+    return ngayCap;
+  }
 
-    public void setNgayCap(LocalDate ngayCap) {
-        this.ngayCap = ngayCap;
-    }
+  public void setNgayCap(LocalDate ngayCap) {
+    this.ngayCap = ngayCap;
+  }
 
-    public Boolean getTrangThai() {
-        return trangThai;
-    }
+  public Boolean getTrangThai() {
+    return trangThai;
+  }
 
-    public void setTrangThai(Boolean trangThai) {
-        this.trangThai = trangThai;
-    }
+  public void setTrangThai(Boolean trangThai) {
+    this.trangThai = trangThai;
+  }
 }

@@ -1,6 +1,9 @@
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.16'
+    id 'jacoco'
+    id 'com.diffplug.spotless' version '7.0.2'
+    id 'org.sonarqube' version '7.5.0.8588'
 }
 
 group = 'com.coachbooking'
@@ -45,4 +48,37 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+spotless {
+    java {
+        removeUnusedImports()
+        googleJavaFormat('1.27.0')
+        trimTrailingWhitespace()
+        endWithNewline()
+    }
+}
+
+jacoco {
+    toolVersion = '0.8.15'
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+        html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+    }
+}
+
+sonarqube {
+    properties {
+        property 'sonar.projectKey', 'phamleanhkhoa101_QLBXMD'
+        property 'sonar.organization', 'phamleanhkhoa101'
+        property 'sonar.host.url', 'https://sonarcloud.io'
+        property 'sonar.coverage.jacoco.xmlReportPaths',
+                layout.buildDirectory.file('reports/jacoco/test/jacocoTestReport.xml').get().asFile.absolutePath
+        property 'sonar.java.source', '25'
+    }
 }

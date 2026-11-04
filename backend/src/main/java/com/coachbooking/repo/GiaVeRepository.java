@@ -1,18 +1,18 @@
 package com.coachbooking.repo;
 
-import com.coachbooking.domain.GiaVe;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import com.coachbooking.domain.GiaVe;
 
 public interface GiaVeRepository extends JpaRepository<GiaVe, Integer> {
 
-  Optional<GiaVe> findByMaNxAndMaLxAndMaTuyen(Integer maNx, Integer maLx, Integer maTuyen);
+    Optional<GiaVe> findByMaNxAndMaLxAndMaTuyen(Integer maNx, Integer maLx, Integer maTuyen);
 
-  boolean existsByMaNxAndMaLxAndMaTuyen(Integer maNx, Integer maLx, Integer maTuyen);
+    boolean existsByMaNxAndMaLxAndMaTuyen(Integer maNx, Integer maLx, Integer maTuyen);
 
-  boolean existsByMaNx(Integer maNx);
+    boolean existsByMaNx(Integer maNx);
 
-  boolean existsByMaLx(Integer maLx);
+    boolean existsByMaLx(Integer maLx);
 
-  boolean existsByMaTuyen(Integer maTuyen);
+    boolean existsByMaTuyen(Integer maTuyen);
 }

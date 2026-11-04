@@ -17,7 +17,7 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
@@ -49,8 +49,10 @@ jobs:
         working-directory: backend
         run: gradle spotlessCheck build jacocoTestReport --no-daemon --stacktrace
 
-      - name: SonarCloud analysis
-        if: env.SONAR_TOKEN != ''
+      # SonarCloud free chỉ phân tích nhánh chính; nhánh khác báo
+      # "Organization is not allowed to access data from non main branches".
+      - name: SonarCloud analysis (main branch only)
+        if: env.SONAR_TOKEN != '' && github.ref == 'refs/heads/main'
         working-directory: backend
         run: gradle sonar --no-daemon -Dsonar.token=$SONAR_TOKEN -Dsonar.qualitygate.wait=true
 

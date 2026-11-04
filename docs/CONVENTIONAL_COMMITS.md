@@ -1,6 +1,6 @@
 # 📜 Quy chuẩn Commit & Quản lý Nhánh (Git Conventions)
 
-> **Dự án:** EduShare (AcademicHub)  
+> **Dự án:** CoachBooking — Hệ thống bán vé xe bến xe miền Đông  
 > **Tiêu chuẩn áp dụng:** [Conventional Commits v1.0.0](https://www.conventionalcommits.org/en/v1.0.0/)
 
 ---
@@ -29,34 +29,37 @@ Một commit message chuẩn bao gồm 3 phần: **Header**, **Body (tùy chọn
 
 | Type | Ý nghĩa | Ví dụ thực tế |
 | :--- | :--- | :--- |
-| **`feat`** | Thêm một tính năng mới cho người dùng | `feat(category): add API to create new category` |
+| **`feat`** | Thêm một tính năng mới cho người dùng | `feat(trip): add API to create a new trip` |
 | **`fix`** | Sửa một lỗi (bug) trong hệ thống | `fix(auth): fix token expiration calculation error` |
 | **`docs`** | Thêm hoặc sửa đổi tài liệu (README, docs...) | `docs(readme): add system architecture diagram` |
 | **`style`** | Thay đổi format code, khoảng trắng, không ảnh hưởng logic | `style(common): apply Google Java Format via Spotless` |
-| **`refactor`** | Tái cấu trúc code (không sửa bug cũng không thêm tính năng) | `refactor(storage): extract MinIO client into separate service` |
-| **`perf`** | Cải thiện hiệu năng xử lý hoặc truy vấn | `perf(search): add composite index on document title and category` |
-| **`test`** | Thêm test mới hoặc chỉnh sửa test có sẵn | `test(category): add unit tests for CategoryServiceImpl` |
-| **`build`** | Thay đổi cấu hình build tool, cập nhật dependency | `build(gradle): upgrade spring-boot plugin to 3.4.3` |
-| **`ci`** | Thay đổi cấu hình CI/CD (GitHub Actions, SonarCloud) | `ci(github): add test and linting pipeline in ci.yml` |
+| **`refactor`** | Tái cấu trúc code (không sửa bug cũng không thêm tính năng) | `refactor(booking): extract seat validation into a shared helper` |
+| **`perf`** | Cải thiện hiệu năng xử lý hoặc truy vấn | `perf(trip): add composite index on departure time and route` |
+| **`test`** | Thêm test mới hoặc chỉnh sửa test có sẵn | `test(booking): add unit tests for seat conflict handling` |
+| **`build`** | Thay đổi cấu hình build tool, cập nhật dependency | `build(gradle): upgrade spring-boot plugin to 3.5.16` |
+| **`ci`** | Thay đổi cấu hình CI/CD (GitHub Actions, SonarCloud) | `ci(github): add build and SonarCloud pipeline` |
 | **`chore`** | Các công việc lặt vặt khác (config, .gitignore, script) | `chore(config): add .env.example template` |
 
 ---
 
-## 3. Phạm vi áp dụng (Scopes) trong EduShare
+## 3. Phạm vi áp dụng (Scopes) trong CoachBooking
 
 Đặt trong dấu ngoặc đơn `(<scope>)` để chỉ rõ thay đổi nằm ở module nào:
 
-* **`category`**: Quản lý thể loại/danh mục tài liệu.
-* **`document`**: Quản lý upload, tải, xem tài liệu PDF.
-* **`auth`**: Đăng ký, đăng nhập, JWT, Spring Security.
-* **`moderation`**: Pipeline kiểm duyệt AI, Decision Engine, Admin review.
-* **`recommendation`**: Thuật toán tính điểm và gợi ý tài liệu.
-* **`storage`**: Thao tác với MinIO S3 Object Storage.
-* **`queue`**: RabbitMQ broker, message producer/consumer.
-* **`ai`**: Gemini API adapter, structured output.
-* **`common`**: DTO dùng chung, Exception Handler, Response format.
-* **`config`**: Cấu hình hệ thống, application.yaml, .env.
-* **`docker`**: Docker Compose, Dockerfile.
+* **`auth`**: Đăng nhập, đăng ký, quên/đổi mật khẩu, JWT và Spring Security.
+* **`booking`**: Tìm chuyến, sơ đồ ghế, đặt vé, hủy vé.
+* **`invoice`**: Hóa đơn, thanh toán và trạng thái thanh toán.
+* **`trip`**: Chuyến xe, tuyến đường, lịch khởi hành, giá vé áp dụng.
+* **`catalog`**: Nhà xe, loại xe, xe, tuyến đường, bảng giá, tài xế.
+* **`customer`**: Khách hàng và hồ sơ khách hàng.
+* **`employee`**: Nhân viên và tài khoản quản trị.
+* **`statistic`**: Thống kê doanh thu và tuyến phổ biến.
+* **`ui`**: Trang và component React, style giao diện.
+* **`common`**: DTO, exception handler, validator dùng chung.
+* **`config`**: application.yml, cấu hình Spring, dữ liệu khởi tạo.
+* **`db`**: Flyway migration và seed dữ liệu.
+* **`docker`**: Dockerfile, docker-compose, nginx.
+* **`ci`**: GitHub Actions, SonarQube, Spotless, JaCoCo.
 
 ---
 
@@ -72,9 +75,9 @@ git commit -m "WIP"                      # Work in progress không có ngữ c�
 
 ### ✅ Những commit ĐẠT chuẩn chuyên nghiệp:
 ```bash
-git commit -m "feat(category): add unique slug validation when creating category"
-git commit -m "fix(security): return HTTP 403 instead of 500 when access denied"
-git commit -m "test(moderation): add unit tests for 3 decision engine branches"
+git commit -m "feat(booking): add seat availability validation before payment"
+git commit -m "fix(auth): return HTTP 403 instead of 500 when access denied"
+git commit -m "test(booking): add unit tests for seat conflict handling"
 git commit -m "chore(deps): add flyway-database-postgresql dependency"
 ```
 
@@ -93,9 +96,9 @@ Dự án áp dụng mô hình phân nhánh chuẩn **Git Flow**:
 3. **`feature/<tên-tính-năng>` (Feature Branches):**
    * Nhánh tách ra từ `dev` để phát triển từng tính năng riêng biệt.
    * Quy ước đặt tên:
-     * `feature/category-crud`
+     * `feature/booking-seat-map`
      * `feature/auth-jwt`
-     * `feature/minio-storage`
+     * `feature/trip-crud`
    * Sau khi hoàn thành và test pass, tạo **Pull Request (PR)** để merge vào `dev`.
 4. **`hotfix/<tên-lỗi>` (Hotfix Branches):**
    * Tách trực tiếp từ `main` để sửa lỗi khẩn cấp trên Production.

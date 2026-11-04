@@ -1,6 +1,6 @@
 import type { ApiErrorBody } from './types';
 
-export const TOKEN_KEY = 'qlbxmd_token';
+export const TOKEN_KEY = 'coachbooking_token';
 
 /** Lỗi gọi API: mang theo mã HTTP và message hiển thị được cho người dùng. */
 export class ApiError extends Error {

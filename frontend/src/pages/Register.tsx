@@ -83,7 +83,7 @@ export function Register() {
         <div className="auth-brand">
           <div className="brand-logo">BX</div>
           <div>
-            <strong>QLBXMD</strong>
+            <strong>CoachBooking</strong>
             <span>Tạo tài khoản khách hàng</span>
           </div>
         </div>

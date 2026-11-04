@@ -139,7 +139,7 @@ export function AppLayout() {
         <div className="brand">
           <div className="brand-logo">BX</div>
           <div className="brand-text">
-            <strong>QLBXMD</strong>
+            <strong>CoachBooking</strong>
             <span>Quản lý bán vé xe</span>
           </div>
         </div>
@@ -165,7 +165,7 @@ export function AppLayout() {
         </nav>
 
         <div className="sidebar-footer">
-          <span>QLBXMD · Spring Boot + React</span>
+          <span>CoachBooking · Spring Boot + React</span>
           <span>Phiên bản 1.0</span>
         </div>
       </aside>

@@ -1,4 +1,4 @@
-# Hợp đồng API — QLBXMD (Spring Boot + React)
+# Hợp đồng API — CoachBooking (Spring Boot + React)
 
 Base URL: `/api`. Mọi endpoint (trừ nhóm `auth` công khai) yêu cầu header
 `Authorization: Bearer <token>`.
@@ -34,7 +34,7 @@ Trả về:
 {
   "token": "eyJhbGciOi...",
   "nguoiDung": {
-    "maTk": 1, "tenDangNhap": "admin", "email": "admin@qlbxmd.vn",
+    "maTk": 1, "tenDangNhap": "admin", "email": "admin@coachbooking.com",
     "quyen": "Admin", "maQuyen": 1, "maNv": 1, "maKh": null,
     "hoTen": "Nguyễn Văn An", "trangThai": true
   }
@@ -55,7 +55,7 @@ mật khẩu ≥ 8 ký tự có hoa/thường/số/ký tự đặc biệt, email
 ### `POST /api/auth/quen-mat-khau` (công khai)
 
 ```json
-{ "tenDangNhap": "kh1", "email": "4@gmail.com" }
+{ "tenDangNhap": "kh1", "email": "kh1@coachbooking.com" }
 ```
 
 Trả về `{ "matKhauTam": "Abc123!xyz" }` (môi trường demo trả mật khẩu tạm trực tiếp

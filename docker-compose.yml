@@ -1,0 +1,51 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: qlbxmd-db
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-qlbxmd}
+      POSTGRES_USER: ${POSTGRES_USER:-qlbxmd}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-qlbxmd}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./db/init:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-qlbxmd} -d ${POSTGRES_DB:-qlbxmd}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build: ./backend
+    container_name: qlbxmd-backend
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-qlbxmd}
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:-qlbxmd}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-qlbxmd}
+      APP_JWT_SECRET: ${JWT_SECRET:-qlbxmd-dev-secret-key-change-me-in-production-2026}
+      APP_CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173}
+    ports:
+      - "${BACKEND_PORT:-8080}:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health | grep -q UP"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 40s
+
+  frontend:
+    build: ./frontend
+    container_name: qlbxmd-frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+
+volumes:
+  db-data:

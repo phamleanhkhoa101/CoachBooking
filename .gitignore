@@ -361,3 +361,25 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# Java / Maven
+target/
+*.class
+*.jar
+!.mvn/wrapper/maven-wrapper.jar
+.mvn/timing.properties
+
+# Node / Vite
+dist/
+dist-ssr/
+node_modules/
+*.local
+frontend/.vite/
+
+# Biến môi trường cục bộ
+.env
+
+# IDE
+.idea/
+*.iml
+.vscode/

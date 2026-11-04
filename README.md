@@ -124,7 +124,9 @@ Project key, organization và host nằm trong `backend/build.gradle` (block `so
 
 Không cần biến `SONAR_HOST_URL` vì host đã khai báo trong `build.gradle`. Khi chưa có token, bước Sonar tự bỏ qua.
 
-Định dạng code: `./gradlew spotlessApply` để tự sửa, `./gradlew spotlessCheck` để kiểm tra. Quality gate chưa bật `wait` vì dự án chưa có test, coverage 0% sẽ làm gate fail.
+Định dạng code: `./gradlew spotlessApply` để tự sửa, `./gradlew spotlessCheck` để kiểm tra.
+Sonar đang bật `sonar.qualitygate.wait=true`, nên CI sẽ đỏ nếu quality gate fail. Hiện coverage
+mới khoảng 1,7% (chỉ có `ValidatorsTest`), trong khi gate "Sonar way" yêu cầu ≥80% trên New Code.
 
 ### Phát hành image
 

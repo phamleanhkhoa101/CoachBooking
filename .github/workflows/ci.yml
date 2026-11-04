@@ -49,11 +49,10 @@ jobs:
         working-directory: backend
         run: gradle spotlessCheck build jacocoTestReport --no-daemon --stacktrace
 
-      # Chưa bật sonar.qualitygate.wait: dự án chưa có test nên coverage 0% sẽ làm gate fail.
       - name: SonarCloud analysis
         if: env.SONAR_TOKEN != ''
         working-directory: backend
-        run: gradle sonar --no-daemon -Dsonar.token=$SONAR_TOKEN
+        run: gradle sonar --no-daemon -Dsonar.token=$SONAR_TOKEN -Dsonar.qualitygate.wait=true
 
       - name: Upload test reports
         if: failure()

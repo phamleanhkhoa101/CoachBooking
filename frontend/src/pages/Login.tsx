@@ -51,7 +51,7 @@ export function Login() {
         <div className="auth-brand">
           <div className="brand-logo">BX</div>
           <div>
-            <strong>QLBXMD</strong>
+            <strong>CoachBooking</strong>
             <span>Hệ thống quản lý bán vé xe miền Đông</span>
           </div>
         </div>

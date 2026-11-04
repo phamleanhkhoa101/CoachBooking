@@ -1,4 +1,4 @@
-# QLBXMD — Frontend React + TypeScript
+# CoachBooking — Frontend React + TypeScript
 
 Giao diện quản trị và đặt vé cho hệ thống quản lý bán vé xe miền Đông, viết lại từ ứng dụng
 WinForms cũ. Frontend giao tiếp với backend Spring Boot qua hợp đồng API tại `docs/API.md`.
@@ -85,7 +85,7 @@ có logic giờ khởi hành/giá vé.
 
 ## Quy ước gọi API
 
-- Token lưu ở `localStorage` với khóa `qlbxmd_token`, gửi qua `Authorization: Bearer <token>`.
+- Token lưu ở `localStorage` với khóa `coachbooking_token`, gửi qua `Authorization: Bearer <token>`.
 - Gặp `401`, client xóa token và chuyển về `/login`.
 - Lỗi hiển thị nguyên văn `message` trong response; xung đột ghế (`409`) được hiển thị
   rõ và sơ đồ ghế tự tải lại.
@@ -106,7 +106,7 @@ có logic giờ khởi hành/giá vé.
 ## Docker
 
 ```bash
-docker build -t qlbxmd-frontend ./frontend
+docker build -t coachbooking-frontend ./frontend
 ```
 
 - Stage 1: `node:20-alpine` chạy `npm install` + `npm run build`.

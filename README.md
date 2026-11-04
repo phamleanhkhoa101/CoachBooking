@@ -103,6 +103,42 @@ APP_JWT_SECRET=<chuỗi tối thiểu 32 ký tự>
 APP_CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
 ```
 
+## CI/CD và SonarQube
+
+GitHub Actions chạy khi push vào `main`, `dev`, `feat/**`, `fix/**` và mọi pull request vào `main`/`dev`:
+
+| Job | Nội dung |
+|---|---|
+| `backend` | JDK 25 + Gradle 9.1.0: `spotlessCheck`, `build`, `jacocoTestReport`, sau đó `sonar` nếu có token |
+| `frontend` | Node 20, `npm ci`, `npm run build` |
+| `docker` | kiểm tra `docker compose config`, build thử cả hai image |
+
+### Cấu hình SonarQube
+
+Project key, organization và host nằm trong `backend/build.gradle` (block `sonarqube`), đang trỏ tới
+`phamleanhkhoa101_QLBXMD` / `phamleanhkhoa101`.
+
+1. Tạo token ở **My Account → Security** trên SonarCloud.
+2. Thêm secret `SONAR_TOKEN` trong GitHub repo (Settings → Secrets and variables → Actions).
+3. Push code; job backend tự chạy `gradle sonar`.
+
+Không cần biến `SONAR_HOST_URL` vì host đã khai báo trong `build.gradle`. Khi chưa có token, bước Sonar tự bỏ qua.
+
+Định dạng code: `./gradlew spotlessApply` để tự sửa, `./gradlew spotlessCheck` để kiểm tra.
+Sonar đang bật `sonar.qualitygate.wait=true`, nên CI sẽ đỏ nếu quality gate fail. Hiện coverage
+mới khoảng 1,7% (chỉ có `ValidatorsTest`), trong khi gate "Sonar way" yêu cầu ≥80% trên New Code.
+
+### Phát hành image
+
+Push tag dạng `v1.2.3`, hoặc chạy tay workflow **CD**, để build và đẩy image lên GHCR:
+
+- `ghcr.io/phamleanhkhoa101/coachbooking-backend`
+- `ghcr.io/phamleanhkhoa101/coachbooking-frontend`
+
+Bước triển khai thực tế chưa được tự động hóa; thêm job deploy sau bước publish nếu cần.
+
+> Đã bổ sung `backend/gradle/wrapper/gradle-wrapper.jar` và `frontend/package-lock.json`, nên chạy local bằng `./gradlew` và cài dependency bằng `npm ci` được. CI vẫn cài Gradle 9.1.0 trực tiếp để không phụ thuộc wrapper jar.
+
 ## API
 
 Hợp đồng đầy đủ ở [`docs/API.md`](docs/API.md): xác thực JWT, danh mục, tìm chuyến,

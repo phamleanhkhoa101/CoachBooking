@@ -15,35 +15,39 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtService jwtService;
-    private final AppUserDetailsService userDetailsService;
+  private final JwtService jwtService;
+  private final AppUserDetailsService userDetailsService;
 
-    public JwtAuthenticationFilter(JwtService jwtService, AppUserDetailsService userDetailsService) {
-        this.jwtService = jwtService;
-        this.userDetailsService = userDetailsService;
-    }
+  public JwtAuthenticationFilter(JwtService jwtService, AppUserDetailsService userDetailsService) {
+    this.jwtService = jwtService;
+    this.userDetailsService = userDetailsService;
+  }
 
-    @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
-            throws ServletException, IOException {
-        String header = request.getHeader("Authorization");
-        if (header != null && header.startsWith("Bearer ")
-                && SecurityContextHolder.getContext().getAuthentication() == null) {
-            String token = header.substring(7);
-            if (jwtService.isValid(token)) {
-                try {
-                    UserDetails userDetails = userDetailsService.loadUserByUsername(jwtService.extractUsername(token));
-                    if (userDetails.isEnabled()) {
-                        UsernamePasswordAuthenticationToken authentication =
-                                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                        SecurityContextHolder.getContext().setAuthentication(authentication);
-                    }
-                } catch (RuntimeException ignored) {
-                    SecurityContextHolder.clearContext();
-                }
-            }
+  @Override
+  protected void doFilterInternal(
+      HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+      throws ServletException, IOException {
+    String header = request.getHeader("Authorization");
+    if (header != null
+        && header.startsWith("Bearer ")
+        && SecurityContextHolder.getContext().getAuthentication() == null) {
+      String token = header.substring(7);
+      if (jwtService.isValid(token)) {
+        try {
+          UserDetails userDetails =
+              userDetailsService.loadUserByUsername(jwtService.extractUsername(token));
+          if (userDetails.isEnabled()) {
+            UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(
+                    userDetails, null, userDetails.getAuthorities());
+            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+          }
+        } catch (RuntimeException ignored) {
+          SecurityContextHolder.clearContext();
         }
-        chain.doFilter(request, response);
+      }
     }
+    chain.doFilter(request, response);
+  }
 }

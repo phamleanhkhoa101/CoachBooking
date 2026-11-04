@@ -1,32 +1,33 @@
 package com.coachbooking.repo;
 
+import com.coachbooking.domain.ChuyenXe;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
-import com.coachbooking.domain.ChuyenXe;
 
 public interface ChuyenXeRepository extends JpaRepository<ChuyenXe, Integer> {
 
-    List<ChuyenXe> findAllByOrderByNgayGioKhoiHanhAsc();
+  List<ChuyenXe> findAllByOrderByNgayGioKhoiHanhAsc();
 
-    long countByNgayGioKhoiHanhGreaterThanEqualAndNgayGioKhoiHanhLessThan(
-            LocalDateTime tu, LocalDateTime den);
+  long countByNgayGioKhoiHanhGreaterThanEqualAndNgayGioKhoiHanhLessThan(
+      LocalDateTime tu, LocalDateTime den);
 
-    boolean existsByMaXe(Integer maXe);
+  boolean existsByMaXe(Integer maXe);
 
-    boolean existsByMaTuyen(Integer maTuyen);
+  boolean existsByMaTuyen(Integer maTuyen);
 
-    boolean existsByMaTx(Integer maTx);
+  boolean existsByMaTx(Integer maTx);
 
-    boolean existsByMaXeAndNgayGioKhoiHanhBetween(Integer maXe, LocalDateTime tu, LocalDateTime den);
+  boolean existsByMaXeAndNgayGioKhoiHanhBetween(Integer maXe, LocalDateTime tu, LocalDateTime den);
 
-    boolean existsByMaXeAndNgayGioKhoiHanhBetweenAndMaChuyenNot(
-            Integer maXe, LocalDateTime tu, LocalDateTime den, Integer maChuyen);
+  boolean existsByMaXeAndNgayGioKhoiHanhBetweenAndMaChuyenNot(
+      Integer maXe, LocalDateTime tu, LocalDateTime den, Integer maChuyen);
 
-    @Query("""
+  @Query(
+      """
             select cx.maChuyen as maChuyen,
                    cx.maXe as maXe,
                    x.bienSoXe as bienSoXe,
@@ -52,9 +53,10 @@ public interface ChuyenXeRepository extends JpaRepository<ChuyenXe, Integer> {
             join TaiXe tx on tx.maTx = cx.maTx
             order by cx.ngayGioKhoiHanh
             """)
-    List<TripRow> findAllRows();
+  List<TripRow> findAllRows();
 
-    @Query("""
+  @Query(
+      """
             select cx.maChuyen as maChuyen,
                    cx.maXe as maXe,
                    x.bienSoXe as bienSoXe,
@@ -84,45 +86,46 @@ public interface ChuyenXeRepository extends JpaRepository<ChuyenXe, Integer> {
               and cx.ngayGioKhoiHanh < :den
             order by cx.ngayGioKhoiHanh
             """)
-    List<TripRow> search(@Param("diemDi") String diemDi,
-                         @Param("diemDen") String diemDen,
-                         @Param("tu") LocalDateTime tu,
-                         @Param("den") LocalDateTime den);
+  List<TripRow> search(
+      @Param("diemDi") String diemDi,
+      @Param("diemDen") String diemDen,
+      @Param("tu") LocalDateTime tu,
+      @Param("den") LocalDateTime den);
 
-    interface TripRow {
+  interface TripRow {
 
-        Integer getMaChuyen();
+    Integer getMaChuyen();
 
-        Integer getMaXe();
+    Integer getMaXe();
 
-        String getBienSoXe();
+    String getBienSoXe();
 
-        Integer getMaNhaXe();
+    Integer getMaNhaXe();
 
-        String getTenNhaXe();
+    String getTenNhaXe();
 
-        Integer getMaLoaiXe();
+    Integer getMaLoaiXe();
 
-        String getTenLoaiXe();
+    String getTenLoaiXe();
 
-        Integer getSoCho();
+    Integer getSoCho();
 
-        Integer getMaTuyen();
+    Integer getMaTuyen();
 
-        String getDiemDi();
+    String getDiemDi();
 
-        String getDiemDen();
+    String getDiemDen();
 
-        Integer getMaTx();
+    Integer getMaTx();
 
-        String getTenTx();
+    String getTenTx();
 
-        LocalDateTime getNgayGioKhoiHanh();
+    LocalDateTime getNgayGioKhoiHanh();
 
-        LocalDateTime getNgayGioDenDuKien();
+    LocalDateTime getNgayGioDenDuKien();
 
-        BigDecimal getGiaVeThucTe();
+    BigDecimal getGiaVeThucTe();
 
-        Long getSoVeDaBan();
-    }
+    Long getSoVeDaBan();
+  }
 }

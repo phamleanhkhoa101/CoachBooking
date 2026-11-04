@@ -45,7 +45,7 @@ const config: CrudConfig = {
       requiredOnCreate: true,
       help: 'Khi sửa: để trống nếu không đổi mật khẩu.',
     },
-    { name: 'email', label: 'Email', type: 'email', required: true, placeholder: 'nguoidung@qlbxmd.vn' },
+    { name: 'email', label: 'Email', type: 'email', required: true, placeholder: 'nguoidung@coachbooking.com' },
     {
       name: 'maQuyen',
       label: 'Quyền',

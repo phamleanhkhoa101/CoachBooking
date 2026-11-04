@@ -3,11 +3,11 @@ server:
 
 spring:
   application:
-    name: qlbxmd-backend
+    name: coachbooking-backend
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/qlbxmd}
-    username: ${SPRING_DATASOURCE_USERNAME:qlbxmd}
-    password: ${SPRING_DATASOURCE_PASSWORD:qlbxmd}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/coachbooking}
+    username: ${SPRING_DATASOURCE_USERNAME:coachbooking}
+    password: ${SPRING_DATASOURCE_PASSWORD:coachbooking}
   jpa:
     hibernate:
       ddl-auto: none
@@ -29,7 +29,7 @@ spring:
 
 app:
   jwt:
-    secret: ${APP_JWT_SECRET:qlbxmd-dev-secret-key-change-me-in-production-2026}
+    secret: ${APP_JWT_SECRET:coachbooking-dev-secret-key-change-me-in-production-2026}
     expiration-minutes: ${APP_JWT_EXPIRATION_MINUTES:720}
   cors:
     allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}

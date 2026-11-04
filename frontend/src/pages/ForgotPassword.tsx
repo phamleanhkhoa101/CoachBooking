@@ -41,7 +41,7 @@ export function ForgotPassword() {
         <div className="auth-brand">
           <div className="brand-logo">BX</div>
           <div>
-            <strong>QLBXMD</strong>
+            <strong>CoachBooking</strong>
             <span>Khôi phục mật khẩu</span>
           </div>
         </div>

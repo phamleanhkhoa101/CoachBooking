@@ -3,7 +3,7 @@ plugins {
     id 'org.springframework.boot' version '3.5.16'
 }
 
-group = 'vn.qlbxmd'
+group = 'com.coachbooking'
 version = '1.0.0'
 description = 'Hệ thống bán vé xe bến xe miền Đông'
 

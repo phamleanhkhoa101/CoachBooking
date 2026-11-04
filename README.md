@@ -1,4 +1,4 @@
-# QLBXMD — Hệ thống bán vé xe bến xe miền Đông
+# CoachBooking — Hệ thống bán vé xe bến xe miền Đông
 
 Bản viết lại của ứng dụng desktop C# (WinForms + EF6 + SQL Server) sang
 **Spring Boot 3 + React + PostgreSQL**. Mã nguồn C# cũ đã được gỡ khỏi repo;
@@ -54,7 +54,7 @@ chạy lại migration; dữ liệu cũ được giữ nguyên.
 | `kh2` | `KhachHang@123` | Khách hàng |
 
 Tài khoản được tạo bằng BCrypt ở lần khởi động backend đầu tiên
-(`backend/src/main/java/vn/qlbxmd/config/DataInitializer.java`).
+(`backend/src/main/java/com/coachbooking/config/DataInitializer.java`).
 
 ## Chạy khi phát triển (không dùng container cho backend/frontend)
 
@@ -87,7 +87,7 @@ npm run dev
 
 ```bash
 cd backend
-./gradlew clean bootJar   # build/libs/qlbxmd-backend-1.0.0.jar
+./gradlew clean bootJar   # build/libs/coachbooking-backend-1.0.0.jar
 ```
 
 Build Docker không cần `gradlew`/wrapper jar: image `gradle:9.1.0-jdk25` được dùng
@@ -96,9 +96,9 @@ trực tiếp trong `backend/Dockerfile`.
 Biến môi trường backend có thể ghi đè trực tiếp:
 
 ```text
-SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/qlbxmd
-SPRING_DATASOURCE_USERNAME=qlbxmd
-SPRING_DATASOURCE_PASSWORD=qlbxmd
+SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/coachbooking
+SPRING_DATASOURCE_USERNAME=coachbooking
+SPRING_DATASOURCE_PASSWORD=coachbooking
 APP_JWT_SECRET=<chuỗi tối thiểu 32 ký tự>
 APP_CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
 ```

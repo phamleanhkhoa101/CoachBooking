@@ -116,7 +116,7 @@ GitHub Actions chạy khi push vào `main`, `dev`, `feat/**`, `fix/**` và mọi
 ### Cấu hình SonarQube
 
 Project key, organization và host nằm trong `backend/build.gradle` (block `sonarqube`), đang trỏ tới
-`phamleanhkhoa101_QLBXMD` / `phamleanhkhoa101`.
+`phamleanhkhoa101_CoachBooking` / `phamleanhkhoa101`.
 
 1. Tạo token ở **My Account → Security** trên SonarCloud.
 2. Thêm secret `SONAR_TOKEN` trong GitHub repo (Settings → Secrets and variables → Actions).
@@ -125,8 +125,15 @@ Project key, organization và host nằm trong `backend/build.gradle` (block `so
 Không cần biến `SONAR_HOST_URL` vì host đã khai báo trong `build.gradle`. Khi chưa có token, bước Sonar tự bỏ qua.
 
 Định dạng code: `./gradlew spotlessApply` để tự sửa, `./gradlew spotlessCheck` để kiểm tra.
-Sonar đang bật `sonar.qualitygate.wait=true`, nên CI sẽ đỏ nếu quality gate fail. Hiện coverage
-mới khoảng 1,7% (chỉ có `ValidatorsTest`), trong khi gate "Sonar way" yêu cầu ≥80% trên New Code.
+
+CI **không** bật `sonar.qualitygate.wait=true`: gate "Sonar way" yêu cầu coverage ≥80% trên New Code
+mà project hiện chỉ có `ValidatorsTest` (coverage khoảng 1,7%), nên bật sẽ làm CI đỏ vô ích. Trạng thái
+gate vẫn hiển thị trên web UI của SonarCloud. Khi đã có test đủ coverage, bật lại bằng cách thêm
+`-Dsonar.qualitygate.wait=true` vào lệnh `gradle sonar` trong `.github/workflows/ci.yml`.
+
+Lưu ý: SonarCloud chỉ cấp quyền đọc quality gate cho main branch, nên job Sonar trong CI chỉ chạy
+khi push vào `main`. Main branch của project SonarCloud phải là `main` (không phải `master`), nếu không
+sẽ gặp lỗi *"Organization is not allowed to access data from non main branches"*.
 
 ### Phát hành image
 

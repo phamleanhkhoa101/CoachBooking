@@ -74,7 +74,7 @@ jacocoTestReport {
 
 sonarqube {
     properties {
-        property 'sonar.projectKey', 'phamleanhkhoa101_QLBXMD'
+        property 'sonar.projectKey', 'phamleanhkhoa101_CoachBooking'
         property 'sonar.organization', 'phamleanhkhoa101'
         property 'sonar.host.url', 'https://sonarcloud.io'
         property 'sonar.coverage.jacoco.xmlReportPaths',

@@ -48,9 +48,10 @@ jobs:
         run: gradle spotlessCheck build jacocoTestReport --no-daemon --stacktrace
 
       # SonarCloud chỉ cấp quyền đọc quality gate cho main branch của project
-      # (main branch phải là "main" - xem scripts/sonarcloud-setup.sh).
+      # (main branch của project SonarCloud phải là "main", không phải "master").
       # Không bật sonar.qualitygate.wait: gate "Sonar way" yêu cầu coverage >= 80%
       # trong khi project mới chỉ có ValidatorsTest, bật sẽ làm CI đỏ.
+      # Chi tiết: README.md -> CI/CD và SonarQube.
       - name: SonarCloud analysis (main branch only)
         if: env.SONAR_TOKEN != '' && github.ref == 'refs/heads/main'
         working-directory: backend

@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
-import { api, buildQuery, getErrorMessage } from '../api/client';
-import type { HoaDonDetail, HoaDonItem, VeItem } from '../api/types';
-import { PaidBadge } from '../components/Badge';
-import { DataTable, type DataTableColumn } from '../components/DataTable';
-import { FormField } from '../components/FormField';
-import { Modal } from '../components/Modal';
-import { useToast } from '../components/Toast';
-import { formatDateTime, formatVnd } from '../utils/format';
+import { api, buildQuery, getErrorMessage } from '../../api/client';
+import type { HoaDonDetail, HoaDonItem, VeItem } from '../../api/types';
+import { PaidBadge } from '../../components/common/Badge';
+import { DataTable, type DataTableColumn } from '../../components/table/DataTable';
+import { FormField } from '../../components/common/FormField';
+import { Modal } from '../../components/common/Modal';
+import { useToast } from '../../components/common/Toast';
+import { formatDateTime, formatVnd } from '../../utils/format';
 
 const PAYMENT_METHODS = ['Tiền mặt', 'Chuyển khoản', 'Thẻ ATM'];
 

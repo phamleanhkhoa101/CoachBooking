@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { ApiError, api, buildQuery, getErrorMessage } from '../api/client';
+import { ApiError, api, buildQuery, getErrorMessage } from '../../api/client';
 import type {
   ChuyenTimKiem,
   DatVeRequest,
@@ -7,13 +7,13 @@ import type {
   GheResponse,
   HoSo,
   TuyenDuong,
-} from '../api/types';
-import { useAuth } from '../auth/AuthContext';
-import { DataTable, type DataTableColumn } from '../components/DataTable';
-import { FormField } from '../components/FormField';
-import { SeatMap } from '../components/SeatMap';
-import { useToast } from '../components/Toast';
-import { formatDate, formatDateTime, formatTime, formatVnd, todayISO } from '../utils/format';
+} from '../../api/types';
+import { useAuth } from '../../auth/AuthContext';
+import { DataTable, type DataTableColumn } from '../../components/table/DataTable';
+import { FormField } from '../../components/common/FormField';
+import { SeatMap } from './components/SeatMap';
+import { useToast } from '../../components/common/Toast';
+import { formatDate, formatDateTime, formatTime, formatVnd, todayISO } from '../../utils/format';
 
 const STAFF_METHODS = ['Tiền mặt', 'Chuyển khoản', 'Thẻ ATM'];
 

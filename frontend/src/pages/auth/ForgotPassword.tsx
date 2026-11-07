@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { apiRequest, getErrorMessage } from '../api/client';
-import { FormField } from '../components/FormField';
+import { apiRequest, getErrorMessage } from '../../api/client';
+import { FormField } from '../../components/common/FormField';
 
 export function ForgotPassword() {
   const [tenDangNhap, setTenDangNhap] = useState('');

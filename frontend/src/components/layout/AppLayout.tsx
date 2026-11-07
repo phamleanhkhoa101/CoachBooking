@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { useAuth } from '../auth/AuthContext';
-import type { Quyen } from '../api/types';
+import { useAuth } from '../../auth/AuthContext';
+import type { Quyen } from '../../api/types';
 
 const ICON_PATHS: Record<string, string> = {
   dashboard: 'M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z',

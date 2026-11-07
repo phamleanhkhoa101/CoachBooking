@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { api, getErrorMessage } from '../api/client';
-import type { HoSo } from '../api/types';
-import { FormField } from '../components/FormField';
-import { useToast } from '../components/Toast';
-import { toDateInput } from '../utils/format';
+import { api, getErrorMessage } from '../../api/client';
+import type { HoSo } from '../../api/types';
+import { FormField } from '../../components/common/FormField';
+import { useToast } from '../../components/common/Toast';
+import { toDateInput } from '../../utils/format';
 
 function isStrongPassword(value: string): boolean {
   return (

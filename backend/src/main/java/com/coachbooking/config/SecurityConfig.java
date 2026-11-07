@@ -49,7 +49,12 @@ public class SecurityConfig {
                         "/api/auth/user/login",
                         "/api/auth/admin/login",
                         "/api/auth/register",
-                        "/api/auth/quen-mat-khau")
+                        "/api/auth/quen-mat-khau",
+                        "/api/tuyen-duong",
+                        "/api/tuyen-duong/*",
+                        "/api/chuyen-xe/tim",
+                        "/api/nha-xe",
+                        "/api/nha-xe/*")
                     .permitAll()
                     .requestMatchers("/actuator/health")
                     .permitAll()

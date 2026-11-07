@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { getErrorMessage } from '../api/client';
-import { homePathFor, useAuth } from '../auth/AuthContext';
-import { isAdminPortal } from '../auth/portal';
-import { FormField } from '../components/FormField';
+import { getErrorMessage } from '../../api/client';
+import { homePathFor, useAuth } from '../../auth/AuthContext';
+import { isAdminPortal } from '../../auth/portal';
+import { FormField } from '../../components/common/FormField';
 
 export function Login() {
   const { nguoiDung, login } = useAuth();

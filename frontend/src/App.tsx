@@ -1,29 +1,30 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import { AuthProvider, RequireRole, homePathFor, useAuth } from './auth/AuthContext';
-import { AppLayout } from './components/AppLayout';
-import { ToastProvider } from './components/Toast';
+import { AuthProvider, RequireRole, useAuth } from './auth/AuthContext';
+import { AppLayout } from './components/layout/AppLayout';
+import { ToastProvider } from './components/common/Toast';
 import { isAdminPortal } from './auth/portal';
-import { Accounts } from './pages/Accounts';
-import { AdminDashboard } from './pages/AdminDashboard';
-import { AdminBooking } from './pages/AdminBooking';
-import { BusCompanies } from './pages/BusCompanies';
-import { CustomerHistory } from './pages/CustomerHistory';
-import { CustomerBooking } from './pages/CustomerBooking';
-import { Customers } from './pages/Customers';
-import { Drivers } from './pages/Drivers';
-import { Employees } from './pages/Employees';
-import { ForgotPassword } from './pages/ForgotPassword';
-import { Invoices } from './pages/Invoices';
-import { Login } from './pages/Login';
-import { Prices } from './pages/Prices';
-import { Profile } from './pages/Profile';
-import { Register } from './pages/Register';
-import { RoutesPage } from './pages/Routes';
-import { Trips } from './pages/Trips';
-import { VehicleTypes } from './pages/VehicleTypes';
-import { Vehicles } from './pages/Vehicles';
+import { Accounts } from './pages/admin/system/Accounts';
+import { AdminDashboard } from './pages/admin/AdminDashboard';
+import { AdminBooking } from './pages/admin/AdminBooking';
+import { BusCompanies } from './pages/admin/operations/BusCompanies';
+import { CustomerHistory } from './pages/customer/CustomerHistory';
+import { CustomerBooking } from './pages/customer/CustomerBooking';
+import { Customers } from './pages/admin/system/Customers';
+import { Drivers } from './pages/admin/operations/Drivers';
+import { Employees } from './pages/admin/system/Employees';
+import { ForgotPassword } from './pages/auth/ForgotPassword';
+import { Home } from './pages/customer/Home';
+import { Invoices } from './pages/admin/Invoices';
+import { Login } from './pages/auth/Login';
+import { Prices } from './pages/admin/operations/Prices';
+import { Profile } from './pages/admin/Profile';
+import { Register } from './pages/auth/Register';
+import { RoutesPage } from './pages/admin/operations/Routes';
+import { Trips } from './pages/admin/operations/Trips';
+import { VehicleTypes } from './pages/admin/operations/VehicleTypes';
+import { Vehicles } from './pages/admin/operations/Vehicles';
 
-function HomeRedirect() {
+function HomeRoute() {
   const { nguoiDung, loading } = useAuth();
   if (loading) {
     return (
@@ -32,11 +33,13 @@ function HomeRedirect() {
       </div>
     );
   }
-  if (!nguoiDung) return <Navigate to="/login" replace />;
+  // Nếu là cổng Admin (port 3001) thì chuyển hướng vào /admin hoặc /login
   if (isAdminPortal()) {
+    if (!nguoiDung) return <Navigate to="/login" replace />;
     return <Navigate to="/admin" replace />;
   }
-  return <Navigate to={homePathFor(nguoiDung.quyen)} replace />;
+  // Cổng Khách hàng (port 3000): hiển thị Trang chủ (Home)
+  return <Home />;
 }
 
 export function App() {
@@ -45,7 +48,7 @@ export function App() {
       <AuthProvider>
         <ToastProvider>
           <Routes>
-            <Route path="/" element={<HomeRedirect />} />
+            <Route path="/" element={<HomeRoute />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -104,7 +107,7 @@ export function App() {
               <Route path="*" element={<Navigate to="/app/dat-ve" replace />} />
             </Route>
 
-            <Route path="*" element={<HomeRedirect />} />
+            <Route path="*" element={<HomeRoute />} />
           </Routes>
         </ToastProvider>
       </AuthProvider>

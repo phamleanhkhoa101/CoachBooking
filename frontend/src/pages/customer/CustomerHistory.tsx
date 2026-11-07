@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { api, getErrorMessage } from '../api/client';
-import type { HoaDonDetail, HoaDonKhachHang, VeItem } from '../api/types';
-import { PaidBadge } from '../components/Badge';
-import { FormField } from '../components/FormField';
-import { Modal } from '../components/Modal';
-import { useToast } from '../components/Toast';
-import { formatDateTime, formatVnd } from '../utils/format';
+import { api, getErrorMessage } from '../../api/client';
+import type { HoaDonDetail, HoaDonKhachHang, VeItem } from '../../api/types';
+import { PaidBadge } from '../../components/common/Badge';
+import { FormField } from '../../components/common/FormField';
+import { Modal } from '../../components/common/Modal';
+import { useToast } from '../../components/common/Toast';
+import { formatDateTime, formatVnd } from '../../utils/format';
 
 const PAYMENT_METHODS = ['Tiền mặt', 'Chuyển khoản', 'Thẻ ATM'];
 

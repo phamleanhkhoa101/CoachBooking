@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { api, getErrorMessage } from '../api/client';
-import type { Quyen, Row } from '../api/types';
-import { useAuth } from '../auth/AuthContext';
+import { api, getErrorMessage } from '../../api/client';
+import type { Quyen, Row } from '../../api/types';
+import { useAuth } from '../../auth/AuthContext';
 import { DataTable, type DataTableColumn } from './DataTable';
-import { FormField, type FormFieldType, type SelectOption } from './FormField';
-import { Modal } from './Modal';
-import { useToast } from './Toast';
+import { FormField, type FormFieldType, type SelectOption } from '../common/FormField';
+import { Modal } from '../common/Modal';
+import { useToast } from '../common/Toast';
 
 export type CrudRefs = Record<string, Row[]>;
 

@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { apiRequest, getErrorMessage } from '../api/client';
-import { homePathFor, useAuth } from '../auth/AuthContext';
-import { isAdminPortal } from '../auth/portal';
-import { FormField } from '../components/FormField';
+import { apiRequest, getErrorMessage } from '../../api/client';
+import { homePathFor, useAuth } from '../../auth/AuthContext';
+import { isAdminPortal } from '../../auth/portal';
+import { FormField } from '../../components/common/FormField';
 
 const PASSWORD_HINT = 'Tối thiểu 8 ký tự, gồm chữ hoa, chữ thường, chữ số và ký tự đặc biệt.';
 

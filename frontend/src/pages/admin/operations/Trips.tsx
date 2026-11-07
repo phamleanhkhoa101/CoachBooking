@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { api, getErrorMessage } from '../api/client';
-import type { ChuyenXe, TaiXe, TuyenDuong, Xe } from '../api/types';
-import { useAuth } from '../auth/AuthContext';
-import { Badge } from '../components/Badge';
-import { DataTable, type DataTableColumn } from '../components/DataTable';
-import { FormField } from '../components/FormField';
-import { Modal } from '../components/Modal';
-import { useToast } from '../components/Toast';
-import { formatDateTime, formatVnd, toDateTimeInput } from '../utils/format';
+import { api, getErrorMessage } from '../../../api/client';
+import type { ChuyenXe, TaiXe, TuyenDuong, Xe } from '../../../api/types';
+import { useAuth } from '../../../auth/AuthContext';
+import { Badge } from '../../../components/common/Badge';
+import { DataTable, type DataTableColumn } from '../../../components/table/DataTable';
+import { FormField } from '../../../components/common/FormField';
+import { Modal } from '../../../components/common/Modal';
+import { useToast } from '../../../components/common/Toast';
+import { formatDateTime, formatVnd, toDateTimeInput } from '../../../utils/format';
 
 interface TripForm {
   maXe: string;

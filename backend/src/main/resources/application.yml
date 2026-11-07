@@ -32,7 +32,7 @@ app:
     secret: ${APP_JWT_SECRET:coachbooking-dev-secret-key-change-me-in-production-2026}
     expiration-minutes: ${APP_JWT_EXPIRATION_MINUTES:720}
   cors:
-    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000,http://localhost:3001}
 
 management:
   endpoints:

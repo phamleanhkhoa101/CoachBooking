@@ -27,6 +27,16 @@ public class AuthController {
     return authService.login(request);
   }
 
+  @PostMapping("/user/login")
+  public AuthService.AuthResponse loginUser(@Valid @RequestBody AuthService.LoginRequest request) {
+    return authService.loginUser(request);
+  }
+
+  @PostMapping("/admin/login")
+  public AuthService.AuthResponse loginAdmin(@Valid @RequestBody AuthService.LoginRequest request) {
+    return authService.loginAdmin(request);
+  }
+
   @PostMapping("/register")
   public Map<String, String> register(@Valid @RequestBody AuthService.RegisterRequest request) {
     return authService.register(request);

@@ -45,7 +45,11 @@ public class SecurityConfig {
         .authorizeHttpRequests(
             auth ->
                 auth.requestMatchers(
-                        "/api/auth/login", "/api/auth/register", "/api/auth/quen-mat-khau")
+                        "/api/auth/login",
+                        "/api/auth/user/login",
+                        "/api/auth/admin/login",
+                        "/api/auth/register",
+                        "/api/auth/quen-mat-khau")
                     .permitAll()
                     .requestMatchers("/actuator/health")
                     .permitAll()
@@ -78,7 +82,9 @@ public class SecurityConfig {
 
   @Bean
   public CorsConfigurationSource corsConfigurationSource(
-      @Value("${app.cors.allowed-origins:http://localhost:5173}") String allowedOrigins) {
+      @Value(
+              "${app.cors.allowed-origins:http://localhost:5173,http://localhost:3000,http://localhost:3001}")
+          String allowedOrigins) {
     CorsConfiguration configuration = new CorsConfiguration();
     configuration.setAllowedOrigins(
         Arrays.stream(allowedOrigins.split(","))

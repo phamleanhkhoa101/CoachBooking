@@ -22,7 +22,25 @@ Mã trạng thái: `400` dữ liệu không hợp lệ, `401` chưa đăng nhậ
 
 ## 1. Xác thực
 
-### `POST /api/auth/login` (công khai)
+### `POST /api/auth/user/login` (công khai)
+
+Đăng nhập dành cho cổng Khách hàng (`KhachHang`). Nếu tài khoản có quyền `Admin` hoặc `NhanVien`, hệ thống trả về HTTP 403 yêu cầu đăng nhập tại cổng Quản trị.
+
+```json
+{ "tenDangNhap": "kh1", "matKhau": "KhachHang@123" }
+```
+
+### `POST /api/auth/admin/login` (công khai)
+
+Đăng nhập dành cho cổng Quản trị viên (`Admin`) và Nhân viên (`NhanVien`). Nếu tài khoản là `KhachHang`, hệ thống trả về HTTP 403 từ chối quyền truy cập.
+
+```json
+{ "tenDangNhap": "admin", "matKhau": "Admin@123" }
+```
+
+### `POST /api/auth/login` (công khai - kế thừa)
+
+Đăng nhập tổng quát (hỗ trợ mọi vai trò hợp lệ).
 
 ```json
 { "tenDangNhap": "admin", "matKhau": "Admin@123" }

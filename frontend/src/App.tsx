@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider, RequireRole, homePathFor, useAuth } from './auth/AuthContext';
 import { AppLayout } from './components/AppLayout';
 import { ToastProvider } from './components/Toast';
+import { isAdminPortal } from './auth/portal';
 import { Accounts } from './pages/Accounts';
 import { AdminDashboard } from './pages/AdminDashboard';
 import { AdminBooking } from './pages/AdminBooking';
@@ -32,6 +33,9 @@ function HomeRedirect() {
     );
   }
   if (!nguoiDung) return <Navigate to="/login" replace />;
+  if (isAdminPortal()) {
+    return <Navigate to="/admin" replace />;
+  }
   return <Navigate to={homePathFor(nguoiDung.quyen)} replace />;
 }
 

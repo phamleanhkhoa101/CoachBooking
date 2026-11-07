@@ -60,11 +60,11 @@ public class DataInitializer implements CommandLineRunner {
   @Override
   @Transactional
   public void run(String... args) {
-    TaiKhoan admin = ensureAccount("admin", "admin@coachbooking.com", "Admin@123", 1);
-    TaiKhoan nv1 = ensureAccount("nv1", "nv1@coachbooking.com", "NhanVien@123", 2);
-    TaiKhoan nv2 = ensureAccount("nv2", "nv2@coachbooking.com", "NhanVien@123", 2);
-    TaiKhoan kh1 = ensureAccount("kh1", "kh1@coachbooking.com", "KhachHang@123", 3);
-    TaiKhoan kh2 = ensureAccount("kh2", "kh2@coachbooking.com", "KhachHang@123", 3);
+    TaiKhoan admin = ensureAccount("admin", "admin@gmail.com", "Abc@123", 1);
+    TaiKhoan nv1 = ensureAccount("nv1", "nv1@gmail.com", "Abc@123", 2);
+    TaiKhoan nv2 = ensureAccount("nv2", "nv2@gmail.com", "Abc@123", 2);
+    TaiKhoan kh1 = ensureAccount("kh1", "kh1@gmail.com", "Abc@123", 3);
+    TaiKhoan kh2 = ensureAccount("kh2", "kh2@gmail.com", "Abc@123", 3);
 
     linkNhanVien("0912345678", admin);
     linkNhanVien("0912345679", nv1);

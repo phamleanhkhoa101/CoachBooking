@@ -14,7 +14,7 @@ import type { LoginResponse, NguoiDung, Quyen } from '../api/types';
 interface AuthContextValue {
   nguoiDung: NguoiDung | null;
   loading: boolean;
-  login: (tenDangNhap: string, matKhau: string) => Promise<NguoiDung>;
+  login: (tenDangNhap: string, matKhau: string, portal?: 'user' | 'admin') => Promise<NguoiDung>;
   logout: () => void;
 }
 
@@ -54,19 +54,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, []);
 
-  const login = useCallback(async (tenDangNhap: string, matKhau: string) => {
-    const data = await apiRequest<LoginResponse>(
-      '/auth/login',
-      {
-        method: 'POST',
-        body: JSON.stringify({ tenDangNhap, matKhau }),
-      },
-      { redirectOn401: false },
-    );
-    setToken(data.token);
-    setNguoiDung(data.nguoiDung);
-    return data.nguoiDung;
-  }, []);
+  const login = useCallback(
+    async (tenDangNhap: string, matKhau: string, portal?: 'user' | 'admin') => {
+      const endpoint =
+        portal === 'admin'
+          ? '/auth/admin/login'
+          : portal === 'user'
+            ? '/auth/user/login'
+            : '/auth/login';
+      const data = await apiRequest<LoginResponse>(
+        endpoint,
+        {
+          method: 'POST',
+          body: JSON.stringify({ tenDangNhap, matKhau }),
+        },
+        { redirectOn401: false },
+      );
+      setToken(data.token);
+      setNguoiDung(data.nguoiDung);
+      return data.nguoiDung;
+    },
+    [],
+  );
 
   const logout = useCallback(() => {
     setToken(null);

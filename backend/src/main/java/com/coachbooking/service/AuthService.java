@@ -53,7 +53,7 @@ public class AuthService {
     this.jwtService = jwtService;
   }
 
-  public AuthResponse login(LoginRequest request) {
+  private TaiKhoan authenticate(LoginRequest request) {
     TaiKhoan taiKhoan =
         taiKhoanRepository
             .findByTenDangNhap(request.tenDangNhap().trim())
@@ -64,7 +64,33 @@ public class AuthService {
     if (!Boolean.TRUE.equals(taiKhoan.getTrangThai())) {
       throw ApiException.forbidden("Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.");
     }
+    return taiKhoan;
+  }
+
+  public AuthResponse login(LoginRequest request) {
+    TaiKhoan taiKhoan = authenticate(request);
     String tenQuyen = roleName(taiKhoan);
+    return new AuthResponse(
+        jwtService.generate(taiKhoan, tenQuyen), toNguoiDung(taiKhoan, tenQuyen));
+  }
+
+  public AuthResponse loginUser(LoginRequest request) {
+    TaiKhoan taiKhoan = authenticate(request);
+    String tenQuyen = roleName(taiKhoan);
+    if (!"KhachHang".equalsIgnoreCase(tenQuyen)) {
+      throw ApiException.forbidden(
+          "Tài khoản quản trị/nhân viên vui lòng đăng nhập tại cổng Quản trị viên.");
+    }
+    return new AuthResponse(
+        jwtService.generate(taiKhoan, tenQuyen), toNguoiDung(taiKhoan, tenQuyen));
+  }
+
+  public AuthResponse loginAdmin(LoginRequest request) {
+    TaiKhoan taiKhoan = authenticate(request);
+    String tenQuyen = roleName(taiKhoan);
+    if ("KhachHang".equalsIgnoreCase(tenQuyen)) {
+      throw ApiException.forbidden("Tài khoản khách hàng không có quyền truy cập quản trị.");
+    }
     return new AuthResponse(
         jwtService.generate(taiKhoan, tenQuyen), toNguoiDung(taiKhoan, tenQuyen));
   }

@@ -38,7 +38,6 @@ public class ChuyenXeController {
   }
 
   @GetMapping("/tim")
-  @PreAuthorize("isAuthenticated()")
   public List<ChuyenXeRepository.TripRow> search(
       @RequestParam(required = false) String diemDi,
       @RequestParam(required = false) String diemDen,

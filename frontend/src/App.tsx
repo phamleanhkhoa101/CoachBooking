@@ -1,5 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import { AuthProvider, RequireRole, homePathFor, useAuth } from './auth/AuthContext';
+import { AuthProvider, RequireRole, useAuth } from './auth/AuthContext';
 import { AppLayout } from './components/AppLayout';
 import { ToastProvider } from './components/Toast';
 import { isAdminPortal } from './auth/portal';
@@ -13,6 +13,7 @@ import { Customers } from './pages/Customers';
 import { Drivers } from './pages/Drivers';
 import { Employees } from './pages/Employees';
 import { ForgotPassword } from './pages/ForgotPassword';
+import { Home } from './pages/Home';
 import { Invoices } from './pages/Invoices';
 import { Login } from './pages/Login';
 import { Prices } from './pages/Prices';
@@ -23,7 +24,7 @@ import { Trips } from './pages/Trips';
 import { VehicleTypes } from './pages/VehicleTypes';
 import { Vehicles } from './pages/Vehicles';
 
-function HomeRedirect() {
+function HomeRoute() {
   const { nguoiDung, loading } = useAuth();
   if (loading) {
     return (
@@ -32,11 +33,13 @@ function HomeRedirect() {
       </div>
     );
   }
-  if (!nguoiDung) return <Navigate to="/login" replace />;
+  // Nếu là cổng Admin (port 3001) thì chuyển hướng vào /admin hoặc /login
   if (isAdminPortal()) {
+    if (!nguoiDung) return <Navigate to="/login" replace />;
     return <Navigate to="/admin" replace />;
   }
-  return <Navigate to={homePathFor(nguoiDung.quyen)} replace />;
+  // Cổng Khách hàng (port 3000): hiển thị Trang chủ (Home)
+  return <Home />;
 }
 
 export function App() {
@@ -45,7 +48,7 @@ export function App() {
       <AuthProvider>
         <ToastProvider>
           <Routes>
-            <Route path="/" element={<HomeRedirect />} />
+            <Route path="/" element={<HomeRoute />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -104,7 +107,7 @@ export function App() {
               <Route path="*" element={<Navigate to="/app/dat-ve" replace />} />
             </Route>
 
-            <Route path="*" element={<HomeRedirect />} />
+            <Route path="*" element={<HomeRoute />} />
           </Routes>
         </ToastProvider>
       </AuthProvider>

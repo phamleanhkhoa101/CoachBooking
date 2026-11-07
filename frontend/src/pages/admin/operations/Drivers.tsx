@@ -1,6 +1,6 @@
-import { StatusBadge } from '../components/Badge';
-import { CrudPage, type CrudConfig } from '../components/CrudPage';
-import { formatDate, gioiTinhLabel } from '../utils/format';
+import { StatusBadge } from '../../../components/common/Badge';
+import { CrudPage, type CrudConfig } from '../../../components/table/CrudPage';
+import { formatDate, gioiTinhLabel } from '../../../utils/format';
 
 const config: CrudConfig = {
   title: 'Tài xế',

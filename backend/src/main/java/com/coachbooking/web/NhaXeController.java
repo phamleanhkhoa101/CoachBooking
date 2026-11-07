@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/nha-xe")
-@PreAuthorize("hasAnyRole('Admin','NhanVien')")
 public class NhaXeController {
 
   private final NhaXeRepository nhaXeRepository;

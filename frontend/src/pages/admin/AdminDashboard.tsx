@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { api, buildQuery, getErrorMessage } from '../api/client';
-import type { ThongKe } from '../api/types';
-import { useAuth } from '../auth/AuthContext';
-import { useToast } from '../components/Toast';
-import { daysAgoISO, formatDate, formatNumber, formatVnd, todayISO } from '../utils/format';
+import { api, buildQuery, getErrorMessage } from '../../api/client';
+import type { ThongKe } from '../../api/types';
+import { useAuth } from '../../auth/AuthContext';
+import { useToast } from '../../components/common/Toast';
+import { daysAgoISO, formatDate, formatNumber, formatVnd, todayISO } from '../../utils/format';
 
 export function AdminDashboard() {
   const { nguoiDung } = useAuth();

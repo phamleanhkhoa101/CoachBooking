@@ -1,5 +1,5 @@
-import { Badge, StatusBadge } from '../components/Badge';
-import { CrudPage, refName, type CrudConfig } from '../components/CrudPage';
+import { Badge, StatusBadge } from '../../../components/common/Badge';
+import { CrudPage, refName, type CrudConfig } from '../../../components/table/CrudPage';
 
 const config: CrudConfig = {
   title: 'Tài khoản',

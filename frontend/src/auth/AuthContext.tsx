@@ -22,7 +22,7 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 /** Trang mặc định theo quyền sau khi đăng nhập. */
 export function homePathFor(quyen: Quyen): string {
-  return quyen === 'KhachHang' ? '/app/dat-ve' : '/admin';
+  return quyen === 'KhachHang' ? '/' : '/admin';
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {

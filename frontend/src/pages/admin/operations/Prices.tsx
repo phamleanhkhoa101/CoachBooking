@@ -1,5 +1,5 @@
-import { CrudPage, refName, type CrudConfig } from '../components/CrudPage';
-import { formatVnd } from '../utils/format';
+import { CrudPage, refName, type CrudConfig } from '../../../components/table/CrudPage';
+import { formatVnd } from '../../../utils/format';
 
 const config: CrudConfig = {
   title: 'Giá vé',

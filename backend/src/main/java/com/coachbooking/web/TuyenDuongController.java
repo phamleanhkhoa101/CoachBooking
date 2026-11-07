@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/tuyen-duong")
-@PreAuthorize("hasAnyRole('Admin','NhanVien')")
 public class TuyenDuongController {
 
   private final TuyenDuongRepository tuyenDuongRepository;
@@ -40,13 +39,11 @@ public class TuyenDuongController {
   }
 
   @GetMapping
-  @PreAuthorize("isAuthenticated()")
   public List<TuyenDuong> list() {
     return tuyenDuongRepository.findAll();
   }
 
   @GetMapping("/{id}")
-  @PreAuthorize("isAuthenticated()")
   public TuyenDuong get(@PathVariable Integer id) {
     return tuyenDuongRepository
         .findById(id)

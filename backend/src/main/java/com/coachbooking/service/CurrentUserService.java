@@ -1,10 +1,11 @@
 package com.coachbooking.service;
 
 import com.coachbooking.common.ApiException;
-import com.coachbooking.domain.Quyen;
-import com.coachbooking.domain.TaiKhoan;
-import com.coachbooking.repo.QuyenRepository;
-import com.coachbooking.repo.TaiKhoanRepository;
+import com.coachbooking.domain.Account;
+import com.coachbooking.domain.Role;
+import com.coachbooking.repo.AccountRepository;
+import com.coachbooking.repo.RoleRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -12,39 +13,31 @@ import org.springframework.stereotype.Service;
 @Service
 public class CurrentUserService {
 
-  private final TaiKhoanRepository taiKhoanRepository;
-  private final QuyenRepository quyenRepository;
+  private final AccountRepository accountRepository;
+  private final RoleRepository roleRepository;
 
-  public CurrentUserService(
-      TaiKhoanRepository taiKhoanRepository, QuyenRepository quyenRepository) {
-    this.taiKhoanRepository = taiKhoanRepository;
-    this.quyenRepository = quyenRepository;
+  public CurrentUserService(AccountRepository accountRepository, RoleRepository roleRepository) {
+    this.accountRepository = accountRepository;
+    this.roleRepository = roleRepository;
   }
 
-  public TaiKhoan requireTaiKhoan() {
+  public Account requireAccount() {
     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
     if (authentication == null
         || !authentication.isAuthenticated()
         || "anonymousUser".equals(authentication.getName())) {
-      throw new ApiException(
-          org.springframework.http.HttpStatus.UNAUTHORIZED, "Vui lòng đăng nhập để tiếp tục.");
+      throw new ApiException(HttpStatus.UNAUTHORIZED, "Vui lòng đăng nhập để tiếp tục.");
     }
-    return taiKhoanRepository
-        .findByTenDangNhap(authentication.getName())
-        .orElseThrow(
-            () ->
-                new ApiException(
-                    org.springframework.http.HttpStatus.UNAUTHORIZED, "Tài khoản không tồn tại."));
+    return accountRepository
+        .findByUsername(authentication.getName())
+        .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "Tài khoản không tồn tại."));
   }
 
-  public String roleName(TaiKhoan taiKhoan) {
-    return quyenRepository
-        .findById(taiKhoan.getMaQuyen())
-        .map(Quyen::getTenQuyen)
-        .orElse("KhachHang");
+  public String roleName(Account account) {
+    return roleRepository.findById(account.getRoleId()).map(Role::getRoleName).orElse("KhachHang");
   }
 
-  public boolean isCustomer(TaiKhoan taiKhoan) {
-    return "KhachHang".equals(roleName(taiKhoan));
+  public boolean isCustomer(Account account) {
+    return "KhachHang".equals(roleName(account));
   }
 }

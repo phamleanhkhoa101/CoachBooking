@@ -1,9 +1,9 @@
 package com.coachbooking.security;
 
-import com.coachbooking.domain.Quyen;
-import com.coachbooking.domain.TaiKhoan;
-import com.coachbooking.repo.QuyenRepository;
-import com.coachbooking.repo.TaiKhoanRepository;
+import com.coachbooking.domain.Account;
+import com.coachbooking.domain.Role;
+import com.coachbooking.repo.AccountRepository;
+import com.coachbooking.repo.RoleRepository;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -13,28 +13,27 @@ import org.springframework.stereotype.Service;
 @Service
 public class AppUserDetailsService implements UserDetailsService {
 
-  private final TaiKhoanRepository taiKhoanRepository;
-  private final QuyenRepository quyenRepository;
+  private final AccountRepository accountRepository;
+  private final RoleRepository roleRepository;
 
-  public AppUserDetailsService(
-      TaiKhoanRepository taiKhoanRepository, QuyenRepository quyenRepository) {
-    this.taiKhoanRepository = taiKhoanRepository;
-    this.quyenRepository = quyenRepository;
+  public AppUserDetailsService(AccountRepository accountRepository, RoleRepository roleRepository) {
+    this.accountRepository = accountRepository;
+    this.roleRepository = roleRepository;
   }
 
   @Override
   public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-    TaiKhoan taiKhoan =
-        taiKhoanRepository
-            .findByTenDangNhap(username)
+    Account account =
+        accountRepository
+            .findByUsername(username)
             .orElseThrow(
                 () -> new UsernameNotFoundException("Không tìm thấy tài khoản: " + username));
-    String tenQuyen =
-        quyenRepository.findById(taiKhoan.getMaQuyen()).map(Quyen::getTenQuyen).orElse("KhachHang");
-    return User.withUsername(taiKhoan.getTenDangNhap())
-        .password(taiKhoan.getMatKhau())
-        .authorities("ROLE_" + tenQuyen)
-        .disabled(!Boolean.TRUE.equals(taiKhoan.getTrangThai()))
+    String roleName =
+        roleRepository.findById(account.getRoleId()).map(Role::getRoleName).orElse("KhachHang");
+    return User.withUsername(account.getUsername())
+        .password(account.getPassword())
+        .authorities("ROLE_" + roleName)
+        .disabled(!Boolean.TRUE.equals(account.getIsActive()))
         .build();
   }
 }

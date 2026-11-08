@@ -4,73 +4,99 @@ import { formatVnd } from '../../../utils/format';
 const config: CrudConfig = {
   title: 'Giá vé',
   subtitle: 'Bảng giá theo cặp (nhà xe, loại xe, tuyến đường).',
-  endpoint: 'gia-ve',
-  idKey: 'maGv',
-  searchKeys: ['maGv', 'giaVe'],
+  endpoint: 'ticket-prices',
+  idKey: 'priceId',
+  searchKeys: ['priceId', 'price', 'maGv', 'giaVe'],
   createLabel: 'Thêm giá vé',
   searchPlaceholder: 'Tìm theo mã giá vé…',
   refs: [
-    { key: 'nha-xe', endpoint: 'nha-xe' },
-    { key: 'loai-xe', endpoint: 'loai-xe' },
-    { key: 'tuyen-duong', endpoint: 'tuyen-duong' },
+    { key: 'bus-companies', endpoint: 'bus-companies' },
+    { key: 'vehicle-types', endpoint: 'vehicle-types' },
+    { key: 'routes', endpoint: 'routes' },
   ],
   columns: [
-    { key: 'maGv', label: 'Mã', width: '70px' },
     {
-      key: 'maNx',
+      key: 'priceId',
+      label: 'Mã',
+      width: '70px',
+      render: (row) => row.priceId ?? row.maGv,
+    },
+    {
+      key: 'companyId',
       label: 'Nhà xe',
-      render: (row, refs) => refName(refs, 'nha-xe', 'maNx', row.maNx, 'tenNx'),
-    },
-    {
-      key: 'maLx',
-      label: 'Loại xe',
-      render: (row, refs) => refName(refs, 'loai-xe', 'maLx', row.maLx, 'tenLx'),
-    },
-    {
-      key: 'maTuyen',
-      label: 'Tuyến',
       render: (row, refs) => {
-        const tuyen = (refs['tuyen-duong'] ?? []).find((item) => item.maTuyen === row.maTuyen);
-        return tuyen ? `${tuyen.diemDi} → ${tuyen.diemDen}` : '—';
+        const id = row.companyId ?? row.maNx;
+        const name = refName(refs, 'bus-companies', 'companyId', id, 'companyName');
+        return name !== '—' ? name : refName(refs, 'bus-companies', 'maNx', id, 'tenNx');
       },
     },
     {
-      key: 'giaVe',
+      key: 'typeId',
+      label: 'Loại xe',
+      render: (row, refs) => {
+        const id = row.typeId ?? row.maLx;
+        const name = refName(refs, 'vehicle-types', 'typeId', id, 'typeName');
+        return name !== '—' ? name : refName(refs, 'vehicle-types', 'maLx', id, 'tenLx');
+      },
+    },
+    {
+      key: 'routeId',
+      label: 'Tuyến',
+      render: (row, refs) => {
+        const id = row.routeId ?? row.maTuyen;
+        const routeList = refs['routes'] ?? [];
+        const route = routeList.find((item) => (item.routeId ?? item.maTuyen) === id);
+        if (!route) return '—';
+        const from = route.departure ?? route.diemDi;
+        const to = route.destination ?? route.diemDen;
+        return `${from} → ${to}`;
+      },
+    },
+    {
+      key: 'price',
       label: 'Giá vé',
       align: 'right',
-      render: (row) => <strong className="text-primary">{formatVnd(row.giaVe)}</strong>,
+      render: (row) => <strong className="text-primary">{formatVnd(row.price ?? row.giaVe)}</strong>,
     },
   ],
   fields: [
     {
-      name: 'maNx',
+      name: 'companyId',
       label: 'Nhà xe',
       type: 'select',
       required: true,
       asNumber: true,
-      options: (refs) => (refs['nha-xe'] ?? []).map((item) => ({ value: String(item.maNx), label: String(item.tenNx) })),
+      options: (refs) =>
+        (refs['bus-companies'] ?? []).map((item) => ({
+          value: String(item.companyId ?? item.maNx),
+          label: String(item.companyName ?? item.tenNx),
+        })),
     },
     {
-      name: 'maLx',
+      name: 'typeId',
       label: 'Loại xe',
       type: 'select',
       required: true,
       asNumber: true,
-      options: (refs) => (refs['loai-xe'] ?? []).map((item) => ({ value: String(item.maLx), label: String(item.tenLx) })),
+      options: (refs) =>
+        (refs['vehicle-types'] ?? []).map((item) => ({
+          value: String(item.typeId ?? item.maLx),
+          label: String(item.typeName ?? item.tenLx),
+        })),
     },
     {
-      name: 'maTuyen',
+      name: 'routeId',
       label: 'Tuyến đường',
       type: 'select',
       required: true,
       asNumber: true,
       options: (refs) =>
-        (refs['tuyen-duong'] ?? []).map((item) => ({
-          value: String(item.maTuyen),
-          label: `${item.diemDi} → ${item.diemDen}`,
+        (refs['routes'] ?? []).map((item) => ({
+          value: String(item.routeId ?? item.maTuyen),
+          label: `${item.departure ?? item.diemDi} → ${item.destination ?? item.diemDen}`,
         })),
     },
-    { name: 'giaVe', label: 'Giá vé (VNĐ)', type: 'number', required: true, min: 0 },
+    { name: 'price', label: 'Giá vé (VNĐ)', type: 'number', required: true, min: 0 },
   ],
 };
 

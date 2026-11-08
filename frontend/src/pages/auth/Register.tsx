@@ -18,11 +18,12 @@ function isStrongPassword(value: string): boolean {
 }
 
 export function Register() {
-  const { nguoiDung } = useAuth();
-  const [tenDangNhap, setTenDangNhap] = useState('');
+  const { user, nguoiDung } = useAuth();
+  const currentUser = user ?? nguoiDung;
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
-  const [matKhau, setMatKhau] = useState('');
-  const [xacNhanMatKhau, setXacNhanMatKhau] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [busy, setBusy] = useState(false);
@@ -31,12 +32,13 @@ export function Register() {
     return <Navigate to="/login" replace />;
   }
 
-  if (nguoiDung) {
-    return <Navigate to={homePathFor(nguoiDung.quyen)} replace />;
+  if (currentUser) {
+    const role = currentUser.role ?? currentUser.quyen;
+    return <Navigate to={homePathFor(role)} replace />;
   }
 
   const handleSubmit = async () => {
-    if (tenDangNhap.trim().length < 6) {
+    if (username.trim().length < 6) {
       setError('Tên đăng nhập phải có ít nhất 6 ký tự.');
       return;
     }
@@ -44,11 +46,11 @@ export function Register() {
       setError('Email không đúng định dạng.');
       return;
     }
-    if (!isStrongPassword(matKhau)) {
+    if (!isStrongPassword(password)) {
       setError(PASSWORD_HINT);
       return;
     }
-    if (matKhau !== xacNhanMatKhau) {
+    if (password !== confirmPassword) {
       setError('Mật khẩu xác nhận không khớp.');
       return;
     }
@@ -62,19 +64,22 @@ export function Register() {
         {
           method: 'POST',
           body: JSON.stringify({
-            tenDangNhap: tenDangNhap.trim(),
+            username: username.trim(),
             email: email.trim(),
-            matKhau,
-            xacNhanMatKhau,
+            password,
+            confirmPassword,
+            tenDangNhap: username.trim(),
+            matKhau: password,
+            xacNhanMatKhau: confirmPassword,
           }),
         },
         { redirectOn401: false },
       );
       setSuccess(data?.message ?? 'Đăng ký thành công.');
-      setTenDangNhap('');
+      setUsername('');
       setEmail('');
-      setMatKhau('');
-      setXacNhanMatKhau('');
+      setPassword('');
+      setConfirmPassword('');
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -108,8 +113,8 @@ export function Register() {
         >
           <FormField
             label="Tên đăng nhập"
-            value={tenDangNhap}
-            onChange={setTenDangNhap}
+            value={username}
+            onChange={setUsername}
             placeholder="Ít nhất 6 ký tự"
             autoComplete="username"
             required
@@ -126,8 +131,8 @@ export function Register() {
           <FormField
             label="Mật khẩu"
             type="password"
-            value={matKhau}
-            onChange={setMatKhau}
+            value={password}
+            onChange={setPassword}
             placeholder="Nhập mật khẩu"
             help={PASSWORD_HINT}
             autoComplete="new-password"
@@ -136,8 +141,8 @@ export function Register() {
           <FormField
             label="Xác nhận mật khẩu"
             type="password"
-            value={xacNhanMatKhau}
-            onChange={setXacNhanMatKhau}
+            value={confirmPassword}
+            onChange={setConfirmPassword}
             placeholder="Nhập lại mật khẩu"
             autoComplete="new-password"
             required

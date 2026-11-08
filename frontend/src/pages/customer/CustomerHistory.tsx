@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { api, getErrorMessage } from '../../api/client';
-import type { HoaDonDetail, HoaDonKhachHang, VeItem } from '../../api/types';
+import type { HoaDonKhachHang, InvoiceDetail, TicketItem } from '../../api/types';
 import { PaidBadge } from '../../components/common/Badge';
 import { FormField } from '../../components/common/FormField';
 import { Modal } from '../../components/common/Modal';
@@ -15,18 +15,20 @@ export function CustomerHistory() {
   const [rows, setRows] = useState<HoaDonKhachHang[]>([]);
   const [loading, setLoading] = useState(true);
   const [openId, setOpenId] = useState<number | null>(null);
-  const [details, setDetails] = useState<Record<number, HoaDonDetail>>({});
+  const [details, setDetails] = useState<Record<number, InvoiceDetail>>({});
   const [detailLoading, setDetailLoading] = useState(false);
 
   const [payTarget, setPayTarget] = useState<HoaDonKhachHang | null>(null);
   const [payMethod, setPayMethod] = useState('Tiền mặt');
-  const [cancelTarget, setCancelTarget] = useState<{ maHd: number; ve: VeItem } | null>(null);
+  const [cancelTarget, setCancelTarget] = useState<{ invoiceId: number; ticket: TicketItem } | null>(
+    null,
+  );
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await api.get<HoaDonKhachHang[]>('/hoa-don/cua-toi');
+      const data = await api.get<HoaDonKhachHang[]>('/invoices/my');
       setRows(Array.isArray(data) ? data : []);
     } catch (error) {
       showToast(getErrorMessage(error), 'error');
@@ -40,39 +42,43 @@ export function CustomerHistory() {
   }, [load]);
 
   const toggleDetail = async (item: HoaDonKhachHang) => {
-    if (openId === item.maHd) {
+    const id = item.invoiceId ?? item.maHd;
+    if (openId === id) {
       setOpenId(null);
       return;
     }
-    setOpenId(item.maHd);
-    if (details[item.maHd]) return;
+    setOpenId(id);
+    if (details[id]) return;
     setDetailLoading(true);
     try {
-      const data = await api.get<HoaDonDetail>(`/hoa-don/${item.maHd}`);
-      setDetails((prev) => ({ ...prev, [item.maHd]: data }));
+      const data = await api.get<InvoiceDetail>(`/invoices/${id}`);
+      setDetails((prev) => ({ ...prev, [id]: data }));
     } catch {
-      // Khách hàng có thể không có quyền xem chi tiết: dùng dữ liệu danh sách nếu có.
+      // Dùng dữ liệu danh sách nếu có
     } finally {
       setDetailLoading(false);
     }
   };
 
-  const veCuaHoaDon = (item: HoaDonKhachHang): VeItem[] => {
-    const detail = details[item.maHd];
+  const getTicketsForInvoice = (item: HoaDonKhachHang): TicketItem[] => {
+    const id = item.invoiceId ?? item.maHd;
+    const detail = details[id];
+    if (detail?.tickets) return detail.tickets;
     if (detail?.veXes) return detail.veXes;
-    return item.veXes ?? [];
+    return item.tickets ?? item.veXes ?? [];
   };
 
   const handlePay = async () => {
     if (!payTarget) return;
+    const id = payTarget.invoiceId ?? payTarget.maHd;
     setBusy(true);
     try {
-      await api.post(`/hoa-don/${payTarget.maHd}/thanh-toan`, { phuongThuc: payMethod });
-      showToast(`Đã thanh toán hóa đơn #${payTarget.maHd}.`);
+      await api.post(`/invoices/${id}/pay`, { paymentMethod: payMethod });
+      showToast(`Đã thanh toán hóa đơn #${id}.`);
       setPayTarget(null);
       setDetails((prev) => {
         const next = { ...prev };
-        delete next[payTarget.maHd];
+        delete next[id];
         return next;
       });
       await load();
@@ -83,15 +89,17 @@ export function CustomerHistory() {
     }
   };
 
-  const handleCancelVe = async () => {
+  const handleCancelTicket = async () => {
     if (!cancelTarget) return;
+    const ticketId = cancelTarget.ticket.ticketId ?? cancelTarget.ticket.maVe;
+    const seatNumber = cancelTarget.ticket.seatNumber ?? cancelTarget.ticket.choNgoi;
     setBusy(true);
     try {
-      await api.post(`/ve/${cancelTarget.ve.maVe}/huy`);
-      showToast(`Đã hủy vé ghế ${cancelTarget.ve.choNgoi}.`);
+      await api.post(`/tickets/${ticketId}/cancel`);
+      showToast(`Đã hủy vé ghế ${seatNumber}.`);
       setDetails((prev) => {
         const next = { ...prev };
-        delete next[cancelTarget.maHd];
+        delete next[cancelTarget.invoiceId];
         return next;
       });
       setCancelTarget(null);
@@ -108,12 +116,7 @@ export function CustomerHistory() {
       <div className="page-header">
         <div>
           <h1>Lịch sử đặt vé</h1>
-          <p className="page-subtitle">Theo dõi các hóa đơn của bạn, thanh toán hoặc hủy vé chưa thanh toán.</p>
-        </div>
-        <div className="page-actions">
-          <Link to="/app/dat-ve" className="btn btn-primary">
-            + Đặt vé mới
-          </Link>
+          <p className="page-subtitle">Xem lại các hóa đơn và vé đã đặt, thanh toán hoặc hủy vé khi đủ điều kiện.</p>
         </div>
       </div>
 
@@ -126,89 +129,119 @@ export function CustomerHistory() {
       ) : rows.length === 0 ? (
         <div className="card">
           <div className="empty-state">
-            Bạn chưa có hóa đơn nào. <Link to="/app/dat-ve">Đặt vé ngay</Link>.
+            <p>Bạn chưa có đơn đặt vé nào.</p>
+            <Link to="/app/dat-ve" className="btn btn-primary">
+              Đặt vé ngay
+            </Link>
           </div>
         </div>
       ) : (
         <div className="history-list">
-          {rows.map((item) => {
-            const isOpen = openId === item.maHd;
-            const ves = veCuaHoaDon(item);
+          {rows.map((row) => {
+            const invoiceId = row.invoiceId ?? row.maHd;
+            const createdAt = row.createdAt ?? row.ngayLap;
+            const isPaid = Boolean(row.isPaid ?? row.trangThai);
+            const totalAmount = row.totalAmount ?? row.tongTien;
+            const ticketCount = row.ticketCount ?? row.soVe;
+            const paymentMethod = row.paymentMethod ?? row.phuongThuc;
+            const isOpen = openId === invoiceId;
+            const tickets = getTicketsForInvoice(row);
+
             return (
-              <section className={`card history-card ${isOpen ? 'history-card-open' : ''}`} key={item.maHd}>
-                <div className="history-head">
-                  <div className="history-code">
-                    <strong>Hóa đơn #{item.maHd}</strong>
-                    <span className="text-muted">{formatDateTime(item.ngayLap)}</span>
+              <article className="card history-card" key={invoiceId}>
+                <header className="history-head">
+                  <div className="history-head-main">
+                    <span className="history-id">Hóa đơn #{invoiceId}</span>
+                    <span className="text-muted">· {formatDateTime(createdAt)}</span>
+                    <PaidBadge paid={isPaid} />
                   </div>
-                  <div className="history-meta">
-                    <span className="text-muted">{item.soVe ?? 0} vé</span>
-                    <strong>{formatVnd(item.tongTien)}</strong>
-                    <PaidBadge paid={item.trangThai} />
+                  <div className="history-head-meta">
+                    <strong className="text-primary">{formatVnd(totalAmount)}</strong>
+                    <span className="text-muted">· {ticketCount} vé</span>
+                    <span className="text-muted">· {paymentMethod ?? 'Chưa thanh toán'}</span>
                   </div>
-                  <div className="row-actions">
-                    <button type="button" className="btn btn-ghost btn-sm" onClick={() => void toggleDetail(item)}>
-                      {isOpen ? 'Thu gọn' : 'Xem vé'}
+                  <div className="history-head-actions">
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => void toggleDetail(row)}
+                    >
+                      {isOpen ? 'Thu gọn' : 'Chi tiết vé'}
                     </button>
-                    {!item.trangThai ? (
+                    {!isPaid ? (
                       <button
                         type="button"
-                        className="btn btn-secondary btn-sm"
+                        className="btn btn-primary btn-sm"
                         onClick={() => {
                           setPayMethod('Tiền mặt');
-                          setPayTarget(item);
+                          setPayTarget(row);
                         }}
                       >
                         Thanh toán
                       </button>
                     ) : null}
                   </div>
-                </div>
+                </header>
 
                 {isOpen ? (
                   <div className="history-body">
-                    {detailLoading && !details[item.maHd] ? (
+                    {detailLoading && !details[invoiceId] ? (
                       <div className="empty-state">
-                        <span className="spinner" /> Đang tải chi tiết…
+                        <span className="spinner" /> Đang tải danh sách vé…
                       </div>
-                    ) : ves.length === 0 ? (
-                      <div className="empty-state">Không có thông tin vé chi tiết.</div>
+                    ) : tickets.length === 0 ? (
+                      <div className="empty-state">Không có thông tin vé cho hóa đơn này.</div>
                     ) : (
                       <div className="ticket-list">
-                        {ves.map((ve) => (
-                          <div className="ticket-row" key={ve.maVe}>
-                            <div className="ticket-code">
-                              <span className="seat-chip">Ghế {ve.choNgoi}</span>
-                              <span className="text-muted">Mã vé #{ve.maVe}</span>
+                        {tickets.map((ticket) => {
+                          const ticketId = ticket.ticketId ?? ticket.maVe;
+                          const seatNumber = ticket.seatNumber ?? ticket.choNgoi;
+                          const departure = ticket.departure ?? ticket.diemDi;
+                          const destination = ticket.destination ?? ticket.diemDen;
+                          const departureTime = ticket.departureTime ?? ticket.ngayGioKhoiHanh;
+                          const price = ticket.price ?? ticket.giaVe;
+
+                          return (
+                            <div className="ticket-card" key={ticketId}>
+                              <div className="ticket-card-main">
+                                <div className="ticket-code">Vé #{ticketId}</div>
+                                <div className="ticket-route">
+                                  <strong>
+                                    {departure} → {destination}
+                                  </strong>
+                                  <span className="text-muted">
+                                    Khởi hành {formatDateTime(departureTime)}
+                                  </span>
+                                </div>
+                                <div className="ticket-seat">
+                                  Ghế: <strong>{seatNumber}</strong>
+                                </div>
+                                <div className="ticket-price">
+                                  <strong>{formatVnd(price)}</strong>
+                                </div>
+                              </div>
+                              <div className="ticket-card-actions">
+                                <button
+                                  type="button"
+                                  className="btn btn-danger-ghost btn-sm"
+                                  onClick={() =>
+                                    setCancelTarget({
+                                      invoiceId,
+                                      ticket,
+                                    })
+                                  }
+                                >
+                                  Hủy vé
+                                </button>
+                              </div>
                             </div>
-                            <div className="ticket-route">
-                              <strong>
-                                {ve.diemDi} → {ve.diemDen}
-                              </strong>
-                              <span className="text-muted">Khởi hành {formatDateTime(ve.ngayGioKhoiHanh)}</span>
-                            </div>
-                            <strong className="text-primary">{formatVnd(ve.giaVe)}</strong>
-                            {!item.trangThai ? (
-                              <button
-                                type="button"
-                                className="btn btn-danger-ghost btn-sm"
-                                onClick={() => setCancelTarget({ maHd: item.maHd, ve })}
-                              >
-                                Hủy vé
-                              </button>
-                            ) : null}
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     )}
-                    <div className="history-foot">
-                      <span className="text-muted">
-                        Phương thức: {details[item.maHd]?.thanhToan?.phuongThuc ?? item.phuongThuc ?? '—'}
-                      </span>
-                    </div>
                   </div>
                 ) : null}
-              </section>
+              </article>
             );
           })}
         </div>
@@ -218,13 +251,24 @@ export function CustomerHistory() {
         open={Boolean(payTarget)}
         onClose={() => setPayTarget(null)}
         title="Thanh toán hóa đơn"
-        subtitle={payTarget ? `Hóa đơn #${payTarget.maHd} · ${formatVnd(payTarget.tongTien)}` : undefined}
+        subtitle={
+          payTarget
+            ? `Hóa đơn #${payTarget.invoiceId ?? payTarget.maHd} · ${formatVnd(
+                payTarget.totalAmount ?? payTarget.tongTien,
+              )}`
+            : undefined
+        }
         footer={
           <>
             <button type="button" className="btn btn-secondary" onClick={() => setPayTarget(null)}>
               Hủy
             </button>
-            <button type="button" className="btn btn-primary" onClick={() => void handlePay()} disabled={busy}>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={() => void handlePay()}
+              disabled={busy}
+            >
               {busy ? 'Đang xử lý…' : 'Xác nhận thanh toán'}
             </button>
           </>
@@ -245,19 +289,38 @@ export function CustomerHistory() {
         title="Hủy vé"
         footer={
           <>
-            <button type="button" className="btn btn-secondary" onClick={() => setCancelTarget(null)}>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => setCancelTarget(null)}
+            >
               Giữ vé
             </button>
-            <button type="button" className="btn btn-danger" onClick={() => void handleCancelVe()} disabled={busy}>
-              {busy ? 'Đang hủy…' : 'Hủy vé'}
+            <button
+              type="button"
+              className="btn btn-danger"
+              onClick={() => void handleCancelTicket()}
+              disabled={busy}
+            >
+              {busy ? 'Đang hủy…' : 'Xác nhận hủy'}
             </button>
           </>
         }
       >
         <p>
-          Bạn có chắc muốn hủy vé ghế <strong>{cancelTarget?.ve.choNgoi}</strong> của hóa đơn{' '}
-          <strong>#{cancelTarget?.maHd}</strong>? Chỉ hủy được khi vé chưa thanh toán và chuyến chưa khởi hành.
+          Bạn có chắc muốn hủy vé ghế{' '}
+          <strong>
+            {cancelTarget?.ticket.seatNumber ?? cancelTarget?.ticket.choNgoi}
+          </strong>{' '}
+          (chuyến{' '}
+          {cancelTarget?.ticket.departure ?? cancelTarget?.ticket.diemDi} →{' '}
+          {cancelTarget?.ticket.destination ?? cancelTarget?.ticket.diemDen} lúc{' '}
+          {formatDateTime(
+            cancelTarget?.ticket.departureTime ?? cancelTarget?.ticket.ngayGioKhoiHanh,
+          )}
+          )?
         </p>
+        <p className="text-muted">Chỉ hủy được khi vé đã thanh toán và trước giờ xe khởi hành.</p>
       </Modal>
     </div>
   );

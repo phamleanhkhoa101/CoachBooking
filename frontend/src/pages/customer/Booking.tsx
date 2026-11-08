@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ApiError, api, buildQuery, getErrorMessage } from '../../api/client';
 import type {
-  ChuyenTimKiem,
-  DatVeRequest,
-  DatVeResponse,
-  GheResponse,
-  HoSo,
-  TuyenDuong,
+  BookingRequest,
+  BookingResponse,
+  Profile,
+  Route,
+  SeatMapResponse,
+  Trip,
 } from '../../api/types';
 import { useAuth } from '../../auth/AuthContext';
 import { DataTable, type DataTableColumn } from '../../components/table/DataTable';
@@ -23,34 +23,35 @@ interface BookingProps {
 
 export function Booking({ mode }: BookingProps) {
   const isStaff = mode === 'nhanvien';
-  const { nguoiDung } = useAuth();
+  const { user, nguoiDung } = useAuth();
+  const currentUser = user ?? nguoiDung;
   const { showToast } = useToast();
 
-  const [tuyenList, setTuyenList] = useState<TuyenDuong[]>([]);
-  const [diemDi, setDiemDi] = useState('');
-  const [diemDen, setDiemDen] = useState('');
-  const [ngay, setNgay] = useState(todayISO());
-  const [tuGio, setTuGio] = useState('');
-  const [denGio, setDenGio] = useState('');
+  const [routeList, setRouteList] = useState<Route[]>([]);
+  const [departure, setDeparture] = useState('');
+  const [destination, setDestination] = useState('');
+  const [travelDate, setTravelDate] = useState(todayISO());
+  const [fromHour, setFromHour] = useState('');
+  const [toHour, setToHour] = useState('');
 
-  const [chuyens, setChuyens] = useState<ChuyenTimKiem[]>([]);
+  const [trips, setTrips] = useState<Trip[]>([]);
   const [searched, setSearched] = useState(false);
-  const [loadingChuyen, setLoadingChuyen] = useState(false);
+  const [loadingTrips, setLoadingTrips] = useState(false);
 
-  const [selectedChuyen, setSelectedChuyen] = useState<ChuyenTimKiem | null>(null);
-  const [ghe, setGhe] = useState<GheResponse | null>(null);
-  const [loadingGhe, setLoadingGhe] = useState(false);
+  const [selectedTrip, setSelectedTrip] = useState<Trip | null>(null);
+  const [seatMap, setSeatMap] = useState<SeatMapResponse | null>(null);
+  const [loadingSeats, setLoadingSeats] = useState(false);
   const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
 
-  const [hoSo, setHoSo] = useState<HoSo | null>(null);
-  const [tenKhachHang, setTenKhachHang] = useState('');
-  const [sdt, setSdt] = useState('');
-  const [namSinh, setNamSinh] = useState('');
-  const [gioiTinh, setGioiTinh] = useState('true');
-  const [phuongThuc, setPhuongThuc] = useState('Tiền mặt');
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [customerName, setCustomerName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [dateOfBirth, setDateOfBirth] = useState('');
+  const [gender, setGender] = useState('true');
+  const [paymentMethod, setPaymentMethod] = useState('Tiền mặt');
   const [submitting, setSubmitting] = useState(false);
   const [bookingError, setBookingError] = useState('');
-  const [result, setResult] = useState<DatVeResponse | null>(null);
+  const [result, setResult] = useState<BookingResponse | null>(null);
 
   const methods = useMemo(
     () => (isStaff ? STAFF_METHODS : [...STAFF_METHODS, 'Thanh toán sau']),
@@ -60,8 +61,8 @@ export function Booking({ mode }: BookingProps) {
   useEffect(() => {
     void (async () => {
       try {
-        const list = await api.get<TuyenDuong[]>('/tuyen-duong');
-        setTuyenList(Array.isArray(list) ? list : []);
+        const list = await api.get<Route[]>('/routes');
+        setRouteList(Array.isArray(list) ? list : []);
       } catch (error) {
         showToast(getErrorMessage(error), 'error');
       }
@@ -72,68 +73,88 @@ export function Booking({ mode }: BookingProps) {
     if (isStaff) return;
     void (async () => {
       try {
-        setHoSo(await api.get<HoSo>('/ho-so'));
+        setProfile(await api.get<Profile>('/profile'));
       } catch (error) {
         showToast(getErrorMessage(error), 'error');
       }
     })();
   }, [isStaff, showToast]);
 
-  const diemDiOptions = useMemo(() => {
-    const unique = Array.from(new Set(tuyenList.map((item) => item.diemDi).filter(Boolean)));
-    return unique.map((value) => ({ value, label: value }));
-  }, [tuyenList]);
+  const departureOptions = useMemo(() => {
+    const unique = Array.from(
+      new Set(routeList.map((item) => item.departure ?? item.diemDi).filter(Boolean)),
+    );
+    return unique.map((value) => ({ value: value!, label: value! }));
+  }, [routeList]);
 
-  const diemDenOptions = useMemo(() => {
+  const destinationOptions = useMemo(() => {
     const unique = Array.from(
       new Set(
-        tuyenList
-          .filter((item) => (diemDi ? item.diemDi === diemDi : true))
-          .map((item) => item.diemDen)
+        routeList
+          .filter((item) => {
+            const dep = item.departure ?? item.diemDi;
+            return departure ? dep === departure : true;
+          })
+          .map((item) => item.destination ?? item.diemDen)
           .filter(Boolean),
       ),
     );
-    return unique.map((value) => ({ value, label: value }));
-  }, [tuyenList, diemDi]);
+    return unique.map((value) => ({ value: value!, label: value! }));
+  }, [routeList, departure]);
 
   const handleSearch = useCallback(async () => {
-    setLoadingChuyen(true);
+    setLoadingTrips(true);
     try {
-      const data = await api.get<ChuyenTimKiem[]>(
-        `/chuyen-xe/tim${buildQuery({ diemDi, diemDen, ngay, tuGio, denGio })}`,
+      const data = await api.get<Trip[]>(
+        `/trips/search${buildQuery({
+          departure,
+          destination,
+          date: travelDate,
+          fromHour,
+          toHour,
+          diemDi: departure,
+          diemDen: destination,
+          ngay: travelDate,
+          tuGio: fromHour,
+          denGio: toHour,
+        })}`,
       );
-      setChuyens(Array.isArray(data) ? data : []);
+      setTrips(Array.isArray(data) ? data : []);
       setSearched(true);
     } catch (error) {
-      setChuyens([]);
+      setTrips([]);
       setSearched(true);
       showToast(getErrorMessage(error), 'error');
     } finally {
-      setLoadingChuyen(false);
+      setLoadingTrips(false);
     }
-  }, [diemDi, diemDen, ngay, tuGio, denGio, showToast]);
+  }, [departure, destination, travelDate, fromHour, toHour, showToast]);
 
-  const loadGhe = useCallback(
-    async (maChuyen: number) => {
-      setLoadingGhe(true);
+  const loadSeats = useCallback(
+    async (tripId: number) => {
+      setLoadingSeats(true);
       try {
-        setGhe(await api.get<GheResponse>(`/chuyen-xe/${maChuyen}/ghe`));
+        const data = await api.get<SeatMapResponse>(`/trips/${tripId}/seats`);
+        setSeatMap(data);
       } catch (error) {
-        setGhe(null);
+        setSeatMap(null);
         showToast(getErrorMessage(error), 'error');
       } finally {
-        setLoadingGhe(false);
+        setLoadingSeats(false);
       }
     },
     [showToast],
   );
 
-  const chooseChuyen = async (chuyen: ChuyenTimKiem) => {
-    setSelectedChuyen(chuyen);
+  const chooseTrip = async (trip: Trip) => {
+    setSelectedTrip(trip);
     setSelectedSeats([]);
     setBookingError('');
     setResult(null);
-    await loadGhe(chuyen.maChuyen);
+    const id = trip.tripId ?? trip.maChuyen;
+    if (id) {
+      await loadSeats(id);
+    }
   };
 
   const toggleSeat = (seat: number) => {
@@ -142,17 +163,23 @@ export function Booking({ mode }: BookingProps) {
     );
   };
 
-  const giaVe = ghe?.giaVe ?? selectedChuyen?.giaVeThucTe ?? 0;
-  const tongTien = giaVe * selectedSeats.length;
+  const ticketPrice =
+    seatMap?.ticketPrice ??
+    seatMap?.giaVe ??
+    selectedTrip?.actualPrice ??
+    selectedTrip?.giaVeThucTe ??
+    0;
+  const totalAmount = ticketPrice * selectedSeats.length;
 
-  // Khách vừa đăng ký có thể chưa có hồ sơ khách hàng (maKh = null):
-  // khi đó phải nhập thông tin để backend tạo hồ sơ ở lần đặt vé đầu tiên.
   const hasCustomerProfile =
-    !isStaff && ((nguoiDung?.maKh ?? null) !== null || (hoSo?.maKh ?? null) !== null);
+    !isStaff &&
+    ((currentUser?.customerId ?? currentUser?.maKh ?? null) !== null ||
+      (profile?.customerId ?? profile?.maKh ?? null) !== null);
   const needCustomerInfo = isStaff || !hasCustomerProfile;
 
-  const handleDatVe = async () => {
-    if (!selectedChuyen) {
+  const handleBooking = async () => {
+    const tripId = selectedTrip?.tripId ?? selectedTrip?.maChuyen;
+    if (!selectedTrip || !tripId) {
       setBookingError('Vui lòng chọn chuyến xe trước.');
       return;
     }
@@ -161,54 +188,61 @@ export function Booking({ mode }: BookingProps) {
       return;
     }
     if (needCustomerInfo) {
-      if (!tenKhachHang.trim()) {
+      if (!customerName.trim()) {
         setBookingError('Vui lòng nhập tên khách hàng.');
         return;
       }
-      if (!/^\d{10,11}$/.test(sdt.trim())) {
+      if (!/^\d{10,11}$/.test(phone.trim())) {
         setBookingError('Số điện thoại phải gồm 10 đến 11 chữ số.');
         return;
       }
-      if (!namSinh) {
+      if (!dateOfBirth) {
         setBookingError('Vui lòng nhập ngày sinh khách hàng.');
         return;
       }
     }
 
-    const body: DatVeRequest = {
-      maChuyen: selectedChuyen.maChuyen,
+    const body: BookingRequest = {
+      tripId,
+      seatNumbers: selectedSeats,
+      paymentMethod,
+      maChuyen: tripId,
       choNgois: selectedSeats,
-      phuongThuc,
+      phuongThuc: paymentMethod,
     };
     if (needCustomerInfo) {
-      body.tenKhachHang = tenKhachHang.trim();
-      body.sdt = sdt.trim();
-      body.namSinh = namSinh;
-      body.gioiTinh = gioiTinh === 'true';
+      body.customerName = customerName.trim();
+      body.phone = phone.trim();
+      body.dateOfBirth = dateOfBirth;
+      body.gender = gender === 'true';
+      body.tenKhachHang = customerName.trim();
+      body.sdt = phone.trim();
+      body.namSinh = dateOfBirth;
+      body.gioiTinh = gender === 'true';
     }
 
     setSubmitting(true);
     setBookingError('');
     try {
-      const res = await api.post<DatVeResponse>('/dat-ve', body);
+      const res = await api.post<BookingResponse>('/bookings', body);
       setResult(res);
-      showToast(`Đặt vé thành công, hóa đơn #${res.maHd}.`);
+      const invoiceId = res.invoiceId ?? res.maHd;
+      showToast(`Đặt vé thành công, hóa đơn #${invoiceId}.`);
       setSelectedSeats([]);
       if (needCustomerInfo) {
-        setTenKhachHang('');
-        setSdt('');
-        setNamSinh('');
-        setGioiTinh('true');
+        setCustomerName('');
+        setPhone('');
+        setDateOfBirth('');
+        setGender('true');
       }
       if (!isStaff && !hasCustomerProfile) {
-        // Hồ sơ khách hàng vừa được tạo ở lần đặt vé đầu tiên.
         try {
-          setHoSo(await api.get<HoSo>('/ho-so'));
+          setProfile(await api.get<Profile>('/profile'));
         } catch {
-          // Không chặn luồng đặt vé nếu tải lại hồ sơ thất bại.
+          // Non-blocking
         }
       }
-      await loadGhe(selectedChuyen.maChuyen);
+      await loadSeats(tripId);
       await handleSearch();
     } catch (error) {
       const message = getErrorMessage(error);
@@ -216,59 +250,86 @@ export function Booking({ mode }: BookingProps) {
       showToast(message, 'error');
       if (error instanceof ApiError && error.status === 409) {
         setSelectedSeats([]);
-        await loadGhe(selectedChuyen.maChuyen);
+        await loadSeats(tripId);
       }
     } finally {
       setSubmitting(false);
     }
   };
 
-  const columns: DataTableColumn<ChuyenTimKiem>[] = [
+  const columns: DataTableColumn<Trip>[] = [
     {
-      key: 'gioDi',
+      key: 'departureTime',
       label: 'Giờ đi',
       width: '110px',
-      render: (row) => (
-        <div className="cell-stack">
-          <strong>{formatTime(row.ngayGioKhoiHanh)}</strong>
-          <span className="text-muted">{formatDate(row.ngayGioKhoiHanh)}</span>
-        </div>
-      ),
+      render: (row) => {
+        const time = row.departureTime ?? row.ngayGioKhoiHanh;
+        return (
+          <div className="cell-stack">
+            <strong>{formatTime(time)}</strong>
+            <span className="text-muted">{formatDate(time)}</span>
+          </div>
+        );
+      },
     },
     {
-      key: 'tuyen',
+      key: 'route',
       label: 'Tuyến',
-      render: (row) => (
-        <div className="cell-stack">
-          <strong>
-            {row.diemDi} → {row.diemDen}
-          </strong>
-          <span className="text-muted">Đến dự kiến {formatTime(row.ngayGioDenDuKien)}</span>
-        </div>
-      ),
+      render: (row) => {
+        const dep = row.departure ?? row.diemDi;
+        const dest = row.destination ?? row.diemDen;
+        const arr = row.estimatedArrivalTime ?? row.ngayGioDenDuKien;
+        return (
+          <div className="cell-stack">
+            <strong>
+              {dep} → {dest}
+            </strong>
+            <span className="text-muted">Đến dự kiến {formatTime(arr)}</span>
+          </div>
+        );
+      },
     },
-    { key: 'tenNhaXe', label: 'Nhà xe' },
-    { key: 'tenLoaiXe', label: 'Loại xe' },
-    { key: 'soCho', label: 'Số chỗ', align: 'right', width: '80px' },
     {
-      key: 'soGheDaDat',
+      key: 'companyName',
+      label: 'Nhà xe',
+      render: (row) => row.companyName ?? row.tenNhaXe,
+    },
+    {
+      key: 'typeName',
+      label: 'Loại xe',
+      render: (row) => row.typeName ?? row.tenLoaiXe,
+    },
+    {
+      key: 'seatCapacity',
+      label: 'Số chỗ',
+      align: 'right',
+      width: '80px',
+      render: (row) => row.seatCapacity ?? row.soCho,
+    },
+    {
+      key: 'bookedSeats',
       label: 'Đã đặt',
       align: 'right',
       width: '90px',
       render: (row) => {
-        const booked = row.soGheDaDat ?? row.soVeDaBan ?? 0;
+        const booked = row.ticketsSold ?? row.soVeDaBan ?? row.bookedSeats ?? 0;
+        const cap = row.seatCapacity ?? row.soCho ?? 0;
         return (
-          <span className={booked >= (row.soCho ?? 0) ? 'text-danger' : undefined}>
-            {booked}/{row.soCho}
+          <span className={booked >= cap ? 'text-danger' : undefined}>
+            {booked}/{cap}
           </span>
         );
       },
     },
     {
-      key: 'giaVeThucTe',
+      key: 'actualPrice',
       label: 'Giá vé',
       align: 'right',
-      render: (row) => <strong className="text-primary">{formatVnd(row.giaVeThucTe)}</strong>,
+      render: (row) => (
+        <strong className="text-primary">
+          {formatVnd(row.actualPrice ?? row.giaVeThucTe)}
+        </strong>
+      ),
     },
   ];
 
@@ -293,28 +354,28 @@ export function Booking({ mode }: BookingProps) {
           <FormField
             label="Điểm đi"
             type="select"
-            value={diemDi}
+            value={departure}
             onChange={(value) => {
-              setDiemDi(value);
-              setDiemDen('');
+              setDeparture(value);
+              setDestination('');
             }}
-            options={diemDiOptions}
+            options={departureOptions}
             placeholder="Tất cả điểm đi"
           />
           <FormField
             label="Điểm đến"
             type="select"
-            value={diemDen}
-            onChange={setDiemDen}
-            options={diemDenOptions}
+            value={destination}
+            onChange={setDestination}
+            options={destinationOptions}
             placeholder="Tất cả điểm đến"
           />
-          <FormField label="Ngày đi" type="date" value={ngay} onChange={setNgay} />
+          <FormField label="Ngày đi" type="date" value={travelDate} onChange={setTravelDate} />
           <FormField
             label="Từ giờ"
             type="select"
-            value={tuGio}
-            onChange={setTuGio}
+            value={fromHour}
+            onChange={setFromHour}
             placeholder="Không lọc"
             options={Array.from({ length: 24 }, (_, hour) => ({
               value: String(hour),
@@ -324,8 +385,8 @@ export function Booking({ mode }: BookingProps) {
           <FormField
             label="Đến giờ"
             type="select"
-            value={denGio}
-            onChange={setDenGio}
+            value={toHour}
+            onChange={setToHour}
             placeholder="Không lọc"
             options={Array.from({ length: 24 }, (_, hour) => ({
               value: String(hour),
@@ -337,59 +398,64 @@ export function Booking({ mode }: BookingProps) {
               type="button"
               className="btn btn-primary btn-block"
               onClick={() => void handleSearch()}
-              disabled={loadingChuyen}
+              disabled={loadingTrips}
             >
-              {loadingChuyen ? 'Đang tìm…' : 'Tìm chuyến'}
+              {loadingTrips ? 'Đang tìm…' : 'Tìm chuyến'}
             </button>
           </div>
         </div>
       </section>
 
-      {searched || loadingChuyen ? (
+      {searched || loadingTrips ? (
         <section className="card">
           <div className="card-header">
             <h2>Chuyến xe phù hợp</h2>
-            <span className="text-muted">{chuyens.length} chuyến</span>
+            <span className="text-muted">{trips.length} chuyến</span>
           </div>
-          <DataTable
+          <DataTable<Trip>
             columns={columns}
-            rows={chuyens}
-            rowKey={(row) => row.maChuyen}
-            loading={loadingChuyen}
+            rows={trips}
+            rowKey={(row) => String(row.tripId ?? row.maChuyen)}
+            loading={loadingTrips}
             emptyText="Không tìm thấy chuyến phù hợp. Hãy thử đổi điểm đi, điểm đến hoặc ngày."
-            selectedKey={selectedChuyen?.maChuyen ?? null}
-            onRowClick={(row) => void chooseChuyen(row)}
-            actions={(row) => (
-              <button
-                type="button"
-                className={`btn btn-sm ${selectedChuyen?.maChuyen === row.maChuyen ? 'btn-secondary' : 'btn-primary'}`}
-                onClick={() => void chooseChuyen(row)}
-              >
-                {selectedChuyen?.maChuyen === row.maChuyen ? 'Đang chọn' : 'Chọn chuyến'}
-              </button>
-            )}
+            actions={(row) => {
+              const currentId = selectedTrip?.tripId ?? selectedTrip?.maChuyen;
+              const rowId = row.tripId ?? row.maChuyen;
+              const isSelected = currentId === rowId;
+              return (
+                <button
+                  type="button"
+                  className={`btn btn-sm ${isSelected ? 'btn-secondary' : 'btn-primary'}`}
+                  onClick={() => void chooseTrip(row)}
+                >
+                  {isSelected ? 'Đang chọn' : 'Chọn chuyến'}
+                </button>
+              );
+            }}
           />
         </section>
       ) : null}
 
-      {selectedChuyen ? (
+      {selectedTrip ? (
         <div className="booking-grid">
           <section className="card">
             <div className="card-header">
               <h2>Sơ đồ ghế</h2>
               <span className="text-muted">
-                {selectedChuyen.diemDi} → {selectedChuyen.diemDen} · {formatDateTime(selectedChuyen.ngayGioKhoiHanh)}
+                {selectedTrip.departure ?? selectedTrip.diemDi} →{' '}
+                {selectedTrip.destination ?? selectedTrip.diemDen} ·{' '}
+                {formatDateTime(selectedTrip.departureTime ?? selectedTrip.ngayGioKhoiHanh)}
               </span>
             </div>
-            {loadingGhe ? (
+            {loadingSeats ? (
               <div className="empty-state">
                 <span className="spinner" /> Đang tải sơ đồ ghế…
               </div>
-            ) : ghe ? (
+            ) : seatMap ? (
               <SeatMap
-                soCho={ghe.soCho}
-                tenLoaiXe={ghe.tenLoaiXe}
-                gheDaDat={ghe.gheDaDat ?? []}
+                seatCapacity={seatMap.seatCapacity ?? seatMap.soCho}
+                vehicleTypeName={seatMap.vehicleTypeName ?? seatMap.tenLoaiXe}
+                bookedSeats={seatMap.bookedSeats ?? seatMap.choDaDat ?? []}
                 selected={selectedSeats}
                 onToggle={toggleSeat}
               />
@@ -408,19 +474,19 @@ export function Booking({ mode }: BookingProps) {
             {!isStaff && hasCustomerProfile ? (
               <div className="info-box">
                 <span className="info-box-title">Hồ sơ khách hàng</span>
-                {hoSo ? (
+                {profile ? (
                   <div className="info-grid">
                     <div>
                       <span className="text-muted">Họ tên</span>
-                      <strong>{hoSo.hoTen}</strong>
+                      <strong>{profile.fullName ?? profile.hoTen}</strong>
                     </div>
                     <div>
                       <span className="text-muted">Số điện thoại</span>
-                      <strong>{hoSo.sdt ?? '—'}</strong>
+                      <strong>{profile.phone ?? profile.sdt ?? '—'}</strong>
                     </div>
                     <div>
                       <span className="text-muted">Email</span>
-                      <strong>{hoSo.email}</strong>
+                      <strong>{profile.email}</strong>
                     </div>
                   </div>
                 ) : (
@@ -438,24 +504,29 @@ export function Booking({ mode }: BookingProps) {
                 <div className="form-grid">
                   <FormField
                     label="Tên khách hàng"
-                    value={tenKhachHang}
-                    onChange={setTenKhachHang}
+                    value={customerName}
+                    onChange={setCustomerName}
                     placeholder="Nguyễn Văn A"
                     required
                   />
                   <FormField
                     label="Số điện thoại"
-                    value={sdt}
-                    onChange={setSdt}
+                    value={phone}
+                    onChange={setPhone}
                     placeholder="09xxxxxxxx"
                     required
                   />
-                  <FormField label="Ngày sinh" type="date" value={namSinh} onChange={setNamSinh} />
+                  <FormField
+                    label="Ngày sinh"
+                    type="date"
+                    value={dateOfBirth}
+                    onChange={setDateOfBirth}
+                  />
                   <FormField
                     label="Giới tính"
                     type="select"
-                    value={gioiTinh}
-                    onChange={setGioiTinh}
+                    value={gender}
+                    onChange={setGender}
                     options={[
                       { value: 'true', label: 'Nam' },
                       { value: 'false', label: 'Nữ' },
@@ -469,8 +540,8 @@ export function Booking({ mode }: BookingProps) {
               <FormField
                 label="Phương thức thanh toán"
                 type="select"
-                value={phuongThuc}
-                onChange={setPhuongThuc}
+                value={paymentMethod}
+                onChange={setPaymentMethod}
                 options={methods.map((value) => ({ value, label: value }))}
               />
             </div>
@@ -482,18 +553,18 @@ export function Booking({ mode }: BookingProps) {
               </div>
               <div className="summary-row">
                 <span>Giá vé</span>
-                <strong>{formatVnd(giaVe)}</strong>
+                <strong>{formatVnd(ticketPrice)}</strong>
               </div>
               <div className="summary-row summary-total">
                 <span>Tổng tiền</span>
-                <strong>{formatVnd(tongTien)}</strong>
+                <strong>{formatVnd(totalAmount)}</strong>
               </div>
             </div>
 
             <button
               type="button"
               className="btn btn-primary btn-block"
-              onClick={() => void handleDatVe()}
+              onClick={() => void handleBooking()}
               disabled={submitting || selectedSeats.length === 0}
             >
               {submitting ? 'Đang đặt vé…' : 'Xác nhận đặt vé'}
@@ -505,23 +576,25 @@ export function Booking({ mode }: BookingProps) {
                 <div className="result-grid">
                   <div>
                     <span className="text-muted">Mã hóa đơn</span>
-                    <strong>#{result.maHd}</strong>
+                    <strong>#{result.invoiceId ?? result.maHd}</strong>
                   </div>
                   <div>
                     <span className="text-muted">Số vé</span>
-                    <strong>{result.soVe}</strong>
+                    <strong>{result.ticketCount ?? result.soVe}</strong>
                   </div>
                   <div>
                     <span className="text-muted">Tổng tiền</span>
-                    <strong>{formatVnd(result.tongTien)}</strong>
+                    <strong>{formatVnd(result.totalAmount ?? result.tongTien)}</strong>
                   </div>
                   <div>
                     <span className="text-muted">Phương thức</span>
-                    <strong>{result.phuongThuc}</strong>
+                    <strong>{result.paymentMethod ?? result.phuongThuc}</strong>
                   </div>
                 </div>
-                {!result.trangThai ? (
-                  <p className="text-muted">Hóa đơn chưa thanh toán — bạn có thể thanh toán trong mục Lịch sử đặt vé.</p>
+                {!(result.isPaid ?? result.trangThai) ? (
+                  <p className="text-muted">
+                    Hóa đơn chưa thanh toán — bạn có thể thanh toán trong mục Lịch sử đặt vé.
+                  </p>
                 ) : null}
               </div>
             ) : null}

@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/thong-ke")
+@RequestMapping({"/api/statistics", "/api/thong-ke"})
 @PreAuthorize("hasAnyRole('Admin','NhanVien')")
 public class StatisticController {
 
@@ -21,10 +21,19 @@ public class StatisticController {
   }
 
   @GetMapping
-  public StatisticService.ThongKeResponse thongKe(
-      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate tu,
-      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-          LocalDate den) {
-    return statisticService.thongKe(tu, den);
+  public StatisticService.StatisticResponse getStatistics(
+      @RequestParam(value = "tu", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+          LocalDate tu,
+      @RequestParam(value = "den", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+          LocalDate den,
+      @RequestParam(value = "fromDate", required = false)
+          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+          LocalDate fromDate,
+      @RequestParam(value = "toDate", required = false)
+          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+          LocalDate toDate) {
+    LocalDate actualFrom = fromDate != null ? fromDate : tu;
+    LocalDate actualTo = toDate != null ? toDate : den;
+    return statisticService.getStatistics(actualFrom, actualTo);
   }
 }

@@ -4,42 +4,65 @@ import { CrudPage, refName, type CrudConfig } from '../../../components/table/Cr
 const config: CrudConfig = {
   title: 'Tài khoản',
   subtitle: 'Tài khoản đăng nhập hệ thống và quyền tương ứng.',
-  endpoint: 'tai-khoan',
-  idKey: 'maTk',
-  searchKeys: ['tenDangNhap', 'email'],
+  endpoint: 'accounts',
+  idKey: 'accountId',
+  searchKeys: ['username', 'email', 'tenDangNhap'],
   createLabel: 'Thêm tài khoản',
   searchPlaceholder: 'Tìm theo tên đăng nhập, email…',
-  refs: [{ key: 'quyen', endpoint: 'quyen' }],
+  refs: [{ key: 'roles', endpoint: 'roles' }],
   transform: (payload, isEdit) => {
-    if (isEdit && !payload.matKhau) {
-      delete payload.matKhau;
+    if (isEdit && !payload.password) {
+      delete payload.password;
     }
     return payload;
   },
   columns: [
-    { key: 'maTk', label: 'Mã', width: '70px' },
-    { key: 'tenDangNhap', label: 'Tên đăng nhập' },
+    {
+      key: 'accountId',
+      label: 'Mã',
+      width: '70px',
+      render: (row) => row.accountId ?? row.maTk,
+    },
+    {
+      key: 'username',
+      label: 'Tên đăng nhập',
+      render: (row) => row.username ?? row.tenDangNhap,
+    },
     { key: 'email', label: 'Email' },
     {
-      key: 'maQuyen',
+      key: 'roleId',
       label: 'Quyền',
       width: '150px',
       render: (row, refs) => {
-        const ten = refName(refs, 'quyen', 'maQuyen', row.maQuyen, 'tenQuyen');
-        return <Badge tone={row.maQuyen === 1 ? 'info' : row.maQuyen === 2 ? 'success' : 'neutral'}>{ten}</Badge>;
+        const id = row.roleId ?? row.maQuyen;
+        const ten =
+          refName(refs, 'roles', 'roleId', id, 'roleName') !== '—'
+            ? refName(refs, 'roles', 'roleId', id, 'roleName')
+            : refName(refs, 'roles', 'maQuyen', id, 'tenQuyen');
+        return (
+          <Badge tone={id === 1 ? 'info' : id === 2 ? 'success' : 'neutral'}>
+            {ten}
+          </Badge>
+        );
       },
     },
     {
-      key: 'trangThai',
+      key: 'isActive',
       label: 'Trạng thái',
       width: '130px',
-      render: (row) => <StatusBadge active={Boolean(row.trangThai)} trueLabel="Đang mở" falseLabel="Đã khóa" />,
+      render: (row) => (
+        <StatusBadge
+          active={Boolean(row.isActive ?? row.trangThai)}
+          trueLabel="Đang mở"
+          falseLabel="Đã khóa"
+        />
+      ),
     },
   ],
   fields: [
-    { name: 'tenDangNhap', label: 'Tên đăng nhập', required: true, placeholder: 'Ít nhất 6 ký tự' },
+    { name: 'username', label: 'Tên đăng nhập', required: true, placeholder: 'Ít nhất 6 ký tự' },
     {
-      name: 'matKhau',
+      name: 'password',
       label: 'Mật khẩu',
       type: 'password',
       requiredOnCreate: true,
@@ -47,18 +70,20 @@ const config: CrudConfig = {
     },
     { name: 'email', label: 'Email', type: 'email', required: true, placeholder: 'nguoidung@coachbooking.com' },
     {
-      name: 'maQuyen',
+      name: 'roleId',
       label: 'Quyền',
       type: 'select',
       required: true,
       asNumber: true,
       options: (refs) =>
-        (refs['quyen'] ?? []).map((item) => ({
-          value: String(item.maQuyen),
-          label: `${item.tenQuyen}${item.moTa ? ` · ${item.moTa}` : ''}`,
+        (refs['roles'] ?? []).map((item) => ({
+          value: String(item.roleId ?? item.maQuyen),
+          label: `${item.roleName ?? item.tenQuyen}${
+            item.description ?? item.moTa ? ` · ${item.description ?? item.moTa}` : ''
+          }`,
         })),
     },
-    { name: 'trangThai', label: 'Đang hoạt động', type: 'checkbox' },
+    { name: 'isActive', label: 'Đang hoạt động', type: 'checkbox' },
   ],
 };
 

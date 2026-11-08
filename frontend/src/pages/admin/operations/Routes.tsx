@@ -5,63 +5,71 @@ import { formatHour } from '../../../utils/format';
 const config: CrudConfig = {
   title: 'Tuyến đường',
   subtitle: 'Điểm đi, điểm đến, quãng đường và thời gian dự kiến của mỗi tuyến.',
-  endpoint: 'tuyen-duong',
-  idKey: 'maTuyen',
-  searchKeys: ['diemDi', 'diemDen'],
+  endpoint: 'routes',
+  idKey: 'routeId',
+  searchKeys: ['departure', 'destination', 'diemDi', 'diemDen'],
   createLabel: 'Thêm tuyến',
   searchPlaceholder: 'Tìm theo điểm đi, điểm đến…',
   toForm: (row) => ({
-    diemDi: row.diemDi ? String(row.diemDi) : '',
-    diemDen: row.diemDen ? String(row.diemDen) : '',
-    quangDuong: row.quangDuong === null || row.quangDuong === undefined ? '' : String(row.quangDuong),
-    thoiGianDuKien: row.thoiGianDuKien ? String(row.thoiGianDuKien).slice(0, 5) : '',
-    trangThai: row.trangThai ? 'true' : 'false',
+    departure: String(row.departure ?? row.diemDi ?? ''),
+    destination: String(row.destination ?? row.diemDen ?? ''),
+    distance: row.distance != null ? String(row.distance) : row.quangDuong != null ? String(row.quangDuong) : '',
+    estimatedDuration: String(row.estimatedDuration ?? row.thoiGianDuKien ?? '').slice(0, 5),
+    isActive: (row.isActive ?? row.trangThai) ? 'true' : 'false',
   }),
   transform: (payload) => {
-    const thoiGian = payload.thoiGianDuKien;
-    if (typeof thoiGian === 'string' && thoiGian.length === 5) {
-      payload.thoiGianDuKien = `${thoiGian}:00`;
+    const duration = payload.estimatedDuration;
+    if (typeof duration === 'string' && duration.length === 5) {
+      payload.estimatedDuration = `${duration}:00`;
     }
     return payload;
   },
   columns: [
-    { key: 'maTuyen', label: 'Mã', width: '70px' },
     {
-      key: 'tuyen',
+      key: 'routeId',
+      label: 'Mã',
+      width: '70px',
+      render: (row) => row.routeId ?? row.maTuyen,
+    },
+    {
+      key: 'route',
       label: 'Tuyến',
       render: (row) => (
         <strong>
-          {row.diemDi} → {row.diemDen}
+          {row.departure ?? row.diemDi} → {row.destination ?? row.diemDen}
         </strong>
       ),
     },
     {
-      key: 'quangDuong',
+      key: 'distance',
       label: 'Quãng đường',
       align: 'right',
       width: '130px',
-      render: (row) => (row.quangDuong ? `${row.quangDuong} km` : '—'),
+      render: (row) => {
+        const dist = row.distance ?? row.quangDuong;
+        return dist ? `${dist} km` : '—';
+      },
     },
     {
-      key: 'thoiGianDuKien',
+      key: 'estimatedDuration',
       label: 'Thời gian dự kiến',
       align: 'center',
       width: '150px',
-      render: (row) => formatHour(row.thoiGianDuKien),
+      render: (row) => formatHour(row.estimatedDuration ?? row.thoiGianDuKien),
     },
     {
-      key: 'trangThai',
+      key: 'isActive',
       label: 'Trạng thái',
       width: '130px',
-      render: (row) => <StatusBadge active={Boolean(row.trangThai)} />,
+      render: (row) => <StatusBadge active={Boolean(row.isActive ?? row.trangThai)} />,
     },
   ],
   fields: [
-    { name: 'diemDi', label: 'Điểm đi', required: true, placeholder: 'TP HCM' },
-    { name: 'diemDen', label: 'Điểm đến', required: true, placeholder: 'Vũng Tàu' },
-    { name: 'quangDuong', label: 'Quãng đường (km)', type: 'number', min: 0 },
-    { name: 'thoiGianDuKien', label: 'Thời gian dự kiến', type: 'time', help: 'Ví dụ 02:30 cho hành trình 2 giờ 30 phút.' },
-    { name: 'trangThai', label: 'Đang khai thác', type: 'checkbox' },
+    { name: 'departure', label: 'Điểm đi', required: true, placeholder: 'TP HCM' },
+    { name: 'destination', label: 'Điểm đến', required: true, placeholder: 'Vũng Tàu' },
+    { name: 'distance', label: 'Quãng đường (km)', type: 'number', min: 0 },
+    { name: 'estimatedDuration', label: 'Thời gian dự kiến', type: 'time', help: 'Ví dụ 02:30 cho hành trình 2 giờ 30 phút.' },
+    { name: 'isActive', label: 'Đang khai thác', type: 'checkbox' },
   ],
 };
 

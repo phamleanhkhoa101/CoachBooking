@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/ho-so")
+@RequestMapping({"/api/profile", "/api/ho-so"})
 @PreAuthorize("isAuthenticated()")
 public class ProfileController {
 
@@ -25,12 +25,12 @@ public class ProfileController {
 
   @GetMapping
   public ProfileService.ProfileResponse get() {
-    return profileService.get(currentUserService.requireTaiKhoan());
+    return profileService.get(currentUserService.requireAccount());
   }
 
   @PutMapping
   public ProfileService.ProfileResponse update(
       @Valid @RequestBody ProfileService.UpdateProfileRequest request) {
-    return profileService.update(currentUserService.requireTaiKhoan(), request);
+    return profileService.update(currentUserService.requireAccount(), request);
   }
 }

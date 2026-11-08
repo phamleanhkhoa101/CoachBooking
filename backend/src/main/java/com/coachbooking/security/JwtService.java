@@ -1,6 +1,6 @@
 package com.coachbooking.security;
 
-import com.coachbooking.domain.TaiKhoan;
+import com.coachbooking.domain.Account;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -24,13 +24,15 @@ public class JwtService {
     this.expirationMinutes = expirationMinutes;
   }
 
-  public String generate(TaiKhoan taiKhoan, String tenQuyen) {
+  public String generate(Account account, String roleName) {
     Date now = new Date();
     Date expiration = new Date(now.getTime() + expirationMinutes * 60_000L);
     return Jwts.builder()
-        .subject(taiKhoan.getTenDangNhap())
-        .claim("maTk", taiKhoan.getMaTk())
-        .claim("quyen", tenQuyen)
+        .subject(account.getUsername())
+        .claim("accountId", account.getAccountId())
+        .claim("role", roleName)
+        .claim("maTk", account.getAccountId()) // giữ backwards compatibility cho client cũ nếu có
+        .claim("quyen", roleName)
         .issuedAt(now)
         .expiration(expiration)
         .signWith(key)

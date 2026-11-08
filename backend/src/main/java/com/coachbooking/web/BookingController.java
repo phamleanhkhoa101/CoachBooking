@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/dat-ve")
+@RequestMapping({"/api/bookings", "/api/dat-ve"})
 public class BookingController {
 
   private final BookingService bookingService;
@@ -23,8 +23,8 @@ public class BookingController {
 
   @PostMapping
   @PreAuthorize("isAuthenticated()")
-  public BookingService.DatVeResponse datVe(
-      @Valid @RequestBody BookingService.DatVeRequest request) {
-    return bookingService.datVe(currentUserService.requireTaiKhoan(), request);
+  public BookingService.BookingResponse bookTickets(
+      @Valid @RequestBody BookingService.BookingRequest request) {
+    return bookingService.bookTickets(currentUserService.requireAccount(), request);
   }
 }

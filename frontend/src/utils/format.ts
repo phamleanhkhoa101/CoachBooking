@@ -85,8 +85,10 @@ export function boolLabel(value: boolean | null | undefined, trueLabel = 'Hoạt
   if (value === null || value === undefined) return EMPTY;
   return value ? trueLabel : falseLabel;
 }
+export const booleanLabel = boolLabel;
 
 export function gioiTinhLabel(value: boolean | null | undefined): string {
   if (value === null || value === undefined) return EMPTY;
   return value ? 'Nam' : 'Nữ';
 }
+export const genderLabel = gioiTinhLabel;

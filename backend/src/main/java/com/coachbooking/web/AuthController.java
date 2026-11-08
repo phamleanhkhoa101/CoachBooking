@@ -42,20 +42,20 @@ public class AuthController {
     return authService.register(request);
   }
 
-  @PostMapping("/quen-mat-khau")
+  @PostMapping({"/forgot-password", "/quen-mat-khau"})
   public Map<String, String> forgotPassword(
       @Valid @RequestBody AuthService.ForgotPasswordRequest request) {
     return authService.forgotPassword(request);
   }
 
   @GetMapping("/me")
-  public AuthService.NguoiDung me() {
-    return authService.me(currentUserService.requireTaiKhoan());
+  public AuthService.UserResponse me() {
+    return authService.me(currentUserService.requireAccount());
   }
 
-  @PostMapping("/doi-mat-khau")
+  @PostMapping({"/change-password", "/doi-mat-khau"})
   public Map<String, String> changePassword(
       @Valid @RequestBody AuthService.ChangePasswordRequest request) {
-    return authService.changePassword(currentUserService.requireTaiKhoan(), request);
+    return authService.changePassword(currentUserService.requireAccount(), request);
   }
 }

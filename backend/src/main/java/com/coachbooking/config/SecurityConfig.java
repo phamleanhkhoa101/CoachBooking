@@ -49,10 +49,16 @@ public class SecurityConfig {
                         "/api/auth/user/login",
                         "/api/auth/admin/login",
                         "/api/auth/register",
+                        "/api/auth/forgot-password",
                         "/api/auth/quen-mat-khau",
+                        "/api/routes",
+                        "/api/routes/*",
                         "/api/tuyen-duong",
                         "/api/tuyen-duong/*",
+                        "/api/trips/search",
                         "/api/chuyen-xe/tim",
+                        "/api/bus-companies",
+                        "/api/bus-companies/*",
                         "/api/nha-xe",
                         "/api/nha-xe/*")
                     .permitAll()

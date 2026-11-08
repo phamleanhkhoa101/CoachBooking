@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
-import type { Quyen } from '../../api/types';
+import type { Role } from '../../api/types';
 
 const ICON_PATHS: Record<string, string> = {
   dashboard: 'M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z',
@@ -100,27 +100,29 @@ const CUSTOMER_NAV: NavGroup[] = [
   },
 ];
 
-const ROLE_LABEL: Record<Quyen, string> = {
+const ROLE_LABEL: Record<Role, string> = {
   Admin: 'Quản trị viên',
   NhanVien: 'Nhân viên',
   KhachHang: 'Khách hàng',
 };
 
 export function AppLayout() {
-  const { nguoiDung, logout } = useAuth();
+  const { user, nguoiDung, logout } = useAuth();
+  const currentUser = user ?? nguoiDung;
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
-  if (!nguoiDung) return null;
+  if (!currentUser) return null;
 
-  const isStaff = nguoiDung.quyen === 'Admin' || nguoiDung.quyen === 'NhanVien';
+  const currentRole = (currentUser.role ?? currentUser.quyen) as Role;
+  const isStaff = currentRole === 'Admin' || currentRole === 'NhanVien';
   const groups: NavGroup[] = isStaff
-    ? nguoiDung.quyen === 'Admin'
+    ? currentRole === 'Admin'
       ? [...STAFF_NAV, STAFF_SYSTEM_NAV]
       : STAFF_NAV
     : CUSTOMER_NAV;
 
-  const displayName = nguoiDung.hoTen ?? nguoiDung.tenDangNhap;
+  const displayName = currentUser.fullName ?? currentUser.username ?? currentUser.hoTen ?? currentUser.tenDangNhap ?? 'Người dùng';
   const initials = displayName
     .split(' ')
     .filter(Boolean)
@@ -164,35 +166,42 @@ export function AppLayout() {
           ))}
         </nav>
 
-        <div className="sidebar-footer">
-          <span>CoachBooking · Spring Boot + React</span>
-          <span>Phiên bản 1.0</span>
+        <div className="sidebar-foot">
+          <span className="sidebar-foot-brand">CoachBooking · Spring Boot + React</span>
+          <span className="sidebar-foot-sub">Phiên bản 1.0</span>
         </div>
       </aside>
 
-      {open ? <div className="sidebar-overlay" onClick={() => setOpen(false)} /> : null}
-
-      <div className="app-main">
+      <div className="main">
         <header className="topbar">
-          <button type="button" className="icon-btn only-mobile" onClick={() => setOpen(true)} aria-label="Mở menu">
-            <Icon name="menu" />
-          </button>
-
-          <div className="topbar-title">
-            <span className="topbar-app">Hệ thống quản lý bán vé xe miền Đông</span>
+          <div className="topbar-left">
+            <button
+              type="button"
+              className="btn btn-ghost topbar-menu-btn"
+              onClick={() => setOpen((prev) => !prev)}
+              aria-label="Mở trình đơn"
+            >
+              <Icon name="menu" />
+            </button>
+            <span className="topbar-context">Hệ thống quản lý bán vé xe miền Đông</span>
           </div>
 
           <div className="topbar-user">
-            <div className="avatar" title={displayName}>
-              {initials || 'U'}
+            <div className="user-avatar" title={displayName}>
+              {initials || 'CB'}
             </div>
             <div className="user-meta">
-              <strong>{displayName}</strong>
-              <span className="role-chip">{ROLE_LABEL[nguoiDung.quyen]}</span>
+              <span className="user-name">{displayName}</span>
+              <span className="user-role">{ROLE_LABEL[currentRole] ?? currentRole}</span>
             </div>
-            <button type="button" className="btn btn-ghost btn-sm" onClick={handleLogout}>
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm btn-logout"
+              onClick={handleLogout}
+              title="Đăng xuất khỏi hệ thống"
+            >
               <Icon name="logout" />
-              <span className="hide-sm">Đăng xuất</span>
+              <span>Đăng xuất</span>
             </button>
           </div>
         </header>

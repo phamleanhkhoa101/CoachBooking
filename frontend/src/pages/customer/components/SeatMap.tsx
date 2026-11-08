@@ -1,15 +1,20 @@
 interface SeatMapProps {
-  soCho: number;
-  tenLoaiXe: string;
-  gheDaDat: number[];
+  seatCapacity?: number;
+  vehicleTypeName?: string;
+  bookedSeats?: number[];
   selected: number[];
   onToggle: (seat: number) => void;
   disabled?: boolean;
+
+  // Vietnamese aliases for backward compatibility
+  soCho?: number;
+  tenLoaiXe?: string;
+  gheDaDat?: number[];
 }
 
 /** Xe "Giường nằm" chia 2 tầng (nửa đầu / nửa sau); các loại khác chỉ 1 tầng. */
-function isGiuongNam(tenLoaiXe: string): boolean {
-  const normalized = tenLoaiXe
+function isGiuongNam(typeName: string): boolean {
+  const normalized = typeName
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/đ/g, 'd')
@@ -23,10 +28,10 @@ interface Deck {
   seats: number[];
 }
 
-function buildDecks(soCho: number, tenLoaiXe: string): Deck[] {
-  const all = Array.from({ length: Math.max(0, soCho) }, (_, index) => index + 1);
-  if (isGiuongNam(tenLoaiXe) && soCho > 1) {
-    const half = Math.ceil(soCho / 2);
+function buildDecks(capacity: number, typeName: string): Deck[] {
+  const all = Array.from({ length: Math.max(0, capacity) }, (_, index) => index + 1);
+  if (isGiuongNam(typeName) && capacity > 1) {
+    const half = Math.ceil(capacity / 2);
     return [
       { title: 'Tầng 1 · nửa đầu xe', seats: all.slice(0, half) },
       { title: 'Tầng 2 · nửa sau xe', seats: all.slice(half) },
@@ -35,17 +40,31 @@ function buildDecks(soCho: number, tenLoaiXe: string): Deck[] {
   return [{ title: '', seats: all }];
 }
 
-export function SeatMap({ soCho, tenLoaiXe, gheDaDat, selected, onToggle, disabled = false }: SeatMapProps) {
-  const booked = new Set(gheDaDat);
+export function SeatMap({
+  seatCapacity,
+  vehicleTypeName,
+  bookedSeats,
+  selected,
+  onToggle,
+  disabled = false,
+  soCho,
+  tenLoaiXe,
+  gheDaDat,
+}: SeatMapProps) {
+  const actualCapacity = seatCapacity ?? soCho ?? 0;
+  const actualTypeName = vehicleTypeName ?? tenLoaiXe ?? 'Sơ đồ ghế';
+  const actualBooked = bookedSeats ?? gheDaDat ?? [];
+
+  const booked = new Set(actualBooked);
   const chosen = new Set(selected);
-  const decks = buildDecks(soCho, tenLoaiXe);
+  const decks = buildDecks(actualCapacity, actualTypeName);
 
   return (
     <div className="seatmap">
       <div className="seatmap-head">
         <div>
-          <strong>{tenLoaiXe || 'Sơ đồ ghế'}</strong>
-          <span className="text-muted"> · {soCho} chỗ</span>
+          <strong>{actualTypeName}</strong>
+          <span className="text-muted"> · {actualCapacity} chỗ</span>
         </div>
         <div className="seat-legend">
           <span className="legend-item">

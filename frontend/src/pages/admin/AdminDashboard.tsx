@@ -1,23 +1,26 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api, buildQuery, getErrorMessage } from '../../api/client';
-import type { ThongKe } from '../../api/types';
+import type { Statistics } from '../../api/types';
 import { useAuth } from '../../auth/AuthContext';
 import { useToast } from '../../components/common/Toast';
 import { daysAgoISO, formatDate, formatNumber, formatVnd, todayISO } from '../../utils/format';
 
 export function AdminDashboard() {
-  const { nguoiDung } = useAuth();
+  const { user, nguoiDung } = useAuth();
+  const currentUser = user ?? nguoiDung;
   const { showToast } = useToast();
-  const [tu, setTu] = useState(daysAgoISO(29));
-  const [den, setDen] = useState(todayISO());
-  const [data, setData] = useState<ThongKe | null>(null);
+  const [fromDate, setFromDate] = useState(daysAgoISO(29));
+  const [toDate, setToDate] = useState(todayISO());
+  const [data, setData] = useState<Statistics | null>(null);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(
     async (from: string, to: string) => {
       setLoading(true);
       try {
-        const res = await api.get<ThongKe>(`/thong-ke${buildQuery({ tu: from, den: to })}`);
+        const res = await api.get<Statistics>(
+          `/statistics${buildQuery({ fromDate: from, toDate: to, tu: from, den: to })}`,
+        );
         setData(res);
       } catch (error) {
         showToast(getErrorMessage(error), 'error');
@@ -29,12 +32,26 @@ export function AdminDashboard() {
   );
 
   useEffect(() => {
-    void load(tu, den);
-  }, [load, tu, den]);
+    void load(fromDate, toDate);
+  }, [load, fromDate, toDate]);
 
-  const chart = data?.doanhThuTheoNgay ?? [];
-  const maxRevenue = Math.max(1, ...chart.map((item) => item.doanhThu));
-  const maxTuyen = Math.max(1, ...(data?.tuyenPhoBien ?? []).map((item) => item.soVe));
+  const chart = data?.dailyRevenue ?? data?.doanhThuTheoNgay ?? [];
+  const maxRevenue = Math.max(
+    1,
+    ...chart.map((item) => item.revenue ?? item.doanhThu ?? 0),
+  );
+  const popularRoutes = data?.popularRoutes ?? data?.tuyenPhoBien ?? [];
+  const maxRoute = Math.max(
+    1,
+    ...popularRoutes.map((item) => item.ticketCount ?? item.soVe ?? 0),
+  );
+
+  const displayName =
+    currentUser?.fullName ??
+    currentUser?.username ??
+    currentUser?.hoTen ??
+    currentUser?.tenDangNhap ??
+    'Quản trị viên';
 
   return (
     <div className="page">
@@ -42,19 +59,34 @@ export function AdminDashboard() {
         <div>
           <h1>Tổng quan</h1>
           <p className="page-subtitle">
-            Xin chào {nguoiDung?.hoTen ?? nguoiDung?.tenDangNhap} · Thống kê hoạt động kinh doanh
+            Xin chào {displayName} · Thống kê hoạt động kinh doanh
           </p>
         </div>
         <div className="page-actions filter-inline">
           <div className="field field-compact">
             <label htmlFor="tk-tu">Từ ngày</label>
-            <input id="tk-tu" type="date" value={tu} onChange={(event) => setTu(event.target.value)} />
+            <input
+              id="tk-tu"
+              type="date"
+              value={fromDate}
+              onChange={(event) => setFromDate(event.target.value)}
+            />
           </div>
           <div className="field field-compact">
             <label htmlFor="tk-den">Đến ngày</label>
-            <input id="tk-den" type="date" value={den} onChange={(event) => setDen(event.target.value)} />
+            <input
+              id="tk-den"
+              type="date"
+              value={toDate}
+              onChange={(event) => setToDate(event.target.value)}
+            />
           </div>
-          <button type="button" className="btn btn-primary" onClick={() => void load(tu, den)} disabled={loading}>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={() => void load(fromDate, toDate)}
+            disabled={loading}
+          >
             {loading ? 'Đang tải…' : 'Xem thống kê'}
           </button>
         </div>
@@ -63,22 +95,30 @@ export function AdminDashboard() {
       <div className="stat-grid">
         <div className="stat-card stat-teal">
           <span className="stat-label">Doanh thu</span>
-          <strong className="stat-value">{formatVnd(data?.tongDoanhThu ?? 0)}</strong>
+          <strong className="stat-value">
+            {formatVnd(data?.totalRevenue ?? data?.tongDoanhThu ?? 0)}
+          </strong>
           <span className="stat-hint">Tổng tiền đã thanh toán</span>
         </div>
         <div className="stat-card stat-indigo">
           <span className="stat-label">Số vé bán</span>
-          <strong className="stat-value">{formatNumber(data?.soVe ?? 0)}</strong>
+          <strong className="stat-value">
+            {formatNumber(data?.ticketCount ?? data?.soVe ?? 0)}
+          </strong>
           <span className="stat-hint">Vé trong khoảng thời gian</span>
         </div>
         <div className="stat-card stat-amber">
           <span className="stat-label">Chuyến xe</span>
-          <strong className="stat-value">{formatNumber(data?.soChuyenXe ?? 0)}</strong>
+          <strong className="stat-value">
+            {formatNumber(data?.tripCount ?? data?.soChuyenXe ?? 0)}
+          </strong>
           <span className="stat-hint">Chuyến đã vận hành</span>
         </div>
         <div className="stat-card stat-rose">
           <span className="stat-label">Khách hàng</span>
-          <strong className="stat-value">{formatNumber(data?.soKhachHang ?? 0)}</strong>
+          <strong className="stat-value">
+            {formatNumber(data?.customerCount ?? data?.soKhachHang ?? 0)}
+          </strong>
           <span className="stat-hint">Khách phát sinh giao dịch</span>
         </div>
       </div>
@@ -87,20 +127,29 @@ export function AdminDashboard() {
         <section className="card">
           <div className="card-header">
             <h2>Doanh thu theo ngày</h2>
-            <span className="text-muted">{formatDate(tu)} – {formatDate(den)}</span>
+            <span className="text-muted">
+              {formatDate(fromDate)} – {formatDate(toDate)}
+            </span>
           </div>
           {chart.length === 0 ? (
             <div className="empty-state">Chưa có dữ liệu trong khoảng thời gian này.</div>
           ) : (
             <div className="bar-chart">
               {chart.map((item) => {
-                const height = Math.max(3, Math.round((item.doanhThu / maxRevenue) * 100));
+                const dateVal = item.date ?? item.ngay ?? '';
+                const revVal = item.revenue ?? item.doanhThu ?? 0;
+                const ticketVal = item.ticketCount ?? item.soVe ?? 0;
+                const height = Math.max(3, Math.round((revVal / maxRevenue) * 100));
                 return (
-                  <div className="bar-col" key={item.ngay} title={`${formatDate(item.ngay)}: ${formatVnd(item.doanhThu)} · ${item.soVe} vé`}>
+                  <div
+                    className="bar-col"
+                    key={dateVal}
+                    title={`${formatDate(dateVal)}: ${formatVnd(revVal)} · ${ticketVal} vé`}
+                  >
                     <div className="bar-track">
-                      <div className="bar" style={{ height: `${height}%` }} />
+                      <div className="bar-fill" style={{ height: `${height}%` }} />
                     </div>
-                    <span className="bar-label">{formatDate(item.ngay).slice(0, 5)}</span>
+                    <span className="bar-label">{dateVal.slice(8, 10)}</span>
                   </div>
                 );
               })}
@@ -110,28 +159,33 @@ export function AdminDashboard() {
 
         <section className="card">
           <div className="card-header">
-            <h2>Tuyến phổ biến</h2>
-            <span className="text-muted">Theo số vé</span>
+            <h2>Tuyến xe bán chạy</h2>
+            <span className="text-muted">Xếp hạng theo số lượng vé</span>
           </div>
-          {(data?.tuyenPhoBien ?? []).length === 0 ? (
-            <div className="empty-state">Chưa có dữ liệu.</div>
+          {popularRoutes.length === 0 ? (
+            <div className="empty-state">Chưa có dữ liệu tuyến xe.</div>
           ) : (
-            <div className="rank-list">
-              {(data?.tuyenPhoBien ?? []).map((item, index) => (
-                <div className="rank-item" key={item.tenTuyen}>
-                  <span className="rank-index">{index + 1}</span>
-                  <div className="rank-body">
-                    <div className="rank-head">
-                      <strong>{item.tenTuyen}</strong>
-                      <span>{formatNumber(item.soVe)} vé</span>
+            <ul className="rank-list">
+              {popularRoutes.map((item, index) => {
+                const name = item.routeName ?? item.tenTuyen ?? '';
+                const count = item.ticketCount ?? item.soVe ?? 0;
+                const percent = Math.round((count / maxRoute) * 100);
+                return (
+                  <li key={name} className="rank-item">
+                    <span className="rank-pos">#{index + 1}</span>
+                    <div className="rank-main">
+                      <div className="rank-header">
+                        <strong>{name}</strong>
+                        <span className="text-muted">{count} vé</span>
+                      </div>
+                      <div className="rank-bar-bg">
+                        <div className="rank-bar-fg" style={{ width: `${percent}%` }} />
+                      </div>
                     </div>
-                    <div className="rank-track">
-                      <div className="rank-fill" style={{ width: `${Math.round((item.soVe / maxTuyen) * 100)}%` }} />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                  </li>
+                );
+              })}
+            </ul>
           )}
         </section>
       </div>

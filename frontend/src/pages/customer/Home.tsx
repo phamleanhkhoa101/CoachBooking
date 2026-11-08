@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api, getErrorMessage } from '../../api/client';
-import type { ChuyenTimKiem, NhaXe, TuyenDuong } from '../../api/types';
+import type { BusCompany, Route, Trip } from '../../api/types';
 import { useAuth } from '../../auth/AuthContext';
 import { formatVnd, todayISO } from '../../utils/format';
 import './Home.css';
@@ -54,29 +54,31 @@ function formatVietnameseDate(isoDate: string): { formatted: string; weekday: st
 }
 
 export function Home() {
-  const { nguoiDung, logout } = useAuth();
+  const { user, nguoiDung, logout } = useAuth();
+  const currentUser = user ?? nguoiDung;
   const navigate = useNavigate();
 
   // Dữ liệu thực từ database
-  const [tuyenList, setTuyenList] = useState<TuyenDuong[]>([]);
-  const [nhaXeList, setNhaXeList] = useState<NhaXe[]>([]);
+  const [routes, setRoutes] = useState<Route[]>([]);
+  const [busCompanies, setBusCompanies] = useState<BusCompany[]>([]);
   const [loadingInitial, setLoadingInitial] = useState(true);
 
   // Form tìm kiếm - khởi tạo mặc định TP HCM -> Đà Lạt
-  const [diemDi, setDiemDi] = useState('TP HCM');
-  const [diemDen, setDiemDen] = useState('Đà Lạt');
-  const [ngay, setNgay] = useState(todayISO());
+  const [departure, setDeparture] = useState('TP HCM');
+  const [destination, setDestination] = useState('Đà Lạt');
+  const [travelDate, setTravelDate] = useState(todayISO());
 
   // Custom Dropdowns cho Điểm đi & Điểm đến
-  const [openDiemDi, setOpenDiemDi] = useState(false);
-  const [openDiemDen, setOpenDiemDen] = useState(false);
-  const diemDiRef = useRef<HTMLDivElement>(null);
-  const diemDenRef = useRef<HTMLDivElement>(null);
+  const [openDeparture, setOpenDeparture] = useState(false);
+  const [openDestination, setOpenDestination] = useState(false);
+  const departureRef = useRef<HTMLDivElement>(null);
+  const destinationRef = useRef<HTMLDivElement>(null);
+  const dateInputRef = useRef<HTMLInputElement>(null);
 
   // Kết quả tìm kiếm thực tế
-  const [chuyens, setChuyens] = useState<ChuyenTimKiem[]>([]);
+  const [trips, setTrips] = useState<Trip[]>([]);
   const [searched, setSearched] = useState(false);
-  const [loadingChuyen, setLoadingChuyen] = useState(false);
+  const [loadingTrips, setLoadingTrips] = useState(false);
   const [searchError, setSearchError] = useState('');
 
   // Dropdown menu người dùng
@@ -89,11 +91,11 @@ export function Home() {
       if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
         setUserMenuOpen(false);
       }
-      if (diemDiRef.current && !diemDiRef.current.contains(e.target as Node)) {
-        setOpenDiemDi(false);
+      if (departureRef.current && !departureRef.current.contains(e.target as Node)) {
+        setOpenDeparture(false);
       }
-      if (diemDenRef.current && !diemDenRef.current.contains(e.target as Node)) {
-        setOpenDiemDen(false);
+      if (destinationRef.current && !destinationRef.current.contains(e.target as Node)) {
+        setOpenDestination(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -106,27 +108,25 @@ export function Home() {
   useEffect(() => {
     let isMounted = true;
     Promise.all([
-      api.get<TuyenDuong[]>('/tuyen-duong', { redirectOn401: false }).catch(() => [] as TuyenDuong[]),
-      api.get<NhaXe[]>('/nha-xe', { redirectOn401: false }).catch(() => [] as NhaXe[]),
-    ]).then(([tuyenData, nhaXeData]) => {
+      api.get<Route[]>('/routes', { redirectOn401: false }).catch(() => [] as Route[]),
+      api.get<BusCompany[]>('/bus-companies', { redirectOn401: false }).catch(() => [] as BusCompany[]),
+    ]).then(([routesData, companiesData]) => {
       if (!isMounted) return;
-      const activeTuyen = (tuyenData || []).filter((t) => t.trangThai);
-      const activeNhaXe = (nhaXeData || []).filter((nx) => nx.trangThai);
+      const activeRoutes = (routesData || []).filter((r) => (r.isActive ?? r.trangThai) !== false);
+      const activeCompanies = (companiesData || []).filter((c) => (c.isActive ?? c.trangThai) !== false);
 
-      setTuyenList(activeTuyen);
-      setNhaXeList(activeNhaXe);
+      setRoutes(activeRoutes);
+      setBusCompanies(activeCompanies);
       setLoadingInitial(false);
 
-      if (activeTuyen.length > 0) {
-        // Tự động chọn tuyến đầu tiên hoặc tuyến xuất bến từ TP.HCM / Bến xe Miền Đông
-        const preferred = activeTuyen.find((t) =>
-          t.diemDi.toLowerCase().includes('tp hcm') ||
-          t.diemDi.toLowerCase().includes('miền đông') ||
-          t.diemDi.toLowerCase().includes('hồ chí minh'),
-        );
-        const selected = preferred || activeTuyen[0];
-        setDiemDi(selected.diemDi);
-        setDiemDen(selected.diemDen);
+      if (activeRoutes.length > 0) {
+        const preferred = activeRoutes.find((r) => {
+          const dep = (r.departure ?? r.diemDi ?? '').toLowerCase();
+          return dep.includes('tp hcm') || dep.includes('miền đông') || dep.includes('hồ chí minh');
+        });
+        const selected = preferred || activeRoutes[0];
+        setDeparture(selected.departure ?? selected.diemDi ?? 'TP HCM');
+        setDestination(selected.destination ?? selected.diemDen ?? 'Đà Lạt');
       }
     });
 
@@ -135,97 +135,119 @@ export function Home() {
     };
   }, []);
 
-  // Danh sách các điểm đi duy nhất có trong database (hoặc fallback nếu chưa tải xong)
-  const diemDiOptions = useMemo(() => {
-    if (tuyenList.length === 0) return DEFAULT_LOCATIONS;
+  // Danh sách các điểm đi duy nhất có trong database
+  const departureOptions = useMemo(() => {
+    if (routes.length === 0) return DEFAULT_LOCATIONS;
     const set = new Set<string>();
-    tuyenList.forEach((t) => set.add(t.diemDi));
+    routes.forEach((r) => {
+      const dep = r.departure ?? r.diemDi;
+      if (dep) set.add(dep);
+    });
     return Array.from(set);
-  }, [tuyenList]);
+  }, [routes]);
 
   // Danh sách các điểm đến tương ứng với điểm đi đã chọn
-  const diemDenOptions = useMemo(() => {
-    if (tuyenList.length === 0) {
-      return DEFAULT_LOCATIONS.filter((loc) => loc !== diemDi);
+  const destinationOptions = useMemo(() => {
+    if (routes.length === 0) {
+      return DEFAULT_LOCATIONS.filter((loc) => loc !== departure);
     }
-    const filtered = tuyenList.filter((t) => t.diemDi === diemDi).map((t) => t.diemDen);
+    const filtered = routes
+      .filter((r) => (r.departure ?? r.diemDi) === departure)
+      .map((r) => r.destination ?? r.diemDen)
+      .filter(Boolean) as string[];
+
     if (filtered.length === 0) {
-      const allTo = Array.from(new Set(tuyenList.map((t) => t.diemDen))).filter((d) => d !== diemDi);
-      return allTo.length > 0 ? allTo : DEFAULT_LOCATIONS.filter((loc) => loc !== diemDi);
+      const allTo = Array.from(
+        new Set(routes.map((r) => r.destination ?? r.diemDen).filter(Boolean)),
+      ).filter((d) => d !== departure) as string[];
+      return allTo.length > 0 ? allTo : DEFAULT_LOCATIONS.filter((loc) => loc !== departure);
     }
     return Array.from(new Set(filtered));
-  }, [tuyenList, diemDi]);
+  }, [routes, departure]);
 
-  // Cập nhật điểm đến phù hợp khi người dùng chọn điểm đi
-  const handleDiemDiChange = (newDiemDi: string) => {
-    setDiemDi(newDiemDi);
-    if (tuyenList.length > 0) {
-      const validDiemDen = tuyenList.filter((t) => t.diemDi === newDiemDi).map((t) => t.diemDen);
-      if (validDiemDen.length > 0 && !validDiemDen.includes(diemDen)) {
-        setDiemDen(validDiemDen[0]);
+  const handleDepartureChange = (newDeparture: string) => {
+    setDeparture(newDeparture);
+    if (routes.length > 0) {
+      const validDestinations = routes
+        .filter((r) => (r.departure ?? r.diemDi) === newDeparture)
+        .map((r) => r.destination ?? r.diemDen)
+        .filter(Boolean) as string[];
+      if (validDestinations.length > 0 && !validDestinations.includes(destination)) {
+        setDestination(validDestinations[0]);
       }
-    } else if (diemDen === newDiemDi) {
-      const fallback = DEFAULT_LOCATIONS.find((loc) => loc !== newDiemDi) || 'Đà Lạt';
-      setDiemDen(fallback);
+    } else if (destination === newDeparture) {
+      const fallback = DEFAULT_LOCATIONS.find((loc) => loc !== newDeparture) || 'Đà Lạt';
+      setDestination(fallback);
     }
   };
 
-  // Danh sách các tuyến phổ biến thực tế từ database
   const popularRoutesFromDb = useMemo(() => {
-    return tuyenList.slice(0, 6);
-  }, [tuyenList]);
+    return routes.slice(0, 6);
+  }, [routes]);
 
   const handleSwap = () => {
-    const temp = diemDi;
-    setDiemDi(diemDen);
-    setDiemDen(temp);
+    const temp = departure;
+    setDeparture(destination);
+    setDestination(temp);
   };
 
   const handleSearch = useCallback(
-    async (overrideDiemDi?: string, overrideDiemDen?: string) => {
-      const from = overrideDiemDi ?? diemDi;
-      const to = overrideDiemDen ?? diemDen;
+    async (overrideDeparture?: string, overrideDestination?: string) => {
+      const from = overrideDeparture ?? departure;
+      const to = overrideDestination ?? destination;
 
       if (!from || !to) {
         setSearchError('Vui lòng chọn Điểm đi và Điểm đến để tra cứu chuyến xe.');
         return;
       }
 
-      setLoadingChuyen(true);
+      setLoadingTrips(true);
       setSearchError('');
       setSearched(true);
 
       try {
         const queryParams = new URLSearchParams();
-        if (from) queryParams.set('diemDi', from);
-        if (to) queryParams.set('diemDen', to);
-        if (ngay) queryParams.set('ngay', ngay);
+        if (from) {
+          queryParams.set('departure', from);
+          queryParams.set('diemDi', from);
+        }
+        if (to) {
+          queryParams.set('destination', to);
+          queryParams.set('diemDen', to);
+        }
+        if (travelDate) {
+          queryParams.set('date', travelDate);
+          queryParams.set('ngay', travelDate);
+        }
 
-        const data = await api.get<ChuyenTimKiem[]>(`/chuyen-xe/tim?${queryParams.toString()}`, {
+        const data = await api.get<Trip[]>(`/trips/search?${queryParams.toString()}`, {
           redirectOn401: false,
         });
-        setChuyens(data || []);
+        setTrips(data || []);
       } catch (err) {
         setSearchError(getErrorMessage(err));
-        setChuyens([]);
+        setTrips([]);
       } finally {
-        setLoadingChuyen(false);
+        setLoadingTrips(false);
       }
     },
-    [diemDi, diemDen, ngay],
+    [departure, destination, travelDate],
   );
 
-  const handleSelectQuickRoute = (route: TuyenDuong) => {
-    setDiemDi(route.diemDi);
-    setDiemDen(route.diemDen);
-    handleSearch(route.diemDi, route.diemDen);
+  const handleSelectQuickRoute = (route: Route) => {
+    const dep = route.departure ?? route.diemDi ?? '';
+    const dest = route.destination ?? route.diemDen ?? '';
+    setDeparture(dep);
+    setDestination(dest);
+    handleSearch(dep, dest);
     window.scrollTo({ top: 400, behavior: 'smooth' });
   };
 
-  const handleSelectChuyen = (chuyen: ChuyenTimKiem) => {
-    if (nguoiDung) {
-      if (nguoiDung.quyen === 'KhachHang') {
-        navigate('/app/dat-ve', { state: { selectedChuyen: chuyen } });
+  const handleSelectTrip = (trip: Trip) => {
+    if (currentUser) {
+      const role = currentUser.role ?? currentUser.quyen;
+      if (role === 'KhachHang') {
+        navigate('/app/dat-ve', { state: { selectedChuyen: trip } });
       } else {
         navigate('/admin/ban-ve');
       }
@@ -233,6 +255,13 @@ export function Home() {
       navigate('/login');
     }
   };
+
+  const userDisplayName =
+    currentUser?.fullName ??
+    currentUser?.username ??
+    currentUser?.hoTen ??
+    currentUser?.tenDangNhap ??
+    '';
 
   return (
     <div className="home-container">
@@ -257,12 +286,12 @@ export function Home() {
               Lịch trình tuyến xe
             </a>
             <a href="#doi-tac" className="nav-item">
-              Nhà xe đối tác ({nhaXeList.length})
+              Nhà xe đối tác ({busCompanies.length})
             </a>
           </nav>
 
           <div className="home-actions">
-            {nguoiDung ? (
+            {currentUser ? (
               <div className="user-dropdown-wrap" ref={userMenuRef}>
                 <button
                   type="button"
@@ -272,9 +301,9 @@ export function Home() {
                   aria-haspopup="true"
                 >
                   <span className="user-avatar-badge">
-                    {(nguoiDung.hoTen || nguoiDung.tenDangNhap).charAt(0).toUpperCase()}
+                    {userDisplayName.charAt(0).toUpperCase()}
                   </span>
-                  <span className="user-name">{nguoiDung.hoTen || nguoiDung.tenDangNhap}</span>
+                  <span className="user-name">{userDisplayName}</span>
                   <svg
                     className={`user-chevron ${userMenuOpen ? 'open' : ''}`}
                     width="14"
@@ -292,14 +321,14 @@ export function Home() {
                   <div className="user-dropdown-menu">
                     <div className="user-menu-header">
                       <div className="user-menu-avatar">
-                        {(nguoiDung.hoTen || nguoiDung.tenDangNhap).charAt(0).toUpperCase()}
+                        {userDisplayName.charAt(0).toUpperCase()}
                       </div>
                       <div className="user-menu-info">
-                        <span className="user-menu-name">{nguoiDung.hoTen || nguoiDung.tenDangNhap}</span>
+                        <span className="user-menu-name">{userDisplayName}</span>
                         <span className="user-menu-role">
-                          {nguoiDung.quyen === 'KhachHang'
+                          {(currentUser.role ?? currentUser.quyen) === 'KhachHang'
                             ? 'Khách hàng thân thiết'
-                            : nguoiDung.quyen === 'Admin'
+                            : (currentUser.role ?? currentUser.quyen) === 'Admin'
                               ? 'Quản trị viên bến'
                               : 'Nhân viên bán vé'}
                         </span>
@@ -308,7 +337,7 @@ export function Home() {
 
                     <div className="user-menu-divider" />
 
-                    {nguoiDung.quyen === 'KhachHang' ? (
+                    {(currentUser.role ?? currentUser.quyen) === 'KhachHang' ? (
                       <>
                         <Link
                           to="/app/ho-so"
@@ -396,7 +425,7 @@ export function Home() {
         </div>
       </header>
 
-      {/* 2. HERO SECTION VỚI DỮ LIỆU THẬT */}
+      {/* 2. HERO SECTION */}
       <section className="hero-section">
         <div className="hero-overlay-gradient" />
         <div className="hero-content">
@@ -413,11 +442,10 @@ export function Home() {
           </h1>
 
           <p className="hero-subtitle">
-            Hơn {tuyenList.length > 0 ? tuyenList.length : '14'} tuyến liên tỉnh phục vụ bởi {nhaXeList.length > 0 ? nhaXeList.length : '5'} đơn vị vận tải uy tín.
+            Hơn {routes.length > 0 ? routes.length : '14'} tuyến liên tỉnh phục vụ bởi {busCompanies.length > 0 ? busCompanies.length : '5'} đơn vị vận tải uy tín.
             Đặt vé và giữ chỗ trực tuyến an toàn theo giá niêm yết chính thức.
           </p>
 
-          {/* Dải cam kết */}
           <div className="hero-trust-badges">
             <div className="trust-badge">
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -452,7 +480,6 @@ export function Home() {
 
           {/* FLOATING BOOKING WIDGET */}
           <div className="hero-booking-widget">
-            {/* FORM TÌM KIẾM THEO TUYẾN THỰC TẾ TRONG DATABASE */}
             <form
               className="widget-search-form"
               onSubmit={(e) => {
@@ -460,27 +487,27 @@ export function Home() {
                 handleSearch();
               }}
             >
-              {/* ĐIỂM ĐI - CUSTOM DROPDOWN */}
-              <div className={`form-field-group field-from ${openDiemDi ? 'field-open' : ''}`} ref={diemDiRef}>
+              {/* ĐIỂM ĐI */}
+              <div className={`form-field-group field-from ${openDeparture ? 'field-open' : ''}`} ref={departureRef}>
                 <label>ĐIỂM ĐI</label>
                 <button
                   type="button"
                   className="custom-select-trigger"
                   onClick={() => {
-                    setOpenDiemDi((prev) => !prev);
-                    setOpenDiemDen(false);
+                    setOpenDeparture((prev) => !prev);
+                    setOpenDestination(false);
                   }}
-                  aria-expanded={openDiemDi}
+                  aria-expanded={openDeparture}
                 >
                   <div className="trigger-left">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1e40af" strokeWidth="2">
                       <circle cx="12" cy="12" r="10" />
                       <circle cx="12" cy="12" r="3" fill="#1e40af" />
                     </svg>
-                    <span className="trigger-value">{diemDi}</span>
+                    <span className="trigger-value">{departure}</span>
                   </div>
                   <svg
-                    className={`trigger-chevron ${openDiemDi ? 'open' : ''}`}
+                    className={`trigger-chevron ${openDeparture ? 'open' : ''}`}
                     width="16"
                     height="16"
                     viewBox="0 0 24 24"
@@ -492,7 +519,7 @@ export function Home() {
                   </svg>
                 </button>
                 <span className="field-subtext">
-                  {LOCATION_METAS[diemDi]?.desc || 'Điểm khởi hành tại bến'}
+                  {LOCATION_METAS[departure]?.desc || 'Điểm khởi hành tại bến'}
                 </span>
 
                 <button
@@ -500,8 +527,8 @@ export function Home() {
                   className="btn-swap-stations"
                   onClick={() => {
                     handleSwap();
-                    setOpenDiemDi(false);
-                    setOpenDiemDen(false);
+                    setOpenDeparture(false);
+                    setOpenDestination(false);
                   }}
                   title="Đảo chiều điểm đi và đến"
                 >
@@ -510,15 +537,15 @@ export function Home() {
                   </svg>
                 </button>
 
-                {openDiemDi && (
+                {openDeparture && (
                   <div className="custom-dropdown-panel">
                     <div className="dropdown-panel-header">
                       <span>CHỌN ĐIỂM KHỞI HÀNH</span>
-                      <span className="dropdown-panel-badge">{diemDiOptions.length} điểm</span>
+                      <span className="dropdown-panel-badge">{departureOptions.length} điểm</span>
                     </div>
                     <div className="dropdown-panel-list">
-                      {diemDiOptions.map((opt) => {
-                        const isSelected = diemDi === opt;
+                      {departureOptions.map((opt) => {
+                        const isSelected = departure === opt;
                         const meta = LOCATION_METAS[opt];
                         return (
                           <button
@@ -526,8 +553,8 @@ export function Home() {
                             type="button"
                             className={`dropdown-option-item ${isSelected ? 'active' : ''}`}
                             onClick={() => {
-                              handleDiemDiChange(opt);
-                              setOpenDiemDi(false);
+                              handleDepartureChange(opt);
+                              setOpenDeparture(false);
                             }}
                           >
                             <div className="opt-icon-circle">
@@ -558,27 +585,27 @@ export function Home() {
                 )}
               </div>
 
-              {/* ĐIỂM ĐẾN - CUSTOM DROPDOWN */}
-              <div className={`form-field-group field-to ${openDiemDen ? 'field-open' : ''}`} ref={diemDenRef}>
+              {/* ĐIỂM ĐẾN */}
+              <div className={`form-field-group field-to ${openDestination ? 'field-open' : ''}`} ref={destinationRef}>
                 <label>ĐIỂM ĐẾN</label>
                 <button
                   type="button"
                   className="custom-select-trigger"
                   onClick={() => {
-                    setOpenDiemDen((prev) => !prev);
-                    setOpenDiemDi(false);
+                    setOpenDestination((prev) => !prev);
+                    setOpenDeparture(false);
                   }}
-                  aria-expanded={openDiemDen}
+                  aria-expanded={openDestination}
                 >
                   <div className="trigger-left">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ea580c" strokeWidth="2">
                       <path d="M12 2a8 8 0 0 0-8 8c0 5.25 8 12 8 12s8-6.75 8-12a8 8 0 0 0-8-8z" />
                       <circle cx="12" cy="10" r="3" />
                     </svg>
-                    <span className="trigger-value">{diemDen}</span>
+                    <span className="trigger-value">{destination}</span>
                   </div>
                   <svg
-                    className={`trigger-chevron ${openDiemDen ? 'open' : ''}`}
+                    className={`trigger-chevron ${openDestination ? 'open' : ''}`}
                     width="16"
                     height="16"
                     viewBox="0 0 24 24"
@@ -590,18 +617,18 @@ export function Home() {
                   </svg>
                 </button>
                 <span className="field-subtext">
-                  {LOCATION_METAS[diemDen]?.desc || 'Bến xe đến / Điểm trả'}
+                  {LOCATION_METAS[destination]?.desc || 'Bến xe đến / Điểm trả'}
                 </span>
 
-                {openDiemDen && (
+                {openDestination && (
                   <div className="custom-dropdown-panel">
                     <div className="dropdown-panel-header">
                       <span>CHỌN ĐIỂM ĐẾN</span>
-                      <span className="dropdown-panel-badge">{diemDenOptions.length} tuyến</span>
+                      <span className="dropdown-panel-badge">{destinationOptions.length} tuyến</span>
                     </div>
                     <div className="dropdown-panel-list">
-                      {diemDenOptions.map((opt) => {
-                        const isSelected = diemDen === opt;
+                      {destinationOptions.map((opt) => {
+                        const isSelected = destination === opt;
                         const meta = LOCATION_METAS[opt];
                         return (
                           <button
@@ -609,8 +636,8 @@ export function Home() {
                             type="button"
                             className={`dropdown-option-item ${isSelected ? 'active' : ''}`}
                             onClick={() => {
-                              setDiemDen(opt);
-                              setOpenDiemDen(false);
+                              setDestination(opt);
+                              setOpenDestination(false);
                             }}
                           >
                             <div className="opt-icon-circle to-icon">
@@ -641,11 +668,12 @@ export function Home() {
                 )}
               </div>
 
+              {/* NGÀY ĐI */}
               <div className="form-field-group field-date">
                 <div className="field-label-row">
                   <label>NGÀY ĐI</label>
                   <div className="quick-date-links">
-                    <button type="button" onClick={() => setNgay(todayISO())}>
+                    <button type="button" onClick={() => setTravelDate(todayISO())}>
                       Hôm nay
                     </button>
                     <span>•</span>
@@ -654,7 +682,7 @@ export function Home() {
                       onClick={() => {
                         const d = new Date();
                         d.setDate(d.getDate() + 1);
-                        setNgay(d.toISOString().slice(0, 10));
+                        setTravelDate(d.toISOString().slice(0, 10));
                       }}
                     >
                       Ngày mai
@@ -662,7 +690,11 @@ export function Home() {
                   </div>
                 </div>
 
-                <div className="date-picker-wrap">
+                <div
+                  className="date-picker-wrap"
+                  onClick={() => dateInputRef.current?.showPicker?.()}
+                  style={{ cursor: 'pointer' }}
+                >
                   <div className="trigger-left">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1e40af" strokeWidth="2">
                       <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
@@ -670,24 +702,27 @@ export function Home() {
                       <line x1="8" y1="2" x2="8" y2="6" />
                       <line x1="3" y1="10" x2="21" y2="10" />
                     </svg>
-                    <span className="trigger-value">{formatVietnameseDate(ngay).formatted}</span>
+                    <span className="trigger-value" style={{ fontWeight: 600 }}>
+                      {formatVietnameseDate(travelDate).formatted}
+                    </span>
                   </div>
                   <input
+                    ref={dateInputRef}
                     type="date"
                     className="hidden-date-input"
-                    value={ngay}
+                    value={travelDate}
                     min={todayISO()}
-                    onChange={(e) => setNgay(e.target.value)}
+                    onChange={(e) => setTravelDate(e.target.value)}
                     required
-                    title="Chọn ngày khởi hành"
+                    title="Chọn ngày khởi hành (định dạng Ngày/Tháng/Năm)"
                   />
                 </div>
-                <span className="field-subtext">{formatVietnameseDate(ngay).weekday}</span>
+                <span className="field-subtext">{formatVietnameseDate(travelDate).weekday}</span>
               </div>
 
               <div className="form-action-group">
-                <button type="submit" className="btn-search-hero" disabled={loadingChuyen || loadingInitial}>
-                  {loadingChuyen ? (
+                <button type="submit" className="btn-search-hero" disabled={loadingTrips || loadingInitial}>
+                  {loadingTrips ? (
                     <span>Đang tìm...</span>
                   ) : (
                     <>
@@ -712,19 +747,23 @@ export function Home() {
                   Tuyến xe kết nối:
                 </span>
                 <div className="suggestion-pills">
-                  {popularRoutesFromDb.map((route) => (
-                    <button
-                      key={route.maTuyen}
-                      type="button"
-                      className="suggestion-pill"
-                      onClick={() => handleSelectQuickRoute(route)}
-                    >
-                      <span>{route.diemDi} ➔ {route.diemDen}</span>
-                      {route.quangDuong && (
-                        <span className="pill-distance">({route.quangDuong} km)</span>
-                      )}
-                    </button>
-                  ))}
+                  {popularRoutesFromDb.map((route) => {
+                    const id = route.routeId ?? route.maTuyen;
+                    const dep = route.departure ?? route.diemDi;
+                    const dest = route.destination ?? route.diemDen;
+                    const dist = route.distance ?? route.quangDuong;
+                    return (
+                      <button
+                        key={id}
+                        type="button"
+                        className="suggestion-pill"
+                        onClick={() => handleSelectQuickRoute(route)}
+                      >
+                        <span>{dep} ➔ {dest}</span>
+                        {dist && <span className="pill-distance">({dist} km)</span>}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -732,17 +771,17 @@ export function Home() {
         </div>
       </section>
 
-      {/* 3. KẾT QUẢ TÌM KIẾM CHUYẾN XE (KẾT NỐI API /api/chuyen-xe/tim THẬT) */}
+      {/* 3. KẾT QUẢ TÌM KIẾM CHUYẾN XE */}
       {searched && (
         <section className="search-results-section" id="ket-qua">
           <div className="results-container">
             <div className="results-header">
               <div>
                 <h2>
-                  Kết quả chuyến xe: <span className="text-primary">{diemDi} ➔ {diemDen}</span>
+                  Kết quả chuyến xe: <span className="text-primary">{departure} ➔ {destination}</span>
                 </h2>
                 <p className="results-sub">
-                  Ngày khởi hành: <strong>{ngay}</strong> · Tìm thấy <strong>{chuyens.length}</strong> chuyến phù hợp trong hệ thống
+                  Ngày khởi hành: <strong>{formatVietnameseDate(travelDate).formatted}</strong> · Tìm thấy <strong>{trips.length}</strong> chuyến phù hợp trong hệ thống
                 </p>
               </div>
               <button
@@ -750,7 +789,7 @@ export function Home() {
                 className="btn-clear-search"
                 onClick={() => {
                   setSearched(false);
-                  setChuyens([]);
+                  setTrips([]);
                 }}
               >
                 Đóng kết quả
@@ -759,35 +798,48 @@ export function Home() {
 
             {searchError && <div className="search-error-alert">{searchError}</div>}
 
-            {loadingChuyen ? (
+            {loadingTrips ? (
               <div className="results-loading">
                 <span className="spinner-large" />
                 <p>Đang tra cứu dữ liệu chuyến xe từ hệ thống bến...</p>
               </div>
-            ) : chuyens.length === 0 ? (
+            ) : trips.length === 0 ? (
               <div className="no-trips-card">
                 <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5">
                   <circle cx="12" cy="12" r="10" />
                   <line x1="8" y1="12" x2="16" y2="12" />
                 </svg>
-                <h3>Chưa có chuyến xe nào xuất bến vào ngày {ngay}</h3>
+                <h3>Chưa có chuyến xe nào xuất bến vào ngày {formatVietnameseDate(travelDate).formatted}</h3>
                 <p>Hiện chưa có chuyến xe nào chạy tuyến này vào ngày đã chọn. Vui lòng chọn ngày khác hoặc thử tuyến đường khác.</p>
               </div>
             ) : (
               <div className="trip-cards-grid">
-                {chuyens.map((chuyen) => {
-                  const conTrong = chuyen.soCho - (chuyen.soGheDaDat ?? chuyen.soVeDaBan ?? 0);
+                {trips.map((trip) => {
+                  const tripId = trip.tripId ?? trip.maChuyen;
+                  const companyName = trip.companyName ?? trip.tenNhaXe ?? '';
+                  const typeName = trip.typeName ?? trip.tenLoaiXe ?? '';
+                  const seatCap = trip.seatCapacity ?? trip.soCho ?? 0;
+                  const licensePlate = trip.licensePlate ?? trip.bienSoXe ?? '';
+                  const driverName = trip.driverName ?? trip.tenTx ?? '';
+                  const depTime = trip.departureTime ?? trip.ngayGioKhoiHanh;
+                  const arrTime = trip.estimatedArrivalTime ?? trip.ngayGioDenDuKien;
+                  const dep = trip.departure ?? trip.diemDi ?? '';
+                  const dest = trip.destination ?? trip.diemDen ?? '';
+                  const price = trip.actualPrice ?? trip.giaVeThucTe ?? 0;
+                  const booked = trip.bookedSeats ?? trip.ticketsSold ?? trip.soGheDaDat ?? trip.soVeDaBan ?? 0;
+                  const conTrong = seatCap - booked;
+
                   return (
-                    <div key={chuyen.maChuyen} className="trip-card">
+                    <div key={tripId} className="trip-card">
                       <div className="trip-card-main">
                         <div className="operator-info">
                           <div className="operator-badge">
-                            {chuyen.tenNhaXe ? chuyen.tenNhaXe.charAt(0).toUpperCase() : 'BX'}
+                            {companyName ? companyName.charAt(0).toUpperCase() : 'BX'}
                           </div>
                           <div>
-                            <strong className="operator-name">{chuyen.tenNhaXe}</strong>
+                            <strong className="operator-name">{companyName || 'Nhà xe bến Miền Đông'}</strong>
                             <span className="vehicle-type-label">
-                              {chuyen.tenLoaiXe} ({chuyen.soCho} chỗ) · BKS: {chuyen.bienSoXe} · Tài xế: {chuyen.tenTx}
+                              {typeName} ({seatCap} chỗ) {licensePlate ? `· BKS: ${licensePlate}` : ''} {driverName ? `· Tài xế: ${driverName}` : ''}
                             </span>
                           </div>
                         </div>
@@ -795,12 +847,14 @@ export function Home() {
                         <div className="trip-timeline">
                           <div className="timeline-node">
                             <span className="node-time">
-                              {new Date(chuyen.ngayGioKhoiHanh).toLocaleTimeString('vi-VN', {
-                                hour: '2-digit',
-                                minute: '2-digit',
-                              })}
+                              {depTime
+                                ? new Date(depTime).toLocaleTimeString('vi-VN', {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  })
+                                : '--:--'}
                             </span>
-                            <span className="node-place">{chuyen.diemDi}</span>
+                            <span className="node-place">{dep}</span>
                           </div>
                           <div className="timeline-divider">
                             <span className="divider-line" />
@@ -808,14 +862,14 @@ export function Home() {
                           </div>
                           <div className="timeline-node">
                             <span className="node-time">
-                              {chuyen.ngayGioDenDuKien
-                                ? new Date(chuyen.ngayGioDenDuKien).toLocaleTimeString('vi-VN', {
+                              {arrTime
+                                ? new Date(arrTime).toLocaleTimeString('vi-VN', {
                                     hour: '2-digit',
                                     minute: '2-digit',
                                   })
                                 : '--:--'}
                             </span>
-                            <span className="node-place">{chuyen.diemDen}</span>
+                            <span className="node-place">{dest}</span>
                           </div>
                         </div>
 
@@ -830,15 +884,15 @@ export function Home() {
                       <div className="trip-card-action">
                         <div className="price-tag">
                           <span className="price-label">Giá vé niêm yết</span>
-                          <strong className="price-val">{formatVnd(chuyen.giaVeThucTe)}</strong>
+                          <strong className="price-val">{formatVnd(price)}</strong>
                         </div>
                         <span className={`seats-left-badge ${conTrong <= 5 ? 'seats-urgent' : ''}`}>
-                          Còn {conTrong} / {chuyen.soCho} chỗ trống
+                          Còn {conTrong > 0 ? conTrong : 0} / {seatCap} chỗ trống
                         </span>
                         <button
                           type="button"
                           className="btn-select-trip"
-                          onClick={() => handleSelectChuyen(chuyen)}
+                          onClick={() => handleSelectTrip(trip)}
                           disabled={conTrong <= 0}
                         >
                           {conTrong > 0 ? 'Chọn Chuyến' : 'Hết Chỗ'}
@@ -853,7 +907,7 @@ export function Home() {
         </section>
       )}
 
-      {/* 4. CÁC ĐƠN VỊ VẬN TẢI ĐỐI TÁC THỰC TẾ TRONG DATABASE */}
+      {/* 4. CÁC ĐƠN VỊ VẬN TẢI ĐỐI TÁC */}
       <section className="section-operators" id="doi-tac">
         <div className="section-container">
           <div className="text-center-wrapper">
@@ -865,30 +919,35 @@ export function Home() {
           </div>
 
           <div className="operators-grid">
-            {nhaXeList.map((op) => (
-              <div key={op.maNx} className="operator-card">
-                <div className="operator-card-top">
-                  <div className="operator-avatar" style={{ backgroundColor: '#1e40af20', color: '#1e40af' }}>
-                    {op.tenNx.charAt(0)}
+            {busCompanies.map((op) => {
+              const id = op.companyId ?? op.maNx;
+              const name = op.companyName ?? op.tenNx ?? '';
+              const phone = op.phone ?? op.sdt;
+              return (
+                <div key={id} className="operator-card">
+                  <div className="operator-card-top">
+                    <div className="operator-avatar" style={{ backgroundColor: '#1e40af20', color: '#1e40af' }}>
+                      {name.charAt(0) || 'BX'}
+                    </div>
+                    <div className="operator-badge-active">
+                      <span>Đang hoạt động</span>
+                    </div>
                   </div>
-                  <div className="operator-badge-active">
-                    <span>Đang hoạt động</span>
+                  <h4 className="op-name">{name}</h4>
+                  <p className="op-type">
+                    {phone ? `Hotline: ${phone}` : 'Liên hệ bến xe'}
+                  </p>
+                  <div className="operator-card-bottom">
+                    <span>{op.email ? op.email : 'contact@benxemiendong.vn'}</span>
                   </div>
                 </div>
-                <h4 className="op-name">{op.tenNx}</h4>
-                <p className="op-type">
-                  {op.sdt ? `Hotline: ${op.sdt}` : 'Liên hệ bến xe'}
-                </p>
-                <div className="operator-card-bottom">
-                  <span>{op.email ? op.email : 'contact@benxemiendong.vn'}</span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
 
-      {/* 5. TẠI SAO CHỌN COACHBOOKING SAMCO */}
+      {/* 5. TẠI SAO CHỌN COACHBOOKING */}
       <section className="section-features">
         <div className="section-container">
           <div className="text-center-wrapper">
@@ -948,57 +1007,67 @@ export function Home() {
           <div className="footer-top-grid">
             <div className="footer-col-brand">
               <div className="footer-brand-header">
-                <div className="brand-badge-logo">BX</div>
-                <strong className="footer-brand-name">CoachBooking</strong>
+                <div className="footer-brand-logo">BX</div>
+                <div>
+                  <h3 className="footer-brand-title">Bến Xe Miền Đông Mới</h3>
+                  <span className="footer-brand-sub">Tổng Công ty Cơ khí Giao thông Vận tải Sài Gòn (SAMCO)</span>
+                </div>
               </div>
-              <p className="footer-brand-desc">
-                Hệ thống đặt vé xe khách trực tuyến Bến xe Miền Đông Mới.
-                Đơn vị chủ quản: Tổng công ty Cơ khí Giao thông Vận tải Sài Gòn (SAMCO).
+              <p className="footer-desc">
+                Hệ thống bán vé trực tuyến chính thức, phục vụ hành khách kết nối TP. Hồ Chí Minh với các tỉnh Miền Trung, Miền Bắc và Tây Nguyên.
               </p>
-              <div className="footer-contact-info">
-                <p>📍 Địa chỉ: 501 Hoàng Hữu Nam, P. Long Bình, TP. Thủ Đức, TP.HCM</p>
-                <p>📞 Hotline: 1900 8888 · Email: hotro@coachbooking.vn</p>
-              </div>
             </div>
 
-            <div className="footer-col-links">
-              <h4>Về Bến xe Miền Đông</h4>
-              <ul>
-                <li><a href="#tuyen-duong">Lịch trình các tuyến xe ({tuyenList.length})</a></li>
-                <li><a href="#doi-tac">Nhà xe đang hoạt động ({nhaXeList.length})</a></li>
-                <li><a href="tel:19008888">Hotline điều hành 24/7</a></li>
-              </ul>
-            </div>
-
-            <div className="footer-col-links">
-              <h4>Hỗ trợ hành khách</h4>
-              <ul>
-                <li><Link to="/app/lich-su">Tra cứu vé đã đặt</Link></li>
+            <div className="footer-col">
+              <h4>Liên kết nhanh</h4>
+              <ul className="footer-links">
+                <li><a href="#tuyen-duong">Lịch trình các tuyến</a></li>
+                <li><a href="#doi-tac">Danh sách nhà xe</a></li>
                 <li><Link to="/login">Đăng nhập tài khoản</Link></li>
                 <li><Link to="/register">Đăng ký thành viên</Link></li>
               </ul>
             </div>
 
-            <div className="footer-col-links">
-              <h4>Phương thức thanh toán</h4>
-              <p className="footer-subtext">Hỗ trợ thanh toán bảo mật bằng Tiền mặt tại quầy, Chuyển khoản ngân hàng hoặc Thẻ ATM</p>
-              <div className="payment-badges-row">
-                <span className="pay-badge">Chuyển khoản</span>
-                <span className="pay-badge">Thẻ ATM</span>
-                <span className="pay-badge">Tiền mặt</span>
-              </div>
+            <div className="footer-col">
+              <h4>Hỗ trợ hành khách</h4>
+              <ul className="footer-links">
+                <li><a href="#">Quy định hủy đổi vé</a></li>
+                <li><a href="#">Chính sách hành lý</a></li>
+                <li><a href="#">Hướng dẫn gửi xe tại bến</a></li>
+                <li><a href="#">Bảo hiểm chuyến đi</a></li>
+              </ul>
+            </div>
+
+            <div className="footer-col">
+              <h4>Thông tin liên hệ</h4>
+              <ul className="footer-contact-list">
+                <li>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                    <circle cx="12" cy="10" r="3" />
+                  </svg>
+                  <span>501 Hoàng Hữu Nam, P. Long Bình, TP. Thủ Đức, TP. HCM</span>
+                </li>
+                <li>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+                  </svg>
+                  <span>Tổng đài đặt vé: 1900 571 285</span>
+                </li>
+                <li>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                    <polyline points="22,6 12,13 2,6" />
+                  </svg>
+                  <span>hotro@benxemiendong.vn</span>
+                </li>
+              </ul>
             </div>
           </div>
 
-          <div className="footer-bottom-bar">
-            <span>© 2026 CoachBooking · Bến xe Miền Đông.</span>
-            <div className="footer-legal-links">
-              <a href="#dieu-khoan">Điều khoản sử dụng</a>
-              <span>·</span>
-              <a href="#bao-mat">Bảo mật</a>
-              <span>·</span>
-              <a href="#quy-che">Quy chế hoạt động bến</a>
-            </div>
+          <div className="footer-bottom">
+            <p>© 2026 Bến xe Miền Đông Mới. Bản quyền thuộc Tổng Công ty SAMCO.</p>
+            <p className="footer-powered">CoachBooking Platform v1.0 · Spring Boot & React</p>
           </div>
         </div>
       </footer>

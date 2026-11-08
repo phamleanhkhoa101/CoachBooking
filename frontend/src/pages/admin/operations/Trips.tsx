@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { api, getErrorMessage } from '../../../api/client';
-import type { ChuyenXe, TaiXe, TuyenDuong, Xe } from '../../../api/types';
+import type { Driver, Route, Trip, Vehicle } from '../../../api/types';
 import { useAuth } from '../../../auth/AuthContext';
 import { Badge } from '../../../components/common/Badge';
 import { DataTable, type DataTableColumn } from '../../../components/table/DataTable';
@@ -10,51 +10,53 @@ import { useToast } from '../../../components/common/Toast';
 import { formatDateTime, formatVnd, toDateTimeInput } from '../../../utils/format';
 
 interface TripForm {
-  maXe: string;
-  maTuyen: string;
-  maTx: string;
-  ngayGioKhoiHanh: string;
+  vehicleId: string;
+  routeId: string;
+  driverId: string;
+  departureTime: string;
 }
 
-const EMPTY_FORM: TripForm = { maXe: '', maTuyen: '', maTx: '', ngayGioKhoiHanh: '' };
+const EMPTY_FORM: TripForm = { vehicleId: '', routeId: '', driverId: '', departureTime: '' };
 
-function isUpcoming(value: string): boolean {
+function isUpcoming(value?: string | null): boolean {
+  if (!value) return false;
   return new Date(value).getTime() > Date.now();
 }
 
 export function Trips() {
-  const { nguoiDung } = useAuth();
+  const { user, nguoiDung } = useAuth();
   const { showToast } = useToast();
-  const isAdmin = nguoiDung?.quyen === 'Admin';
+  const currentUser = user ?? nguoiDung;
+  const isAdmin = (currentUser?.role ?? currentUser?.quyen) === 'Admin';
 
-  const [rows, setRows] = useState<ChuyenXe[]>([]);
-  const [xes, setXes] = useState<Xe[]>([]);
-  const [tuyenList, setTuyenList] = useState<TuyenDuong[]>([]);
-  const [taiXes, setTaiXes] = useState<TaiXe[]>([]);
+  const [rows, setRows] = useState<Trip[]>([]);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [routes, setRoutes] = useState<Route[]>([]);
+  const [drivers, setDrivers] = useState<Driver[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [editing, setEditing] = useState<ChuyenXe | null>(null);
+  const [editing, setEditing] = useState<Trip | null>(null);
   const [form, setForm] = useState<TripForm>(EMPTY_FORM);
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
-  const [deleting, setDeleting] = useState<ChuyenXe | null>(null);
+  const [deleting, setDeleting] = useState<Trip | null>(null);
   const [deleteBusy, setDeleteBusy] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [chuyenData, xeData, tuyenData, txData] = await Promise.all([
-        api.get<ChuyenXe[]>('/chuyen-xe'),
-        api.get<Xe[]>('/xe'),
-        api.get<TuyenDuong[]>('/tuyen-duong'),
-        api.get<TaiXe[]>('/tai-xe'),
+      const [tripData, vehicleData, routeData, driverData] = await Promise.all([
+        api.get<Trip[]>('/trips'),
+        api.get<Vehicle[]>('/vehicles'),
+        api.get<Route[]>('/routes'),
+        api.get<Driver[]>('/drivers'),
       ]);
-      setRows(Array.isArray(chuyenData) ? chuyenData : []);
-      setXes(Array.isArray(xeData) ? xeData : []);
-      setTuyenList(Array.isArray(tuyenData) ? tuyenData : []);
-      setTaiXes(Array.isArray(txData) ? txData : []);
+      setRows(Array.isArray(tripData) ? tripData : []);
+      setVehicles(Array.isArray(vehicleData) ? vehicleData : []);
+      setRoutes(Array.isArray(routeData) ? routeData : []);
+      setDrivers(Array.isArray(driverData) ? driverData : []);
     } catch (error) {
       showToast(getErrorMessage(error), 'error');
     } finally {
@@ -66,29 +68,35 @@ export function Trips() {
     void load();
   }, [load]);
 
-  const xeOptions = useMemo(
+  const vehicleOptions = useMemo(
     () =>
-      xes
-        .filter((xe) => xe.trangThai !== false)
-        .map((xe) => ({ value: String(xe.maXe), label: xe.bienSoXe })),
-    [xes],
+      vehicles
+        .filter((v) => (v.isActive ?? v.trangThai) !== false)
+        .map((v) => ({
+          value: String(v.vehicleId ?? v.maXe),
+          label: v.licensePlate ?? v.bienSoXe ?? '',
+        })),
+    [vehicles],
   );
 
-  const tuyenOptions = useMemo(
+  const routeOptions = useMemo(
     () =>
-      tuyenList.map((tuyen) => ({
-        value: String(tuyen.maTuyen),
-        label: `${tuyen.diemDi} → ${tuyen.diemDen}`,
+      routes.map((r) => ({
+        value: String(r.routeId ?? r.maTuyen),
+        label: `${r.departure ?? r.diemDi} → ${r.destination ?? r.diemDen}`,
       })),
-    [tuyenList],
+    [routes],
   );
 
-  const taiXeOptions = useMemo(
+  const driverOptions = useMemo(
     () =>
-      taiXes
-        .filter((tx) => tx.trangThai !== false)
-        .map((tx) => ({ value: String(tx.maTx), label: tx.tenTx })),
-    [taiXes],
+      drivers
+        .filter((d) => (d.isActive ?? d.trangThai) !== false)
+        .map((d) => ({
+          value: String(d.driverId ?? d.maTx),
+          label: d.fullName ?? d.tenTx ?? '',
+        })),
+    [drivers],
   );
 
   const openCreate = () => {
@@ -98,13 +106,13 @@ export function Trips() {
     setModalOpen(true);
   };
 
-  const openEdit = (row: ChuyenXe) => {
+  const openEdit = (row: Trip) => {
     setEditing(row);
     setForm({
-      maXe: String(row.maXe ?? ''),
-      maTuyen: String(row.maTuyen ?? ''),
-      maTx: String(row.maTx ?? ''),
-      ngayGioKhoiHanh: toDateTimeInput(row.ngayGioKhoiHanh),
+      vehicleId: String(row.vehicleId ?? row.maXe ?? ''),
+      routeId: String(row.routeId ?? row.maTuyen ?? ''),
+      driverId: String(row.driverId ?? row.maTx ?? ''),
+      departureTime: toDateTimeInput(row.departureTime ?? row.ngayGioKhoiHanh),
     });
     setFormError('');
     setModalOpen(true);
@@ -115,25 +123,33 @@ export function Trips() {
   };
 
   const handleSubmit = async () => {
-    if (!form.maXe || !form.maTuyen || !form.maTx || !form.ngayGioKhoiHanh) {
+    if (!form.vehicleId || !form.routeId || !form.driverId || !form.departureTime) {
       setFormError('Vui lòng chọn xe, tuyến đường, tài xế và thời điểm khởi hành.');
       return;
     }
+    const departureTimeIso =
+      form.departureTime.length === 16 ? `${form.departureTime}:00` : form.departureTime;
     const payload = {
-      maXe: Number(form.maXe),
-      maTuyen: Number(form.maTuyen),
-      maTx: Number(form.maTx),
-      ngayGioKhoiHanh: form.ngayGioKhoiHanh.length === 16 ? `${form.ngayGioKhoiHanh}:00` : form.ngayGioKhoiHanh,
+      vehicleId: Number(form.vehicleId),
+      routeId: Number(form.routeId),
+      driverId: Number(form.driverId),
+      departureTime: departureTimeIso,
+      // Vietnamese fallbacks
+      maXe: Number(form.vehicleId),
+      maTuyen: Number(form.routeId),
+      maTx: Number(form.driverId),
+      ngayGioKhoiHanh: departureTimeIso,
     };
 
     setSaving(true);
     setFormError('');
     try {
-      if (editing) {
-        await api.put(`/chuyen-xe/${editing.maChuyen}`, payload);
+      const tripId = editing ? (editing.tripId ?? editing.maChuyen) : null;
+      if (editing && tripId) {
+        await api.put(`/trips/${tripId}`, payload);
         showToast('Đã cập nhật chuyến xe.');
       } else {
-        await api.post('/chuyen-xe', payload);
+        await api.post('/trips', payload);
         showToast('Đã thêm chuyến xe.');
       }
       setModalOpen(false);
@@ -147,9 +163,11 @@ export function Trips() {
 
   const handleDelete = async () => {
     if (!deleting) return;
+    const tripId = deleting.tripId ?? deleting.maChuyen;
+    if (!tripId) return;
     setDeleteBusy(true);
     try {
-      await api.del(`/chuyen-xe/${deleting.maChuyen}`);
+      await api.del(`/trips/${tripId}`);
       showToast('Đã xóa chuyến xe.');
       setDeleting(null);
       await load();
@@ -163,75 +181,172 @@ export function Trips() {
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
     if (!term) return rows;
-    return rows.filter((row) =>
-      [row.diemDi, row.diemDen, row.bienSoXe, row.tenNhaXe, row.tenTx]
+    return rows.filter((row) => {
+      const dep = row.departure ?? row.diemDi;
+      const dest = row.destination ?? row.diemDen;
+      const plate = row.licensePlate ?? row.bienSoXe;
+      const company = row.companyName ?? row.tenNhaXe;
+      const driver = row.driverName ?? row.tenTx;
+      return [dep, dest, plate, company, driver]
         .filter(Boolean)
-        .some((value) => String(value).toLowerCase().includes(term)),
-    );
+        .some((val) => String(val).toLowerCase().includes(term));
+    });
   }, [rows, search]);
 
-  const columns: DataTableColumn<ChuyenXe>[] = [
+  const columns: DataTableColumn<Trip>[] = [
     {
-      key: 'ngayGioKhoiHanh',
+      key: 'departureTime',
       label: 'Khởi hành',
       width: '150px',
-      render: (row) => (
-        <div className="cell-stack">
-          <strong>{formatDateTime(row.ngayGioKhoiHanh)}</strong>
-          <span className="text-muted">Đến {formatDateTime(row.ngayGioDenDuKien)}</span>
-        </div>
-      ),
+      render: (row) => {
+        const depTime = row.departureTime ?? row.ngayGioKhoiHanh;
+        const arrTime = row.estimatedArrivalTime ?? row.ngayGioDenDuKien;
+        return (
+          <div className="cell-stack">
+            <strong>{formatDateTime(depTime)}</strong>
+            <span className="text-muted">Đến {formatDateTime(arrTime)}</span>
+          </div>
+        );
+      },
     },
     {
-      key: 'tuyen',
+      key: 'route',
       label: 'Tuyến',
-      render: (row) => (
-        <div className="cell-stack">
-          <strong>
-            {row.diemDi} → {row.diemDen}
-          </strong>
-          <span className="text-muted">{row.tenNhaXe}</span>
-        </div>
-      ),
+      render: (row) => {
+        const dep = row.departure ?? row.diemDi;
+        const dest = row.destination ?? row.diemDen;
+        const company = row.companyName ?? row.tenNhaXe;
+        return (
+          <div className="cell-stack">
+            <strong>
+              {dep} → {dest}
+            </strong>
+            <span className="text-muted">{company}</span>
+          </div>
+        );
+      },
     },
     {
-      key: 'xe',
+      key: 'vehicle',
       label: 'Xe / Loại xe',
-      render: (row) => (
-        <div className="cell-stack">
-          <strong>{row.bienSoXe}</strong>
-          <span className="text-muted">
-            {row.tenLoaiXe} · {row.soCho} chỗ
-          </span>
-        </div>
-      ),
+      render: (row) => {
+        const typeName = row.typeName ?? row.tenLoaiXe;
+        const cap = row.seatCapacity ?? row.soCho;
+        const plate = row.licensePlate ?? row.bienSoXe;
+        return (
+          <div className="cell-stack">
+            <strong>{plate}</strong>
+            <span className="text-muted">
+              {typeName} · {cap} chỗ
+            </span>
+          </div>
+        );
+      },
     },
-    { key: 'tenTx', label: 'Tài xế' },
     {
-      key: 'giaVeThucTe',
+      key: 'driverName',
+      label: 'Tài xế',
+      render: (row) => row.driverName ?? row.tenTx ?? '—',
+    },
+    {
+      key: 'actualPrice',
       label: 'Giá vé',
       align: 'right',
-      render: (row) => <strong className="text-primary">{formatVnd(row.giaVeThucTe)}</strong>,
+      render: (row) => (
+        <strong className="text-primary">{formatVnd(row.actualPrice ?? row.giaVeThucTe)}</strong>
+      ),
     },
     {
-      key: 'soVeDaBan',
+      key: 'ticketsSold',
       label: 'Đã bán',
       align: 'center',
-      width: '90px',
-      render: (row) => `${row.soVeDaBan ?? 0}/${row.soCho}`,
+      render: (row) => {
+        const sold = row.ticketsSold ?? row.soVeDaBan ?? row.bookedSeats ?? 0;
+        const cap = row.seatCapacity ?? row.soCho ?? 0;
+        return `${sold}/${cap}`;
+      },
     },
     {
-      key: 'trangThai',
+      key: 'status',
       label: 'Trạng thái',
       width: '130px',
+      render: (row) => {
+        const depTime = row.departureTime ?? row.ngayGioKhoiHanh;
+        const upcoming = isUpcoming(depTime);
+        return (
+          <Badge tone={upcoming ? 'success' : 'neutral'}>
+            {upcoming ? 'Sắp chạy' : 'Đã khởi hành'}
+          </Badge>
+        );
+      },
+    },
+    {
+      key: 'actions',
+      label: 'Thao tác',
+      align: 'right',
       render: (row) =>
-        isUpcoming(row.ngayGioKhoiHanh) ? (
-          <Badge tone="info">Sắp khởi hành</Badge>
-        ) : (
-          <Badge tone="neutral">Đã khởi hành</Badge>
-        ),
+        isAdmin ? (
+          <div className="table-actions">
+            <button
+              type="button"
+              className="btn btn-sm btn-secondary"
+              onClick={() => openEdit(row)}
+            >
+              Sửa
+            </button>
+            <button
+              type="button"
+              className="btn btn-sm btn-danger-ghost"
+              onClick={() => setDeleting(row)}
+            >
+              Xóa
+            </button>
+          </div>
+        ) : null,
     },
   ];
+
+  const modalFooter = (
+    <>
+      <button
+        type="button"
+        className="btn btn-secondary"
+        onClick={() => setModalOpen(false)}
+        disabled={saving}
+      >
+        Hủy
+      </button>
+      <button
+        type="button"
+        className="btn btn-primary"
+        onClick={() => void handleSubmit()}
+        disabled={saving}
+      >
+        {saving ? 'Đang lưu…' : editing ? 'Cập nhật' : 'Thêm mới'}
+      </button>
+    </>
+  );
+
+  const deleteFooter = (
+    <>
+      <button
+        type="button"
+        className="btn btn-secondary"
+        onClick={() => setDeleting(null)}
+        disabled={deleteBusy}
+      >
+        Hủy
+      </button>
+      <button
+        type="button"
+        className="btn btn-danger"
+        onClick={() => void handleDelete()}
+        disabled={deleteBusy}
+      >
+        {deleteBusy ? 'Đang xóa…' : 'Xác nhận xóa'}
+      </button>
+    </>
+  );
 
   return (
     <div className="page">
@@ -242,74 +357,46 @@ export function Trips() {
             Lịch chạy của các xe. Giờ đến và giá vé được hệ thống tự tính từ tuyến đường và bảng giá.
           </p>
         </div>
-        {isAdmin ? (
+        {isAdmin && (
           <div className="page-actions">
             <button type="button" className="btn btn-primary" onClick={openCreate}>
               + Thêm chuyến xe
             </button>
           </div>
-        ) : null}
+        )}
       </div>
 
-      <div className="card">
-        <div className="card-toolbar">
-          <input
-            type="search"
-            className="search-input"
-            placeholder="Tìm theo tuyến, biển số xe, nhà xe, tài xế…"
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-          />
-          <div className="toolbar-meta">
-            <span className="text-muted">
-              {filtered.length} / {rows.length} chuyến
-            </span>
-            <button type="button" className="btn btn-ghost btn-sm" onClick={() => void load()}>
-              Làm mới
-            </button>
-          </div>
-        </div>
-
-        <DataTable
-          columns={columns}
-          rows={filtered}
-          rowKey={(row) => row.maChuyen}
-          loading={loading}
-          emptyText="Chưa có chuyến xe nào."
-          actions={
-            isAdmin
-              ? (row) => (
-                  <>
-                    <button type="button" className="btn btn-ghost btn-sm" onClick={() => openEdit(row)}>
-                      Sửa
-                    </button>
-                    <button type="button" className="btn btn-danger-ghost btn-sm" onClick={() => setDeleting(row)}>
-                      Xóa
-                    </button>
-                  </>
-                )
-              : undefined
-          }
+      <div className="page-toolbar">
+        <input
+          type="search"
+          className="search-input"
+          placeholder="Tìm theo tuyến, biển số xe, nhà xe, tài xế…"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
         />
+        <div className="toolbar-stats">
+          <span>{filtered.length} / {rows.length} chuyến</span>
+          <button type="button" className="btn btn-secondary btn-sm" onClick={() => void load()}>
+            Làm mới
+          </button>
+        </div>
       </div>
+
+      <DataTable<Trip>
+        columns={columns}
+        rows={filtered}
+        rowKey={(row) => String(row.tripId ?? row.maChuyen)}
+        loading={loading}
+        emptyText={search ? 'Không có chuyến xe nào khớp tìm kiếm.' : 'Chưa có chuyến xe nào.'}
+      />
 
       <Modal
         open={modalOpen}
+        title={editing ? `Sửa chuyến #${editing.tripId ?? editing.maChuyen}` : 'Thêm chuyến xe mới'}
         onClose={() => setModalOpen(false)}
-        title={editing ? `Sửa chuyến xe #${editing.maChuyen}` : 'Thêm chuyến xe'}
-        subtitle={editing ? `${editing.diemDi} → ${editing.diemDen}` : 'Hệ thống tự tính giờ đến và giá vé.'}
-        footer={
-          <>
-            <button type="button" className="btn btn-secondary" onClick={() => setModalOpen(false)}>
-              Hủy
-            </button>
-            <button type="button" className="btn btn-primary" onClick={() => void handleSubmit()} disabled={saving}>
-              {saving ? 'Đang lưu…' : 'Lưu'}
-            </button>
-          </>
-        }
+        footer={modalFooter}
       >
-        {formError ? <div className="alert alert-error">{formError}</div> : null}
+        {formError && <div className="form-error-banner">{formError}</div>}
         <form
           className="form-grid"
           onSubmit={(event) => {
@@ -318,59 +405,59 @@ export function Trips() {
           }}
         >
           <FormField
-            label="Xe"
+            label="Xe vận hành"
+            name="vehicleId"
             type="select"
-            value={form.maXe}
-            onChange={(value) => setField('maXe', value)}
-            options={xeOptions}
             required
+            value={form.vehicleId}
+            onChange={(val) => setField('vehicleId', val)}
+            options={vehicleOptions}
+            placeholder="Chọn xe"
           />
           <FormField
             label="Tuyến đường"
+            name="routeId"
             type="select"
-            value={form.maTuyen}
-            onChange={(value) => setField('maTuyen', value)}
-            options={tuyenOptions}
             required
+            value={form.routeId}
+            onChange={(val) => setField('routeId', val)}
+            options={routeOptions}
+            placeholder="Chọn tuyến"
           />
           <FormField
-            label="Tài xế"
+            label="Tài xế phụ trách"
+            name="driverId"
             type="select"
-            value={form.maTx}
-            onChange={(value) => setField('maTx', value)}
-            options={taiXeOptions}
             required
+            value={form.driverId}
+            onChange={(val) => setField('driverId', val)}
+            options={driverOptions}
+            placeholder="Chọn tài xế"
           />
           <FormField
-            label="Ngày giờ khởi hành"
+            label="Thời điểm khởi hành"
+            name="departureTime"
             type="datetime-local"
-            value={form.ngayGioKhoiHanh}
-            onChange={(value) => setField('ngayGioKhoiHanh', value)}
             required
-            help="Không được chọn thời điểm trong quá khứ."
+            value={form.departureTime}
+            onChange={(val) => setField('departureTime', val)}
+            help="Giờ đến dự kiến và giá vé được tự động tính dựa trên bảng giá và thời gian tuyến."
           />
         </form>
       </Modal>
 
       <Modal
         open={Boolean(deleting)}
-        onClose={() => setDeleting(null)}
         title="Xác nhận xóa chuyến xe"
-        footer={
-          <>
-            <button type="button" className="btn btn-secondary" onClick={() => setDeleting(null)}>
-              Hủy
-            </button>
-            <button type="button" className="btn btn-danger" onClick={() => void handleDelete()} disabled={deleteBusy}>
-              {deleteBusy ? 'Đang xóa…' : 'Xóa'}
-            </button>
-          </>
-        }
+        onClose={() => setDeleting(null)}
+        footer={deleteFooter}
       >
         <p>
-          Xóa chuyến xe <strong>#{deleting?.maChuyen}</strong> ({deleting?.diemDi} → {deleting?.diemDen})? Chỉ xóa
-          được khi chuyến chưa có vé.
+          Bạn có chắc muốn xóa chuyến #{deleting?.tripId ?? deleting?.maChuyen} (
+          {deleting?.departure ?? deleting?.diemDi} → {deleting?.destination ?? deleting?.diemDen} lúc{' '}
+          {formatDateTime(deleting?.departureTime ?? deleting?.ngayGioKhoiHanh)})?
         </p>
+        <p className="text-muted">Chuyến xe đã có vé đặt sẽ không thể xóa.</p>
       </Modal>
     </div>
   );

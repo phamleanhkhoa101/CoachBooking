@@ -9,24 +9,25 @@ import {
 } from 'react';
 import { Navigate } from 'react-router-dom';
 import { api, apiRequest, getToken, setToken } from '../api/client';
-import type { LoginResponse, NguoiDung, Quyen } from '../api/types';
+import type { LoginResponse, Role, User } from '../api/types';
 
 interface AuthContextValue {
-  nguoiDung: NguoiDung | null;
+  user: User | null;
+  nguoiDung: User | null; // Alias for backward compatibility
   loading: boolean;
-  login: (tenDangNhap: string, matKhau: string, portal?: 'user' | 'admin') => Promise<NguoiDung>;
+  login: (username: string, password: string, portal?: 'user' | 'admin') => Promise<User>;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 /** Trang mặc định theo quyền sau khi đăng nhập. */
-export function homePathFor(quyen: Quyen): string {
-  return quyen === 'KhachHang' ? '/' : '/admin';
+export function homePathFor(role?: Role | null): string {
+  return role === 'KhachHang' ? '/' : '/admin';
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [nguoiDung, setNguoiDung] = useState<NguoiDung | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(Boolean(getToken()));
 
   useEffect(() => {
@@ -36,14 +37,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     api
-      .get<NguoiDung>('/auth/me', { redirectOn401: false })
+      .get<User>('/auth/me', { redirectOn401: false })
       .then((data) => {
-        if (!cancelled) setNguoiDung(data);
+        if (!cancelled) setUser(data);
       })
       .catch(() => {
         if (!cancelled) {
           setToken(null);
-          setNguoiDung(null);
+          setUser(null);
         }
       })
       .finally(() => {
@@ -55,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const login = useCallback(
-    async (tenDangNhap: string, matKhau: string, portal?: 'user' | 'admin') => {
+    async (username: string, password: string, portal?: 'user' | 'admin') => {
       const endpoint =
         portal === 'admin'
           ? '/auth/admin/login'
@@ -66,25 +67,31 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         endpoint,
         {
           method: 'POST',
-          body: JSON.stringify({ tenDangNhap, matKhau }),
+          body: JSON.stringify({
+            username,
+            password,
+            tenDangNhap: username,
+            matKhau: password,
+          }),
         },
         { redirectOn401: false },
       );
       setToken(data.token);
-      setNguoiDung(data.nguoiDung);
-      return data.nguoiDung;
+      const currentUser = data.user ?? data.nguoiDung ?? null;
+      setUser(currentUser);
+      return currentUser!;
     },
     [],
   );
 
   const logout = useCallback(() => {
     setToken(null);
-    setNguoiDung(null);
+    setUser(null);
   }, []);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ nguoiDung, loading, login, logout }),
-    [nguoiDung, loading, login, logout],
+    () => ({ user, nguoiDung: user, loading, login, logout }),
+    [user, loading, login, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -97,8 +104,8 @@ export function useAuth(): AuthContextValue {
 }
 
 /** Chặn route theo quyền: chưa đăng nhập -> /login, sai quyền -> trang mặc định của quyền. */
-export function RequireRole({ roles, children }: { roles: Quyen[]; children: ReactNode }) {
-  const { nguoiDung, loading } = useAuth();
+export function RequireRole({ roles, children }: { roles: Role[]; children: ReactNode }) {
+  const { user, loading } = useAuth();
 
   if (loading) {
     return (
@@ -107,11 +114,12 @@ export function RequireRole({ roles, children }: { roles: Quyen[]; children: Rea
       </div>
     );
   }
-  if (!nguoiDung) {
+  if (!user) {
     return <Navigate to="/login" replace />;
   }
-  if (!roles.includes(nguoiDung.quyen)) {
-    return <Navigate to={homePathFor(nguoiDung.quyen)} replace />;
+  const currentRole = user.role ?? user.quyen;
+  if (!currentRole || !roles.includes(currentRole)) {
+    return <Navigate to={homePathFor(currentRole)} replace />;
   }
   return <>{children}</>;
 }

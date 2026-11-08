@@ -6,29 +6,32 @@ import { isAdminPortal } from '../../auth/portal';
 import { FormField } from '../../components/common/FormField';
 
 export function Login() {
-  const { nguoiDung, login } = useAuth();
+  const { user, nguoiDung, login } = useAuth();
+  const currentUser = user ?? nguoiDung;
   const navigate = useNavigate();
   const admin = isAdminPortal();
 
-  const [tenDangNhap, setTenDangNhap] = useState('');
-  const [matKhau, setMatKhau] = useState('');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
-  if (nguoiDung) {
-    return <Navigate to={homePathFor(nguoiDung.quyen)} replace />;
+  if (currentUser) {
+    const role = currentUser.role ?? currentUser.quyen;
+    return <Navigate to={homePathFor(role)} replace />;
   }
 
   const handleSubmit = async () => {
-    if (!tenDangNhap.trim() || !matKhau) {
+    if (!username.trim() || !password) {
       setError('Vui lòng nhập tên đăng nhập và mật khẩu.');
       return;
     }
     setBusy(true);
     setError('');
     try {
-      const user = await login(tenDangNhap.trim(), matKhau, admin ? 'admin' : 'user');
-      navigate(homePathFor(user.quyen), { replace: true });
+      const loggedUser = await login(username.trim(), password, admin ? 'admin' : 'user');
+      const role = loggedUser.role ?? loggedUser.quyen;
+      navigate(homePathFor(role), { replace: true });
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -69,16 +72,16 @@ export function Login() {
         >
           <FormField
             label="Tên đăng nhập"
-            value={tenDangNhap}
-            onChange={setTenDangNhap}
+            value={username}
+            onChange={setUsername}
             placeholder="Nhập tên đăng nhập"
             autoComplete="username"
             required
           />
           <FormField
             label="Mật khẩu"
-            value={matKhau}
-            onChange={setMatKhau}
+            value={password}
+            onChange={setPassword}
             type="password"
             placeholder="Nhập mật khẩu"
             autoComplete="current-password"

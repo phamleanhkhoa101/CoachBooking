@@ -2,15 +2,16 @@ package com.coachbooking.service;
 
 import com.coachbooking.common.ApiException;
 import com.coachbooking.common.Validators;
-import com.coachbooking.domain.KhachHang;
-import com.coachbooking.domain.NhanVien;
-import com.coachbooking.domain.Quyen;
-import com.coachbooking.domain.TaiKhoan;
-import com.coachbooking.repo.KhachHangRepository;
-import com.coachbooking.repo.NhanVienRepository;
-import com.coachbooking.repo.QuyenRepository;
-import com.coachbooking.repo.TaiKhoanRepository;
+import com.coachbooking.domain.Account;
+import com.coachbooking.domain.Customer;
+import com.coachbooking.domain.Employee;
+import com.coachbooking.domain.Role;
+import com.coachbooking.repo.AccountRepository;
+import com.coachbooking.repo.CustomerRepository;
+import com.coachbooking.repo.EmployeeRepository;
+import com.coachbooking.repo.RoleRepository;
 import com.coachbooking.security.JwtService;
+import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import java.security.SecureRandom;
@@ -25,164 +26,163 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AuthService {
 
-  private static final int MA_QUYEN_KHACH_HANG = 3;
+  private static final int ROLE_CUSTOMER_ID = 3;
   private static final String UPPER = "ABCDEFGHJKLMNPQRSTUVWXYZ";
   private static final String LOWER = "abcdefghijkmnopqrstuvwxyz";
   private static final String DIGITS = "23456789";
   private static final String SPECIAL = "!@#$%^&*";
 
-  private final TaiKhoanRepository taiKhoanRepository;
-  private final QuyenRepository quyenRepository;
-  private final NhanVienRepository nhanVienRepository;
-  private final KhachHangRepository khachHangRepository;
+  private final AccountRepository accountRepository;
+  private final RoleRepository roleRepository;
+  private final EmployeeRepository employeeRepository;
+  private final CustomerRepository customerRepository;
   private final PasswordEncoder passwordEncoder;
   private final JwtService jwtService;
 
   public AuthService(
-      TaiKhoanRepository taiKhoanRepository,
-      QuyenRepository quyenRepository,
-      NhanVienRepository nhanVienRepository,
-      KhachHangRepository khachHangRepository,
+      AccountRepository accountRepository,
+      RoleRepository roleRepository,
+      EmployeeRepository employeeRepository,
+      CustomerRepository customerRepository,
       PasswordEncoder passwordEncoder,
       JwtService jwtService) {
-    this.taiKhoanRepository = taiKhoanRepository;
-    this.quyenRepository = quyenRepository;
-    this.nhanVienRepository = nhanVienRepository;
-    this.khachHangRepository = khachHangRepository;
+    this.accountRepository = accountRepository;
+    this.roleRepository = roleRepository;
+    this.employeeRepository = employeeRepository;
+    this.customerRepository = customerRepository;
     this.passwordEncoder = passwordEncoder;
     this.jwtService = jwtService;
   }
 
-  private TaiKhoan authenticate(LoginRequest request) {
-    TaiKhoan taiKhoan =
-        taiKhoanRepository
-            .findByTenDangNhap(request.tenDangNhap().trim())
+  private Account authenticate(LoginRequest request) {
+    Account account =
+        accountRepository
+            .findByUsername(request.username().trim())
             .orElseThrow(() -> ApiException.badRequest("Tên đăng nhập hoặc mật khẩu không đúng."));
-    if (!passwordEncoder.matches(request.matKhau(), taiKhoan.getMatKhau())) {
+    if (!passwordEncoder.matches(request.password(), account.getPassword())) {
       throw ApiException.badRequest("Tên đăng nhập hoặc mật khẩu không đúng.");
     }
-    if (!Boolean.TRUE.equals(taiKhoan.getTrangThai())) {
+    if (!Boolean.TRUE.equals(account.getIsActive())) {
       throw ApiException.forbidden("Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.");
     }
-    return taiKhoan;
+    return account;
   }
 
   public AuthResponse login(LoginRequest request) {
-    TaiKhoan taiKhoan = authenticate(request);
-    String tenQuyen = roleName(taiKhoan);
+    Account account = authenticate(request);
+    String roleName = roleName(account);
     return new AuthResponse(
-        jwtService.generate(taiKhoan, tenQuyen), toNguoiDung(taiKhoan, tenQuyen));
+        jwtService.generate(account, roleName), toUserResponse(account, roleName));
   }
 
   public AuthResponse loginUser(LoginRequest request) {
-    TaiKhoan taiKhoan = authenticate(request);
-    String tenQuyen = roleName(taiKhoan);
-    if (!"KhachHang".equalsIgnoreCase(tenQuyen)) {
+    Account account = authenticate(request);
+    String roleName = roleName(account);
+    if (!"KhachHang".equalsIgnoreCase(roleName) && !"Customer".equalsIgnoreCase(roleName)) {
       throw ApiException.forbidden(
           "Tài khoản quản trị/nhân viên vui lòng đăng nhập tại cổng Quản trị viên.");
     }
     return new AuthResponse(
-        jwtService.generate(taiKhoan, tenQuyen), toNguoiDung(taiKhoan, tenQuyen));
+        jwtService.generate(account, roleName), toUserResponse(account, roleName));
   }
 
   public AuthResponse loginAdmin(LoginRequest request) {
-    TaiKhoan taiKhoan = authenticate(request);
-    String tenQuyen = roleName(taiKhoan);
-    if ("KhachHang".equalsIgnoreCase(tenQuyen)) {
+    Account account = authenticate(request);
+    String roleName = roleName(account);
+    if ("KhachHang".equalsIgnoreCase(roleName) || "Customer".equalsIgnoreCase(roleName)) {
       throw ApiException.forbidden("Tài khoản khách hàng không có quyền truy cập quản trị.");
     }
     return new AuthResponse(
-        jwtService.generate(taiKhoan, tenQuyen), toNguoiDung(taiKhoan, tenQuyen));
+        jwtService.generate(account, roleName), toUserResponse(account, roleName));
   }
 
   @Transactional
   public Map<String, String> register(RegisterRequest request) {
-    Validators.requireText(request.tenDangNhap(), "Vui lòng nhập tên đăng nhập.");
-    if (request.tenDangNhap().trim().length() < 6) {
+    Validators.requireText(request.username(), "Vui lòng nhập tên đăng nhập.");
+    if (request.username().trim().length() < 6) {
       throw ApiException.badRequest("Tên đăng nhập phải có ít nhất 6 ký tự.");
     }
     Validators.requireEmail(request.email());
-    Validators.requirePassword(request.matKhau());
-    if (!request.matKhau().equals(request.xacNhanMatKhau())) {
+    Validators.requirePassword(request.password());
+    if (!request.password().equals(request.confirmPassword())) {
       throw ApiException.badRequest("Mật khẩu không khớp.");
     }
-    if (taiKhoanRepository.existsByTenDangNhap(request.tenDangNhap().trim())) {
+    if (accountRepository.existsByUsername(request.username().trim())) {
       throw ApiException.conflict("Tên đăng nhập đã được sử dụng.");
     }
-    if (taiKhoanRepository.existsByEmail(request.email().trim())) {
+    if (accountRepository.existsByEmail(request.email().trim())) {
       throw ApiException.conflict("Email đã được sử dụng.");
     }
 
-    TaiKhoan taiKhoan = new TaiKhoan();
-    taiKhoan.setTenDangNhap(request.tenDangNhap().trim());
-    taiKhoan.setEmail(request.email().trim());
-    taiKhoan.setMatKhau(passwordEncoder.encode(request.matKhau()));
-    taiKhoan.setMaQuyen(MA_QUYEN_KHACH_HANG);
-    taiKhoan.setTrangThai(true);
-    taiKhoanRepository.save(taiKhoan);
+    Account account = new Account();
+    account.setUsername(request.username().trim());
+    account.setEmail(request.email().trim());
+    account.setPassword(passwordEncoder.encode(request.password()));
+    account.setRoleId(ROLE_CUSTOMER_ID);
+    account.setIsActive(true);
+    accountRepository.save(account);
     return Map.of("message", "Đăng ký thành công.");
   }
 
   @Transactional
   public Map<String, String> forgotPassword(ForgotPasswordRequest request) {
     Validators.requireEmail(request.email());
-    if (Validators.isBlank(request.tenDangNhap()) || request.tenDangNhap().trim().length() < 6) {
+    if (Validators.isBlank(request.username()) || request.username().trim().length() < 6) {
       throw ApiException.badRequest("Tên đăng nhập phải có ít nhất 6 ký tự.");
     }
-    TaiKhoan taiKhoan =
-        taiKhoanRepository
-            .findByTenDangNhapAndEmail(request.tenDangNhap().trim(), request.email().trim())
+    Account account =
+        accountRepository
+            .findByUsernameAndEmail(request.username().trim(), request.email().trim())
             .orElseThrow(() -> ApiException.notFound("Tên đăng nhập hoặc Email không tồn tại."));
 
-    String matKhauTam = generatePassword();
-    taiKhoan.setMatKhau(passwordEncoder.encode(matKhauTam));
-    taiKhoanRepository.save(taiKhoan);
+    String tempPassword = generatePassword();
+    account.setPassword(passwordEncoder.encode(tempPassword));
+    accountRepository.save(account);
     return Map.of(
         "message",
         "Đã đặt lại mật khẩu. Môi trường demo trả mật khẩu tạm trực tiếp.",
         "matKhauTam",
-        matKhauTam);
+        tempPassword,
+        "temporaryPassword",
+        tempPassword);
   }
 
-  public NguoiDung me(TaiKhoan taiKhoan) {
-    return toNguoiDung(taiKhoan, roleName(taiKhoan));
+  public UserResponse me(Account account) {
+    return toUserResponse(account, roleName(account));
   }
 
   @Transactional
-  public Map<String, String> changePassword(TaiKhoan taiKhoan, ChangePasswordRequest request) {
-    if (!passwordEncoder.matches(request.matKhauCu(), taiKhoan.getMatKhau())) {
+  public Map<String, String> changePassword(Account account, ChangePasswordRequest request) {
+    if (!passwordEncoder.matches(request.oldPassword(), account.getPassword())) {
       throw ApiException.badRequest("Mật khẩu hiện tại không đúng.");
     }
-    Validators.requirePassword(request.matKhauMoi());
-    taiKhoan.setMatKhau(passwordEncoder.encode(request.matKhauMoi()));
-    taiKhoanRepository.save(taiKhoan);
+    Validators.requirePassword(request.newPassword());
+    account.setPassword(passwordEncoder.encode(request.newPassword()));
+    accountRepository.save(account);
     return Map.of("message", "Đổi mật khẩu thành công.");
   }
 
-  public NguoiDung toNguoiDung(TaiKhoan taiKhoan, String tenQuyen) {
-    NhanVien nhanVien = nhanVienRepository.findByMaTk(taiKhoan.getMaTk()).orElse(null);
-    KhachHang khachHang = khachHangRepository.findByMaTk(taiKhoan.getMaTk()).orElse(null);
-    String hoTen =
-        nhanVien != null
-            ? nhanVien.getTenNv()
-            : khachHang != null ? khachHang.getTenKh() : taiKhoan.getTenDangNhap();
-    return new NguoiDung(
-        taiKhoan.getMaTk(),
-        taiKhoan.getTenDangNhap(),
-        taiKhoan.getEmail(),
-        tenQuyen,
-        taiKhoan.getMaQuyen(),
-        nhanVien == null ? null : nhanVien.getMaNv(),
-        khachHang == null ? null : khachHang.getMaKh(),
-        hoTen,
-        taiKhoan.getTrangThai());
+  public UserResponse toUserResponse(Account account, String roleName) {
+    Employee employee = employeeRepository.findByAccountId(account.getAccountId()).orElse(null);
+    Customer customer = customerRepository.findByAccountId(account.getAccountId()).orElse(null);
+    String fullName =
+        employee != null
+            ? employee.getFullName()
+            : customer != null ? customer.getFullName() : account.getUsername();
+    return new UserResponse(
+        account.getAccountId(),
+        account.getUsername(),
+        account.getEmail(),
+        roleName,
+        account.getRoleId(),
+        employee == null ? null : employee.getEmployeeId(),
+        customer == null ? null : customer.getCustomerId(),
+        fullName,
+        account.getIsActive());
   }
 
-  public String roleName(TaiKhoan taiKhoan) {
-    return quyenRepository
-        .findById(taiKhoan.getMaQuyen())
-        .map(Quyen::getTenQuyen)
-        .orElse("KhachHang");
+  public String roleName(Account account) {
+    return roleRepository.findById(account.getRoleId()).map(Role::getRoleName).orElse("KhachHang");
   }
 
   private String generatePassword() {
@@ -203,35 +203,81 @@ public class AuthService {
   }
 
   public record LoginRequest(
-      @NotBlank(message = "Vui lòng nhập tên đăng nhập.") String tenDangNhap,
-      @NotBlank(message = "Vui lòng nhập mật khẩu.") String matKhau) {}
+      @NotBlank(message = "Vui lòng nhập tên đăng nhập.") @JsonAlias({"tenDangNhap", "username"})
+          String username,
+      @NotBlank(message = "Vui lòng nhập mật khẩu.") @JsonAlias({"matKhau", "password"})
+          String password) {}
 
   public record RegisterRequest(
-      @NotBlank(message = "Vui lòng nhập tên đăng nhập.") String tenDangNhap,
+      @NotBlank(message = "Vui lòng nhập tên đăng nhập.") @JsonAlias({"tenDangNhap", "username"})
+          String username,
       @NotBlank(message = "Vui lòng nhập email.") @Email(message = "Email không đúng định dạng.")
           String email,
-      @NotBlank(message = "Vui lòng nhập mật khẩu.") String matKhau,
-      @NotBlank(message = "Vui lòng xác nhận mật khẩu.") String xacNhanMatKhau) {}
+      @NotBlank(message = "Vui lòng nhập mật khẩu.") @JsonAlias({"matKhau", "password"})
+          String password,
+      @NotBlank(message = "Vui lòng xác nhận mật khẩu.")
+          @JsonAlias({"xacNhanMatKhau", "confirmPassword"})
+          String confirmPassword) {}
 
   public record ForgotPasswordRequest(
-      @NotBlank(message = "Vui lòng nhập tên đăng nhập.") String tenDangNhap,
+      @NotBlank(message = "Vui lòng nhập tên đăng nhập.") @JsonAlias({"tenDangNhap", "username"})
+          String username,
       @NotBlank(message = "Vui lòng nhập email.") @Email(message = "Email không đúng định dạng.")
           String email) {}
 
   public record ChangePasswordRequest(
-      @NotBlank(message = "Vui lòng nhập mật khẩu hiện tại.") String matKhauCu,
-      @NotBlank(message = "Vui lòng nhập mật khẩu mới.") String matKhauMoi) {}
+      @NotBlank(message = "Vui lòng nhập mật khẩu hiện tại.")
+          @JsonAlias({"matKhauCu", "oldPassword"})
+          String oldPassword,
+      @NotBlank(message = "Vui lòng nhập mật khẩu mới.") @JsonAlias({"matKhauMoi", "newPassword"})
+          String newPassword) {}
 
-  public record NguoiDung(
-      Integer maTk,
-      String tenDangNhap,
+  public record UserResponse(
+      Integer accountId,
+      String username,
       String email,
-      String quyen,
-      Integer maQuyen,
-      Integer maNv,
-      Integer maKh,
-      String hoTen,
-      Boolean trangThai) {}
+      String role,
+      Integer roleId,
+      Integer employeeId,
+      Integer customerId,
+      String fullName,
+      Boolean isActive) {
+    public Integer getMaTk() {
+      return accountId;
+    }
 
-  public record AuthResponse(String token, NguoiDung nguoiDung) {}
+    public String getTenDangNhap() {
+      return username;
+    }
+
+    public String getQuyen() {
+      return role;
+    }
+
+    public Integer getMaQuyen() {
+      return roleId;
+    }
+
+    public Integer getMaNv() {
+      return employeeId;
+    }
+
+    public Integer getMaKh() {
+      return customerId;
+    }
+
+    public String getHoTen() {
+      return fullName;
+    }
+
+    public Boolean getTrangThai() {
+      return isActive;
+    }
+  }
+
+  public record AuthResponse(String token, UserResponse user) {
+    public UserResponse getNguoiDung() {
+      return user;
+    }
+  }
 }

@@ -4,12 +4,12 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import com.coachbooking.common.ApiException;
-import com.coachbooking.domain.Quyen;
-import com.coachbooking.domain.TaiKhoan;
-import com.coachbooking.repo.KhachHangRepository;
-import com.coachbooking.repo.NhanVienRepository;
-import com.coachbooking.repo.QuyenRepository;
-import com.coachbooking.repo.TaiKhoanRepository;
+import com.coachbooking.domain.Account;
+import com.coachbooking.domain.Role;
+import com.coachbooking.repo.AccountRepository;
+import com.coachbooking.repo.CustomerRepository;
+import com.coachbooking.repo.EmployeeRepository;
+import com.coachbooking.repo.RoleRepository;
 import com.coachbooking.security.JwtService;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
@@ -19,73 +19,73 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 class AuthServiceTest {
 
-  private TaiKhoanRepository taiKhoanRepository;
-  private QuyenRepository quyenRepository;
-  private NhanVienRepository nhanVienRepository;
-  private KhachHangRepository khachHangRepository;
+  private AccountRepository accountRepository;
+  private RoleRepository roleRepository;
+  private EmployeeRepository employeeRepository;
+  private CustomerRepository customerRepository;
   private PasswordEncoder passwordEncoder;
   private JwtService jwtService;
   private AuthService authService;
 
   @BeforeEach
   void setUp() {
-    taiKhoanRepository = mock(TaiKhoanRepository.class);
-    quyenRepository = mock(QuyenRepository.class);
-    nhanVienRepository = mock(NhanVienRepository.class);
-    khachHangRepository = mock(KhachHangRepository.class);
+    accountRepository = mock(AccountRepository.class);
+    roleRepository = mock(RoleRepository.class);
+    employeeRepository = mock(EmployeeRepository.class);
+    customerRepository = mock(CustomerRepository.class);
     passwordEncoder = mock(PasswordEncoder.class);
     jwtService = mock(JwtService.class);
 
     authService =
         new AuthService(
-            taiKhoanRepository,
-            quyenRepository,
-            nhanVienRepository,
-            khachHangRepository,
+            accountRepository,
+            roleRepository,
+            employeeRepository,
+            customerRepository,
             passwordEncoder,
             jwtService);
   }
 
-  private TaiKhoan createTaiKhoan(int maTk, String username, int maQuyen, boolean trangThai) {
-    TaiKhoan tk = new TaiKhoan();
-    tk.setMaTk(maTk);
-    tk.setTenDangNhap(username);
-    tk.setMatKhau("encoded_secret");
-    tk.setMaQuyen(maQuyen);
-    tk.setTrangThai(trangThai);
-    return tk;
+  private Account createAccount(int accountId, String username, int roleId, boolean isActive) {
+    Account acc = new Account();
+    acc.setAccountId(accountId);
+    acc.setUsername(username);
+    acc.setPassword("encoded_secret");
+    acc.setRoleId(roleId);
+    acc.setIsActive(isActive);
+    return acc;
   }
 
   @Test
-  void loginUser_success_whenKhachHang() {
-    TaiKhoan tk = createTaiKhoan(1, "kh1", 3, true);
-    when(taiKhoanRepository.findByTenDangNhap("kh1")).thenReturn(Optional.of(tk));
+  void loginUser_success_whenCustomer() {
+    Account acc = createAccount(1, "kh1", 3, true);
+    when(accountRepository.findByUsername("kh1")).thenReturn(Optional.of(acc));
     when(passwordEncoder.matches("pass123", "encoded_secret")).thenReturn(true);
 
-    Quyen role = new Quyen();
-    role.setMaQuyen(3);
-    role.setTenQuyen("KhachHang");
-    when(quyenRepository.findById(3)).thenReturn(Optional.of(role));
-    when(jwtService.generate(tk, "KhachHang")).thenReturn("mock_token");
+    Role role = new Role();
+    role.setRoleId(3);
+    role.setRoleName("KhachHang");
+    when(roleRepository.findById(3)).thenReturn(Optional.of(role));
+    when(jwtService.generate(acc, "KhachHang")).thenReturn("mock_token");
 
     AuthService.AuthResponse response =
         authService.loginUser(new AuthService.LoginRequest("kh1", "pass123"));
 
     assertNotNull(response);
     assertEquals("mock_token", response.token());
-    assertEquals("KhachHang", response.nguoiDung().quyen());
+    assertEquals("KhachHang", response.user().role());
   }
 
   @Test
   void loginUser_forbidden_whenAdmin() {
-    TaiKhoan tk = createTaiKhoan(2, "admin", 1, true);
-    when(taiKhoanRepository.findByTenDangNhap("admin")).thenReturn(Optional.of(tk));
+    Account acc = createAccount(2, "admin", 1, true);
+    when(accountRepository.findByUsername("admin")).thenReturn(Optional.of(acc));
     when(passwordEncoder.matches("pass123", "encoded_secret")).thenReturn(true);
 
-    Quyen role = new Quyen();
-    role.setMaQuyen(1);
-    role.setTenQuyen("Admin");
-    when(quyenRepository.findById(1)).thenReturn(Optional.of(role));
+    Role role = new Role();
+    role.setRoleId(1);
+    role.setRoleName("Admin");
+    when(roleRepository.findById(1)).thenReturn(Optional.of(role));
 
     ApiException ex =
         assertThrows(
@@ -97,34 +97,34 @@ class AuthServiceTest {
 
   @Test
   void loginAdmin_success_whenAdminOrEmployee() {
-    TaiKhoan tk = createTaiKhoan(2, "admin", 1, true);
-    when(taiKhoanRepository.findByTenDangNhap("admin")).thenReturn(Optional.of(tk));
+    Account acc = createAccount(2, "admin", 1, true);
+    when(accountRepository.findByUsername("admin")).thenReturn(Optional.of(acc));
     when(passwordEncoder.matches("pass123", "encoded_secret")).thenReturn(true);
 
-    Quyen role = new Quyen();
-    role.setMaQuyen(1);
-    role.setTenQuyen("Admin");
-    when(quyenRepository.findById(1)).thenReturn(Optional.of(role));
-    when(jwtService.generate(tk, "Admin")).thenReturn("admin_token");
+    Role role = new Role();
+    role.setRoleId(1);
+    role.setRoleName("Admin");
+    when(roleRepository.findById(1)).thenReturn(Optional.of(role));
+    when(jwtService.generate(acc, "Admin")).thenReturn("admin_token");
 
     AuthService.AuthResponse response =
         authService.loginAdmin(new AuthService.LoginRequest("admin", "pass123"));
 
     assertNotNull(response);
     assertEquals("admin_token", response.token());
-    assertEquals("Admin", response.nguoiDung().quyen());
+    assertEquals("Admin", response.user().role());
   }
 
   @Test
-  void loginAdmin_forbidden_whenKhachHang() {
-    TaiKhoan tk = createTaiKhoan(1, "kh1", 3, true);
-    when(taiKhoanRepository.findByTenDangNhap("kh1")).thenReturn(Optional.of(tk));
+  void loginAdmin_forbidden_whenCustomer() {
+    Account acc = createAccount(1, "kh1", 3, true);
+    when(accountRepository.findByUsername("kh1")).thenReturn(Optional.of(acc));
     when(passwordEncoder.matches("pass123", "encoded_secret")).thenReturn(true);
 
-    Quyen role = new Quyen();
-    role.setMaQuyen(3);
-    role.setTenQuyen("KhachHang");
-    when(quyenRepository.findById(3)).thenReturn(Optional.of(role));
+    Role role = new Role();
+    role.setRoleId(3);
+    role.setRoleName("KhachHang");
+    when(roleRepository.findById(3)).thenReturn(Optional.of(role));
 
     ApiException ex =
         assertThrows(
@@ -136,8 +136,8 @@ class AuthServiceTest {
 
   @Test
   void authenticate_badRequest_whenWrongPassword() {
-    TaiKhoan tk = createTaiKhoan(1, "kh1", 3, true);
-    when(taiKhoanRepository.findByTenDangNhap("kh1")).thenReturn(Optional.of(tk));
+    Account acc = createAccount(1, "kh1", 3, true);
+    when(accountRepository.findByUsername("kh1")).thenReturn(Optional.of(acc));
     when(passwordEncoder.matches("wrong", "encoded_secret")).thenReturn(false);
 
     ApiException ex =

@@ -2,21 +2,21 @@ package com.coachbooking.service;
 
 import com.coachbooking.common.ApiException;
 import com.coachbooking.common.Validators;
-import com.coachbooking.domain.ChuyenXe;
-import com.coachbooking.domain.HoaDon;
-import com.coachbooking.domain.KhachHang;
-import com.coachbooking.domain.NhanVien;
-import com.coachbooking.domain.TaiKhoan;
-import com.coachbooking.domain.ThanhToan;
-import com.coachbooking.domain.TuyenDuong;
-import com.coachbooking.domain.VeXe;
-import com.coachbooking.repo.ChuyenXeRepository;
-import com.coachbooking.repo.HoaDonRepository;
-import com.coachbooking.repo.KhachHangRepository;
-import com.coachbooking.repo.NhanVienRepository;
-import com.coachbooking.repo.ThanhToanRepository;
-import com.coachbooking.repo.TuyenDuongRepository;
-import com.coachbooking.repo.VeXeRepository;
+import com.coachbooking.domain.Account;
+import com.coachbooking.domain.Customer;
+import com.coachbooking.domain.Employee;
+import com.coachbooking.domain.Invoice;
+import com.coachbooking.domain.Payment;
+import com.coachbooking.domain.Route;
+import com.coachbooking.domain.Ticket;
+import com.coachbooking.domain.Trip;
+import com.coachbooking.repo.CustomerRepository;
+import com.coachbooking.repo.EmployeeRepository;
+import com.coachbooking.repo.InvoiceRepository;
+import com.coachbooking.repo.PaymentRepository;
+import com.coachbooking.repo.RouteRepository;
+import com.coachbooking.repo.TicketRepository;
+import com.coachbooking.repo.TripRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -32,202 +32,227 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class InvoiceService {
 
-  private static final Set<String> PHUONG_THUC_HOP_LE =
-      Set.of("Tiền mặt", "Chuyển khoản", "Thẻ ATM");
+  private static final Set<String> VALID_PAYMENT_METHODS =
+      Set.of("Tiền mặt", "Chuyển khoản", "Thẻ ATM", "Cash", "Bank Transfer", "ATM Card");
 
-  private final HoaDonRepository hoaDonRepository;
-  private final VeXeRepository veXeRepository;
-  private final ThanhToanRepository thanhToanRepository;
-  private final KhachHangRepository khachHangRepository;
-  private final NhanVienRepository nhanVienRepository;
-  private final ChuyenXeRepository chuyenXeRepository;
-  private final TuyenDuongRepository tuyenDuongRepository;
+  private final InvoiceRepository invoiceRepository;
+  private final TicketRepository ticketRepository;
+  private final PaymentRepository paymentRepository;
+  private final CustomerRepository customerRepository;
+  private final EmployeeRepository employeeRepository;
+  private final TripRepository tripRepository;
+  private final RouteRepository routeRepository;
   private final CurrentUserService currentUserService;
 
   public InvoiceService(
-      HoaDonRepository hoaDonRepository,
-      VeXeRepository veXeRepository,
-      ThanhToanRepository thanhToanRepository,
-      KhachHangRepository khachHangRepository,
-      NhanVienRepository nhanVienRepository,
-      ChuyenXeRepository chuyenXeRepository,
-      TuyenDuongRepository tuyenDuongRepository,
+      InvoiceRepository invoiceRepository,
+      TicketRepository ticketRepository,
+      PaymentRepository paymentRepository,
+      CustomerRepository customerRepository,
+      EmployeeRepository employeeRepository,
+      TripRepository tripRepository,
+      RouteRepository routeRepository,
       CurrentUserService currentUserService) {
-    this.hoaDonRepository = hoaDonRepository;
-    this.veXeRepository = veXeRepository;
-    this.thanhToanRepository = thanhToanRepository;
-    this.khachHangRepository = khachHangRepository;
-    this.nhanVienRepository = nhanVienRepository;
-    this.chuyenXeRepository = chuyenXeRepository;
-    this.tuyenDuongRepository = tuyenDuongRepository;
+    this.invoiceRepository = invoiceRepository;
+    this.ticketRepository = ticketRepository;
+    this.paymentRepository = paymentRepository;
+    this.customerRepository = customerRepository;
+    this.employeeRepository = employeeRepository;
+    this.tripRepository = tripRepository;
+    this.routeRepository = routeRepository;
     this.currentUserService = currentUserService;
   }
 
-  public List<HoaDonRow> list(LocalDate tu, LocalDate den, Boolean trangThai) {
-    List<HoaDon> hoaDons =
-        hoaDonRepository.findAllByOrderByNgayLapDesc().stream()
-            .filter(hoaDon -> trangThai == null || trangThai.equals(hoaDon.getTrangThai()))
-            .filter(hoaDon -> tu == null || !hoaDon.getNgayLap().toLocalDate().isBefore(tu))
-            .filter(hoaDon -> den == null || !hoaDon.getNgayLap().toLocalDate().isAfter(den))
+  public List<InvoiceRow> list(LocalDate fromDate, LocalDate toDate, Boolean isPaid) {
+    List<Invoice> invoices =
+        invoiceRepository.findAllByOrderByCreatedAtDesc().stream()
+            .filter(invoice -> isPaid == null || isPaid.equals(invoice.getIsPaid()))
+            .filter(
+                invoice ->
+                    fromDate == null || !invoice.getCreatedAt().toLocalDate().isBefore(fromDate))
+            .filter(
+                invoice -> toDate == null || !invoice.getCreatedAt().toLocalDate().isAfter(toDate))
             .toList();
-    return toRows(hoaDons);
+    return toRows(invoices);
   }
 
-  public List<HoaDonRow> myInvoices(TaiKhoan taiKhoan) {
-    KhachHang khachHang = khachHangRepository.findByMaTk(taiKhoan.getMaTk()).orElse(null);
-    if (khachHang == null) {
+  public List<InvoiceRow> myInvoices(Account account) {
+    Customer customer = customerRepository.findByAccountId(account.getAccountId()).orElse(null);
+    if (customer == null) {
       return List.of();
     }
-    return toRows(hoaDonRepository.findByMaKhOrderByNgayLapDesc(khachHang.getMaKh()));
+    return toRows(invoiceRepository.findByCustomerIdOrderByCreatedAtDesc(customer.getCustomerId()));
   }
 
-  public HoaDonDetail detail(Integer maHd, TaiKhoan taiKhoan) {
-    HoaDon hoaDon = findInvoice(maHd);
-    requireOwnership(taiKhoan, hoaDon);
+  public InvoiceDetail detail(Integer invoiceId, Account account) {
+    Invoice invoice = findInvoice(invoiceId);
+    requireOwnership(account, invoice);
 
-    KhachHang khachHang =
-        hoaDon.getMaKh() == null
+    Customer customer =
+        invoice.getCustomerId() == null
             ? null
-            : khachHangRepository.findById(hoaDon.getMaKh()).orElse(null);
-    NhanVien nhanVien =
-        hoaDon.getMaNv() == null
+            : customerRepository.findById(invoice.getCustomerId()).orElse(null);
+    Employee employee =
+        invoice.getEmployeeId() == null
             ? null
-            : nhanVienRepository.findById(hoaDon.getMaNv()).orElse(null);
+            : employeeRepository.findById(invoice.getEmployeeId()).orElse(null);
 
-    List<VeXe> ves = veXeRepository.findByMaHd(maHd);
-    Map<Integer, ChuyenXe> chuyenMap = loadTrips(ves);
-    Map<Integer, TuyenDuong> tuyenMap = loadRoutes(chuyenMap.values());
-    List<VeRow> veRows =
-        ves.stream().map(ve -> toVeRow(ve, chuyenMap.get(ve.getMaChuyen()), tuyenMap)).toList();
-    ThanhToan thanhToan = thanhToanRepository.findByMaHd(maHd).orElse(null);
+    List<Ticket> tickets = ticketRepository.findByInvoiceId(invoiceId);
+    Map<Integer, Trip> tripMap = loadTrips(tickets);
+    Map<Integer, Route> routeMap = loadRoutes(tripMap.values());
+    List<TicketRow> ticketRows =
+        tickets.stream()
+            .map(ticket -> toTicketRow(ticket, tripMap.get(ticket.getTripId()), routeMap))
+            .toList();
+    Payment payment = paymentRepository.findByInvoiceId(invoiceId).orElse(null);
 
-    return new HoaDonDetail(
-        hoaDon.getMaHd(),
-        khachHang == null ? null : khachHang.getTenKh(),
-        khachHang == null ? null : khachHang.getSdt(),
-        nhanVien == null ? null : nhanVien.getTenNv(),
-        hoaDon.getNgayLap(),
-        hoaDon.getTongTien(),
-        hoaDon.getTrangThai(),
-        veRows,
-        thanhToan == null
+    return new InvoiceDetail(
+        invoice.getInvoiceId(),
+        customer == null ? null : customer.getFullName(),
+        customer == null ? null : customer.getPhone(),
+        employee == null ? null : employee.getFullName(),
+        invoice.getCreatedAt(),
+        invoice.getTotalAmount(),
+        invoice.getIsPaid(),
+        ticketRows,
+        payment == null
             ? null
-            : new ThanhToanRow(
-                thanhToan.getMaTt(),
-                thanhToan.getTongTien(),
-                thanhToan.getNgayTt(),
-                thanhToan.getPhuongThuc()));
+            : new PaymentRow(
+                payment.getPaymentId(),
+                payment.getAmount(),
+                payment.getPaymentDate(),
+                payment.getPaymentMethod()));
   }
 
   @Transactional
-  public Map<String, String> pay(Integer maHd, String phuongThuc, TaiKhoan taiKhoan) {
-    if (Validators.isBlank(phuongThuc) || !PHUONG_THUC_HOP_LE.contains(phuongThuc.trim())) {
+  public Map<String, String> pay(Integer invoiceId, String paymentMethod, Account account) {
+    if (Validators.isBlank(paymentMethod)
+        || !VALID_PAYMENT_METHODS.contains(paymentMethod.trim())) {
       throw ApiException.badRequest("Phương thức thanh toán không hợp lệ.");
     }
-    HoaDon hoaDon = findInvoice(maHd);
-    requireOwnership(taiKhoan, hoaDon);
-    if (Boolean.TRUE.equals(hoaDon.getTrangThai())) {
+    Invoice invoice = findInvoice(invoiceId);
+    requireOwnership(account, invoice);
+    if (Boolean.TRUE.equals(invoice.getIsPaid())) {
       throw ApiException.conflict("Hóa đơn đã được thanh toán.");
     }
-    List<VeXe> ves = veXeRepository.findByMaHd(maHd);
-    BigDecimal tongTien = ves.stream().map(VeXe::getGiaVe).reduce(BigDecimal.ZERO, BigDecimal::add);
+    List<Ticket> tickets = ticketRepository.findByInvoiceId(invoiceId);
+    BigDecimal totalAmount =
+        tickets.stream().map(Ticket::getPrice).reduce(BigDecimal.ZERO, BigDecimal::add);
 
-    ThanhToan thanhToan = new ThanhToan();
-    thanhToan.setMaHd(maHd);
-    thanhToan.setTongTien(tongTien);
-    thanhToan.setNgayTt(LocalDateTime.now());
-    thanhToan.setPhuongThuc(phuongThuc.trim());
-    thanhToanRepository.save(thanhToan);
+    Payment payment = new Payment();
+    payment.setInvoiceId(invoiceId);
+    payment.setAmount(totalAmount);
+    payment.setPaymentDate(LocalDateTime.now());
+    payment.setPaymentMethod(paymentMethod.trim());
+    paymentRepository.save(payment);
 
-    hoaDon.setTongTien(tongTien);
-    hoaDon.setTrangThai(true);
-    hoaDonRepository.save(hoaDon);
+    invoice.setTotalAmount(totalAmount);
+    invoice.setIsPaid(true);
+    invoiceRepository.save(invoice);
     return Map.of("message", "Thanh toán hóa đơn thành công.");
   }
 
   @Transactional
-  public Map<String, String> cancel(Integer maHd, TaiKhoan taiKhoan) {
-    HoaDon hoaDon = findInvoice(maHd);
-    requireOwnership(taiKhoan, hoaDon);
-    if (Boolean.TRUE.equals(hoaDon.getTrangThai())) {
+  public Map<String, String> cancel(Integer invoiceId, Account account) {
+    Invoice invoice = findInvoice(invoiceId);
+    requireOwnership(account, invoice);
+    if (Boolean.TRUE.equals(invoice.getIsPaid())) {
       throw ApiException.conflict("Không thể hủy hóa đơn đã thanh toán.");
     }
-    veXeRepository.deleteByMaHd(maHd);
-    hoaDonRepository.delete(hoaDon);
+    ticketRepository.deleteByInvoiceId(invoiceId);
+    invoiceRepository.delete(invoice);
     return Map.of("message", "Hủy hóa đơn thành công.");
   }
 
   @Transactional
-  public Map<String, String> cancelTicket(Integer maVe, TaiKhoan taiKhoan) {
-    VeXe ve =
-        veXeRepository.findById(maVe).orElseThrow(() -> ApiException.notFound("Vé không tồn tại."));
-    HoaDon hoaDon = findInvoice(ve.getMaHd());
-    requireOwnership(taiKhoan, hoaDon);
-    if (Boolean.TRUE.equals(hoaDon.getTrangThai())) {
+  public Map<String, String> cancelTicket(Integer ticketId, Account account) {
+    Ticket ticket =
+        ticketRepository
+            .findById(ticketId)
+            .orElseThrow(() -> ApiException.notFound("Vé không tồn tại."));
+    Invoice invoice = findInvoice(ticket.getInvoiceId());
+    requireOwnership(account, invoice);
+    if (Boolean.TRUE.equals(invoice.getIsPaid())) {
       throw ApiException.conflict("Không thể hủy vé của hóa đơn đã thanh toán.");
     }
-    ChuyenXe chuyenXe =
-        chuyenXeRepository
-            .findById(ve.getMaChuyen())
+    Trip trip =
+        tripRepository
+            .findById(ticket.getTripId())
             .orElseThrow(() -> ApiException.notFound("Chuyến xe không tồn tại."));
-    if (!chuyenXe.getNgayGioKhoiHanh().isAfter(LocalDateTime.now())) {
+    if (!trip.getDepartureTime().isAfter(LocalDateTime.now())) {
       throw ApiException.conflict("Chuyến xe đã khởi hành, không thể hủy vé.");
     }
 
-    veXeRepository.delete(ve);
-    veXeRepository.flush();
+    ticketRepository.delete(ticket);
+    ticketRepository.flush();
 
-    List<VeXe> conLai = veXeRepository.findByMaHd(hoaDon.getMaHd());
-    if (conLai.isEmpty()) {
-      hoaDonRepository.delete(hoaDon);
+    List<Ticket> remaining = ticketRepository.findByInvoiceId(invoice.getInvoiceId());
+    if (remaining.isEmpty()) {
+      invoiceRepository.delete(invoice);
       return Map.of("message", "Đã hủy vé cuối cùng và xóa hóa đơn.");
     }
-    BigDecimal tongTien =
-        conLai.stream().map(VeXe::getGiaVe).reduce(BigDecimal.ZERO, BigDecimal::add);
-    hoaDon.setTongTien(tongTien);
-    hoaDonRepository.save(hoaDon);
+    BigDecimal totalAmount =
+        remaining.stream().map(Ticket::getPrice).reduce(BigDecimal.ZERO, BigDecimal::add);
+    invoice.setTotalAmount(totalAmount);
+    invoiceRepository.save(invoice);
     return Map.of("message", "Hủy vé thành công.");
   }
 
-  private List<HoaDonRow> toRows(List<HoaDon> hoaDons) {
-    if (hoaDons.isEmpty()) {
+  private List<InvoiceRow> toRows(List<Invoice> invoices) {
+    if (invoices.isEmpty()) {
       return List.of();
     }
-    List<Integer> ids = hoaDons.stream().map(HoaDon::getMaHd).toList();
-    Map<Integer, Long> soVe =
-        veXeRepository.findByMaHdIn(ids).stream()
-            .collect(Collectors.groupingBy(VeXe::getMaHd, Collectors.counting()));
-    Map<Integer, ThanhToan> thanhToan =
-        thanhToanRepository.findByMaHdIn(ids).stream()
-            .collect(Collectors.toMap(ThanhToan::getMaHd, Function.identity()));
-    Map<Integer, String> tenKhachHang =
+    List<Integer> ids = invoices.stream().map(Invoice::getInvoiceId).toList();
+    Map<Integer, Long> ticketCounts =
+        ticketRepository.findByInvoiceIdIn(ids).stream()
+            .collect(Collectors.groupingBy(Ticket::getInvoiceId, Collectors.counting()));
+    Map<Integer, Payment> payments =
+        paymentRepository.findByInvoiceIdIn(ids).stream()
+            .collect(Collectors.toMap(Payment::getInvoiceId, Function.identity()));
+    Map<Integer, String> customerNames =
         loadNames(
-            hoaDons.stream().map(HoaDon::getMaKh).filter(java.util.Objects::nonNull).toList(),
-            khachHangRepository.findAllById(
-                hoaDons.stream().map(HoaDon::getMaKh).filter(java.util.Objects::nonNull).toList()),
-            KhachHang::getMaKh,
-            KhachHang::getTenKh);
-    Map<Integer, String> tenNhanVien =
+            invoices.stream()
+                .map(Invoice::getCustomerId)
+                .filter(java.util.Objects::nonNull)
+                .toList(),
+            customerRepository.findAllById(
+                invoices.stream()
+                    .map(Invoice::getCustomerId)
+                    .filter(java.util.Objects::nonNull)
+                    .toList()),
+            Customer::getCustomerId,
+            Customer::getFullName);
+    Map<Integer, String> employeeNames =
         loadNames(
-            hoaDons.stream().map(HoaDon::getMaNv).filter(java.util.Objects::nonNull).toList(),
-            nhanVienRepository.findAllById(
-                hoaDons.stream().map(HoaDon::getMaNv).filter(java.util.Objects::nonNull).toList()),
-            NhanVien::getMaNv,
-            NhanVien::getTenNv);
+            invoices.stream()
+                .map(Invoice::getEmployeeId)
+                .filter(java.util.Objects::nonNull)
+                .toList(),
+            employeeRepository.findAllById(
+                invoices.stream()
+                    .map(Invoice::getEmployeeId)
+                    .filter(java.util.Objects::nonNull)
+                    .toList()),
+            Employee::getEmployeeId,
+            Employee::getFullName);
 
-    return hoaDons.stream()
+    return invoices.stream()
         .map(
-            hoaDon ->
-                new HoaDonRow(
-                    hoaDon.getMaHd(),
-                    hoaDon.getMaKh() == null ? null : tenKhachHang.get(hoaDon.getMaKh()),
-                    hoaDon.getMaNv() == null ? null : tenNhanVien.get(hoaDon.getMaNv()),
-                    hoaDon.getNgayLap(),
-                    hoaDon.getTongTien(),
-                    hoaDon.getTrangThai(),
-                    soVe.getOrDefault(hoaDon.getMaHd(), 0L),
-                    thanhToan.containsKey(hoaDon.getMaHd())
-                        ? thanhToan.get(hoaDon.getMaHd()).getPhuongThuc()
+            invoice ->
+                new InvoiceRow(
+                    invoice.getInvoiceId(),
+                    invoice.getCustomerId() == null
+                        ? null
+                        : customerNames.get(invoice.getCustomerId()),
+                    invoice.getEmployeeId() == null
+                        ? null
+                        : employeeNames.get(invoice.getEmployeeId()),
+                    invoice.getCreatedAt(),
+                    invoice.getTotalAmount(),
+                    invoice.getIsPaid(),
+                    ticketCounts.getOrDefault(invoice.getInvoiceId(), 0L),
+                    payments.containsKey(invoice.getInvoiceId())
+                        ? payments.get(invoice.getInvoiceId()).getPaymentMethod()
                         : null))
         .toList();
   }
@@ -243,83 +268,199 @@ public class InvoiceService {
     return items.stream().collect(Collectors.toMap(idGetter, nameGetter));
   }
 
-  private Map<Integer, ChuyenXe> loadTrips(List<VeXe> ves) {
-    List<Integer> ids = ves.stream().map(VeXe::getMaChuyen).distinct().toList();
+  private Map<Integer, Trip> loadTrips(List<Ticket> tickets) {
+    List<Integer> ids = tickets.stream().map(Ticket::getTripId).distinct().toList();
     if (ids.isEmpty()) {
       return Map.of();
     }
-    return chuyenXeRepository.findAllById(ids).stream()
-        .collect(Collectors.toMap(ChuyenXe::getMaChuyen, Function.identity()));
+    return tripRepository.findAllById(ids).stream()
+        .collect(Collectors.toMap(Trip::getTripId, Function.identity()));
   }
 
-  private Map<Integer, TuyenDuong> loadRoutes(Collection<ChuyenXe> chuyenXes) {
-    List<Integer> ids = chuyenXes.stream().map(ChuyenXe::getMaTuyen).distinct().toList();
+  private Map<Integer, Route> loadRoutes(Collection<Trip> trips) {
+    List<Integer> ids = trips.stream().map(Trip::getRouteId).distinct().toList();
     if (ids.isEmpty()) {
       return Map.of();
     }
-    return tuyenDuongRepository.findAllById(ids).stream()
-        .collect(Collectors.toMap(TuyenDuong::getMaTuyen, Function.identity()));
+    return routeRepository.findAllById(ids).stream()
+        .collect(Collectors.toMap(Route::getRouteId, Function.identity()));
   }
 
-  private VeRow toVeRow(VeXe ve, ChuyenXe chuyenXe, Map<Integer, TuyenDuong> tuyenMap) {
-    TuyenDuong tuyen = chuyenXe == null ? null : tuyenMap.get(chuyenXe.getMaTuyen());
-    return new VeRow(
-        ve.getMaVe(),
-        ve.getMaChuyen(),
-        tuyen == null ? null : tuyen.getDiemDi(),
-        tuyen == null ? null : tuyen.getDiemDen(),
-        chuyenXe == null ? null : chuyenXe.getNgayGioKhoiHanh(),
-        ve.getChoNgoi(),
-        ve.getGiaVe());
+  private TicketRow toTicketRow(Ticket ticket, Trip trip, Map<Integer, Route> routeMap) {
+    Route route = trip == null ? null : routeMap.get(trip.getRouteId());
+    return new TicketRow(
+        ticket.getTicketId(),
+        ticket.getTripId(),
+        route == null ? null : route.getDeparture(),
+        route == null ? null : route.getDestination(),
+        trip == null ? null : trip.getDepartureTime(),
+        ticket.getSeatNumber(),
+        ticket.getPrice());
   }
 
-  private HoaDon findInvoice(Integer maHd) {
-    return hoaDonRepository
-        .findById(maHd)
+  private Invoice findInvoice(Integer invoiceId) {
+    return invoiceRepository
+        .findById(invoiceId)
         .orElseThrow(() -> ApiException.notFound("Hóa đơn không tồn tại."));
   }
 
-  private void requireOwnership(TaiKhoan taiKhoan, HoaDon hoaDon) {
-    if (!currentUserService.isCustomer(taiKhoan)) {
+  private void requireOwnership(Account account, Invoice invoice) {
+    if (!currentUserService.isCustomer(account)) {
       return;
     }
-    Integer maKh =
-        khachHangRepository.findByMaTk(taiKhoan.getMaTk()).map(KhachHang::getMaKh).orElse(null);
-    if (maKh == null || !maKh.equals(hoaDon.getMaKh())) {
+    Integer customerId =
+        customerRepository
+            .findByAccountId(account.getAccountId())
+            .map(Customer::getCustomerId)
+            .orElse(null);
+    if (customerId == null || !customerId.equals(invoice.getCustomerId())) {
       throw ApiException.forbidden("Bạn không có quyền thao tác trên hóa đơn này.");
     }
   }
 
-  public record HoaDonRow(
-      Integer maHd,
-      String tenKhachHang,
-      String tenNhanVien,
-      LocalDateTime ngayLap,
-      BigDecimal tongTien,
-      Boolean trangThai,
-      Long soVe,
-      String phuongThuc) {}
+  public record InvoiceRow(
+      Integer invoiceId,
+      String customerName,
+      String employeeName,
+      LocalDateTime createdAt,
+      BigDecimal totalAmount,
+      Boolean isPaid,
+      Long ticketCount,
+      String paymentMethod) {
+    // Backwards compatibility getters
+    public Integer getMaHd() {
+      return invoiceId;
+    }
 
-  public record VeRow(
-      Integer maVe,
-      Integer maChuyen,
-      String diemDi,
-      String diemDen,
-      LocalDateTime ngayGioKhoiHanh,
-      Integer choNgoi,
-      BigDecimal giaVe) {}
+    public String getTenKhachHang() {
+      return customerName;
+    }
 
-  public record ThanhToanRow(
-      Integer maTt, BigDecimal tongTien, LocalDateTime ngayTt, String phuongThuc) {}
+    public String getTenNhanVien() {
+      return employeeName;
+    }
 
-  public record HoaDonDetail(
-      Integer maHd,
-      String tenKhachHang,
-      String sdtKhachHang,
-      String tenNhanVien,
-      LocalDateTime ngayLap,
-      BigDecimal tongTien,
-      Boolean trangThai,
-      List<VeRow> veXes,
-      ThanhToanRow thanhToan) {}
+    public LocalDateTime getNgayLap() {
+      return createdAt;
+    }
+
+    public BigDecimal getTongTien() {
+      return totalAmount;
+    }
+
+    public Boolean getTrangThai() {
+      return isPaid;
+    }
+
+    public Long getSoVe() {
+      return ticketCount;
+    }
+
+    public String getPhuongThuc() {
+      return paymentMethod;
+    }
+  }
+
+  public record TicketRow(
+      Integer ticketId,
+      Integer tripId,
+      String departure,
+      String destination,
+      LocalDateTime departureTime,
+      Integer seatNumber,
+      BigDecimal price) {
+    public Integer getMaVe() {
+      return ticketId;
+    }
+
+    public Integer getMaChuyen() {
+      return tripId;
+    }
+
+    public String getDiemDi() {
+      return departure;
+    }
+
+    public String getDiemDen() {
+      return destination;
+    }
+
+    public LocalDateTime getNgayGioKhoiHanh() {
+      return departureTime;
+    }
+
+    public Integer getChoNgoi() {
+      return seatNumber;
+    }
+
+    public BigDecimal getGiaVe() {
+      return price;
+    }
+  }
+
+  public record PaymentRow(
+      Integer paymentId, BigDecimal amount, LocalDateTime paymentDate, String paymentMethod) {
+    public Integer getMaTt() {
+      return paymentId;
+    }
+
+    public BigDecimal getTongTien() {
+      return amount;
+    }
+
+    public LocalDateTime getNgayTt() {
+      return paymentDate;
+    }
+
+    public String getPhuongThuc() {
+      return paymentMethod;
+    }
+  }
+
+  public record InvoiceDetail(
+      Integer invoiceId,
+      String customerName,
+      String customerPhone,
+      String employeeName,
+      LocalDateTime createdAt,
+      BigDecimal totalAmount,
+      Boolean isPaid,
+      List<TicketRow> tickets,
+      PaymentRow payment) {
+    public Integer getMaHd() {
+      return invoiceId;
+    }
+
+    public String getTenKhachHang() {
+      return customerName;
+    }
+
+    public String getSdtKhachHang() {
+      return customerPhone;
+    }
+
+    public String getTenNhanVien() {
+      return employeeName;
+    }
+
+    public LocalDateTime getNgayLap() {
+      return createdAt;
+    }
+
+    public BigDecimal getTongTien() {
+      return totalAmount;
+    }
+
+    public Boolean getTrangThai() {
+      return isPaid;
+    }
+
+    public List<TicketRow> getVeXes() {
+      return tickets;
+    }
+
+    public PaymentRow getThanhToan() {
+      return payment;
+    }
+  }
 }

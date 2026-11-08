@@ -21,6 +21,7 @@ interface FormFieldProps {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  name?: string;
   type?: FormFieldType;
   options?: SelectOption[];
   placeholder?: string;

@@ -2,19 +2,19 @@ package com.coachbooking.service;
 
 import com.coachbooking.common.ApiException;
 import com.coachbooking.common.Validators;
-import com.coachbooking.domain.ChuyenXe;
-import com.coachbooking.domain.GiaVe;
-import com.coachbooking.domain.LoaiXe;
-import com.coachbooking.domain.TaiXe;
-import com.coachbooking.domain.TuyenDuong;
-import com.coachbooking.domain.Xe;
-import com.coachbooking.repo.ChuyenXeRepository;
-import com.coachbooking.repo.GiaVeRepository;
-import com.coachbooking.repo.LoaiXeRepository;
-import com.coachbooking.repo.TaiXeRepository;
-import com.coachbooking.repo.TuyenDuongRepository;
-import com.coachbooking.repo.VeXeRepository;
-import com.coachbooking.repo.XeRepository;
+import com.coachbooking.domain.Driver;
+import com.coachbooking.domain.Route;
+import com.coachbooking.domain.TicketPrice;
+import com.coachbooking.domain.Trip;
+import com.coachbooking.domain.Vehicle;
+import com.coachbooking.domain.VehicleType;
+import com.coachbooking.repo.DriverRepository;
+import com.coachbooking.repo.RouteRepository;
+import com.coachbooking.repo.TicketPriceRepository;
+import com.coachbooking.repo.TicketRepository;
+import com.coachbooking.repo.TripRepository;
+import com.coachbooking.repo.VehicleRepository;
+import com.coachbooking.repo.VehicleTypeRepository;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.Duration;
@@ -28,206 +28,210 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class TripService {
 
-  private final ChuyenXeRepository chuyenXeRepository;
-  private final XeRepository xeRepository;
-  private final LoaiXeRepository loaiXeRepository;
-  private final TuyenDuongRepository tuyenDuongRepository;
-  private final TaiXeRepository taiXeRepository;
-  private final GiaVeRepository giaVeRepository;
-  private final VeXeRepository veXeRepository;
+  private final TripRepository tripRepository;
+  private final VehicleRepository vehicleRepository;
+  private final VehicleTypeRepository vehicleTypeRepository;
+  private final RouteRepository routeRepository;
+  private final DriverRepository driverRepository;
+  private final TicketPriceRepository ticketPriceRepository;
+  private final TicketRepository ticketRepository;
 
   public TripService(
-      ChuyenXeRepository chuyenXeRepository,
-      XeRepository xeRepository,
-      LoaiXeRepository loaiXeRepository,
-      TuyenDuongRepository tuyenDuongRepository,
-      TaiXeRepository taiXeRepository,
-      GiaVeRepository giaVeRepository,
-      VeXeRepository veXeRepository) {
-    this.chuyenXeRepository = chuyenXeRepository;
-    this.xeRepository = xeRepository;
-    this.loaiXeRepository = loaiXeRepository;
-    this.tuyenDuongRepository = tuyenDuongRepository;
-    this.taiXeRepository = taiXeRepository;
-    this.giaVeRepository = giaVeRepository;
-    this.veXeRepository = veXeRepository;
+      TripRepository tripRepository,
+      VehicleRepository vehicleRepository,
+      VehicleTypeRepository vehicleTypeRepository,
+      RouteRepository routeRepository,
+      DriverRepository driverRepository,
+      TicketPriceRepository ticketPriceRepository,
+      TicketRepository ticketRepository) {
+    this.tripRepository = tripRepository;
+    this.vehicleRepository = vehicleRepository;
+    this.vehicleTypeRepository = vehicleTypeRepository;
+    this.routeRepository = routeRepository;
+    this.driverRepository = driverRepository;
+    this.ticketPriceRepository = ticketPriceRepository;
+    this.ticketRepository = ticketRepository;
   }
 
-  public List<ChuyenXeRepository.TripRow> listAll() {
-    return chuyenXeRepository.findAllRows();
+  public List<TripRepository.TripRow> listAll() {
+    return tripRepository.findAllRows();
   }
 
-  public List<ChuyenXeRepository.TripRow> search(
-      String diemDi, String diemDen, LocalDate ngay, Integer tuGio, Integer denGio) {
-    LocalDate date = ngay == null ? LocalDate.now() : ngay;
-    if (tuGio != null && denGio != null && tuGio > denGio) {
+  public List<TripRepository.TripRow> search(
+      String departure, String destination, LocalDate date, Integer fromHour, Integer toHour) {
+    LocalDate searchDate = date == null ? LocalDate.now() : date;
+    if (fromHour != null && toHour != null && fromHour > toHour) {
       throw ApiException.badRequest("Khung giờ không hợp lệ.");
     }
-    LocalDateTime start = date.atStartOfDay();
-    LocalDateTime end = date.plusDays(1).atStartOfDay();
+    LocalDateTime start = searchDate.atStartOfDay();
+    LocalDateTime end = searchDate.plusDays(1).atStartOfDay();
     LocalDateTime now = LocalDateTime.now();
-    return chuyenXeRepository.search(blankToNull(diemDi), blankToNull(diemDen), start, end).stream()
-        .filter(row -> row.getGiaVeThucTe() != null && row.getGiaVeThucTe().signum() > 0)
-        .filter(row -> row.getNgayGioKhoiHanh().isAfter(now))
-        .filter(row -> tuGio == null || row.getNgayGioKhoiHanh().getHour() >= tuGio)
-        .filter(row -> denGio == null || row.getNgayGioKhoiHanh().getHour() <= denGio)
+    return tripRepository
+        .search(blankToNull(departure), blankToNull(destination), start, end)
+        .stream()
+        .filter(row -> row.getActualPrice() != null && row.getActualPrice().signum() > 0)
+        .filter(row -> row.getDepartureTime().isAfter(now))
+        .filter(row -> fromHour == null || row.getDepartureTime().getHour() >= fromHour)
+        .filter(row -> toHour == null || row.getDepartureTime().getHour() <= toHour)
         .toList();
   }
 
-  public SeatMapResponse seatMap(Integer maChuyen) {
-    ChuyenXe chuyenXe = findTrip(maChuyen);
-    Xe xe =
-        xeRepository
-            .findById(chuyenXe.getMaXe())
+  public SeatMapResponse seatMap(Integer tripId) {
+    Trip trip = findTrip(tripId);
+    Vehicle vehicle =
+        vehicleRepository
+            .findById(trip.getVehicleId())
             .orElseThrow(() -> ApiException.notFound("Xe của chuyến không tồn tại."));
-    LoaiXe loaiXe =
-        loaiXeRepository
-            .findById(xe.getMaLx())
+    VehicleType vehicleType =
+        vehicleTypeRepository
+            .findById(vehicle.getTypeId())
             .orElseThrow(() -> ApiException.notFound("Loại xe không tồn tại."));
-    TuyenDuong tuyen =
-        tuyenDuongRepository
-            .findById(chuyenXe.getMaTuyen())
+    Route route =
+        routeRepository
+            .findById(trip.getRouteId())
             .orElseThrow(() -> ApiException.notFound("Tuyến đường không tồn tại."));
     return new SeatMapResponse(
-        chuyenXe.getMaChuyen(),
-        loaiXe.getTenLx(),
-        loaiXe.getSoCho(),
-        chuyenXe.getGiaVeThucTe(),
-        veXeRepository.findChoNgoiByMaChuyen(maChuyen),
-        tuyen.getDiemDi(),
-        tuyen.getDiemDen(),
-        chuyenXe.getNgayGioKhoiHanh());
+        trip.getTripId(),
+        vehicleType.getTypeName(),
+        vehicleType.getSeatCapacity(),
+        trip.getActualPrice(),
+        ticketRepository.findSeatNumbersByTripId(tripId),
+        route.getDeparture(),
+        route.getDestination(),
+        trip.getDepartureTime());
   }
 
   @Transactional
-  public ChuyenXe create(TripRequest request) {
-    Xe xe =
-        xeRepository
-            .findById(request.maXe())
+  public Trip create(TripRequest request) {
+    Vehicle vehicle =
+        vehicleRepository
+            .findById(request.vehicleId())
             .orElseThrow(() -> ApiException.notFound("Xe không tồn tại."));
-    TuyenDuong tuyen =
-        tuyenDuongRepository
-            .findById(request.maTuyen())
+    Route route =
+        routeRepository
+            .findById(request.routeId())
             .orElseThrow(() -> ApiException.notFound("Tuyến đường không tồn tại."));
-    TaiXe taiXe =
-        taiXeRepository
-            .findById(request.maTx())
+    Driver driver =
+        driverRepository
+            .findById(request.driverId())
             .orElseThrow(() -> ApiException.notFound("Tài xế không tồn tại."));
-    LocalDateTime khoiHanh = requireDeparture(request.ngayGioKhoiHanh());
-    checkConflict(xe.getMaXe(), khoiHanh, null);
+    LocalDateTime departure = requireDeparture(request.departureTime());
+    checkConflict(vehicle.getVehicleId(), departure, null);
 
-    GiaVe giaVe =
-        giaVeRepository
-            .findByMaNxAndMaLxAndMaTuyen(xe.getMaNx(), xe.getMaLx(), tuyen.getMaTuyen())
+    TicketPrice ticketPrice =
+        ticketPriceRepository
+            .findByCompanyIdAndTypeIdAndRouteId(
+                vehicle.getCompanyId(), vehicle.getTypeId(), route.getRouteId())
             .orElseThrow(
                 () ->
                     ApiException.conflict(
                         "Chưa có bảng giá cho nhà xe, loại xe và tuyến đường này."));
 
-    ChuyenXe chuyenXe = new ChuyenXe();
-    apply(chuyenXe, xe, tuyen, taiXe, khoiHanh, giaVe.getGiaVe());
-    return chuyenXeRepository.save(chuyenXe);
+    Trip trip = new Trip();
+    apply(trip, vehicle, route, driver, departure, ticketPrice.getPrice());
+    return tripRepository.save(trip);
   }
 
   @Transactional
-  public ChuyenXe update(Integer maChuyen, TripRequest request) {
-    ChuyenXe chuyenXe = findTrip(maChuyen);
-    Xe xe =
-        xeRepository
-            .findById(request.maXe())
+  public Trip update(Integer tripId, TripRequest request) {
+    Trip trip = findTrip(tripId);
+    Vehicle vehicle =
+        vehicleRepository
+            .findById(request.vehicleId())
             .orElseThrow(() -> ApiException.notFound("Xe không tồn tại."));
-    TuyenDuong tuyen =
-        tuyenDuongRepository
-            .findById(request.maTuyen())
+    Route route =
+        routeRepository
+            .findById(request.routeId())
             .orElseThrow(() -> ApiException.notFound("Tuyến đường không tồn tại."));
-    TaiXe taiXe =
-        taiXeRepository
-            .findById(request.maTx())
+    Driver driver =
+        driverRepository
+            .findById(request.driverId())
             .orElseThrow(() -> ApiException.notFound("Tài xế không tồn tại."));
-    LocalDateTime khoiHanh = requireDeparture(request.ngayGioKhoiHanh());
-    if (veXeRepository.existsByMaChuyen(maChuyen)) {
-      boolean doiThongTinChuyen =
-          !chuyenXe.getMaXe().equals(xe.getMaXe())
-              || !chuyenXe.getMaTuyen().equals(tuyen.getMaTuyen())
-              || !chuyenXe.getNgayGioKhoiHanh().equals(khoiHanh);
-      if (doiThongTinChuyen) {
+    LocalDateTime departure = requireDeparture(request.departureTime());
+    if (ticketRepository.existsByTripId(tripId)) {
+      boolean changedCoreInfo =
+          !trip.getVehicleId().equals(vehicle.getVehicleId())
+              || !trip.getRouteId().equals(route.getRouteId())
+              || !trip.getDepartureTime().equals(departure);
+      if (changedCoreInfo) {
         throw ApiException.conflict(
             "Chuyến đã bán vé, chỉ có thể đổi tài xế. Không thể đổi xe, tuyến hoặc giờ khởi hành.");
       }
     }
-    checkConflict(xe.getMaXe(), khoiHanh, maChuyen);
+    checkConflict(vehicle.getVehicleId(), departure, tripId);
 
-    GiaVe giaVe =
-        giaVeRepository
-            .findByMaNxAndMaLxAndMaTuyen(xe.getMaNx(), xe.getMaLx(), tuyen.getMaTuyen())
+    TicketPrice ticketPrice =
+        ticketPriceRepository
+            .findByCompanyIdAndTypeIdAndRouteId(
+                vehicle.getCompanyId(), vehicle.getTypeId(), route.getRouteId())
             .orElseThrow(
                 () ->
                     ApiException.conflict(
                         "Chưa có bảng giá cho nhà xe, loại xe và tuyến đường này."));
 
-    apply(chuyenXe, xe, tuyen, taiXe, khoiHanh, giaVe.getGiaVe());
-    return chuyenXeRepository.save(chuyenXe);
+    apply(trip, vehicle, route, driver, departure, ticketPrice.getPrice());
+    return tripRepository.save(trip);
   }
 
   @Transactional
-  public Map<String, String> delete(Integer maChuyen) {
-    ChuyenXe chuyenXe = findTrip(maChuyen);
-    if (veXeRepository.existsByMaChuyen(maChuyen)) {
+  public Map<String, String> delete(Integer tripId) {
+    Trip trip = findTrip(tripId);
+    if (ticketRepository.existsByTripId(tripId)) {
       throw ApiException.conflict("Không thể xóa chuyến xe đã có vé.");
     }
-    chuyenXeRepository.delete(chuyenXe);
+    tripRepository.delete(trip);
     return Map.of("message", "Xóa chuyến xe thành công.");
   }
 
-  public ChuyenXe findTrip(Integer maChuyen) {
-    return chuyenXeRepository
-        .findById(maChuyen)
+  public Trip findTrip(Integer tripId) {
+    return tripRepository
+        .findById(tripId)
         .orElseThrow(() -> ApiException.notFound("Chuyến xe không tồn tại."));
   }
 
   private void apply(
-      ChuyenXe chuyenXe,
-      Xe xe,
-      TuyenDuong tuyen,
-      TaiXe taiXe,
-      LocalDateTime khoiHanh,
-      BigDecimal giaVe) {
-    chuyenXe.setMaXe(xe.getMaXe());
-    chuyenXe.setMaTuyen(tuyen.getMaTuyen());
-    chuyenXe.setMaTx(taiXe.getMaTx());
-    chuyenXe.setNgayGioKhoiHanh(khoiHanh);
-    chuyenXe.setNgayGioDenDuKien(khoiHanh.plus(durationOf(tuyen)));
-    chuyenXe.setGiaVeThucTe(giaVe);
+      Trip trip,
+      Vehicle vehicle,
+      Route route,
+      Driver driver,
+      LocalDateTime departure,
+      BigDecimal price) {
+    trip.setVehicleId(vehicle.getVehicleId());
+    trip.setRouteId(route.getRouteId());
+    trip.setDriverId(driver.getDriverId());
+    trip.setDepartureTime(departure);
+    trip.setEstimatedArrivalTime(departure.plus(durationOf(route)));
+    trip.setActualPrice(price);
   }
 
-  private LocalDateTime requireDeparture(LocalDateTime khoiHanh) {
-    if (khoiHanh == null) {
+  private LocalDateTime requireDeparture(LocalDateTime departure) {
+    if (departure == null) {
       throw ApiException.badRequest("Vui lòng chọn ngày giờ khởi hành.");
     }
-    if (!khoiHanh.isAfter(LocalDateTime.now())) {
+    if (!departure.isAfter(LocalDateTime.now())) {
       throw ApiException.badRequest("Ngày giờ khởi hành phải sau thời điểm hiện tại.");
     }
-    return khoiHanh;
+    return departure;
   }
 
-  private void checkConflict(Integer maXe, LocalDateTime khoiHanh, Integer excludeId) {
-    LocalDateTime start = khoiHanh.withSecond(0).withNano(0);
+  private void checkConflict(Integer vehicleId, LocalDateTime departure, Integer excludeId) {
+    LocalDateTime start = departure.withSecond(0).withNano(0);
     LocalDateTime end = start.plusMinutes(1);
     boolean conflict =
         excludeId == null
-            ? chuyenXeRepository.existsByMaXeAndNgayGioKhoiHanhBetween(maXe, start, end)
-            : chuyenXeRepository.existsByMaXeAndNgayGioKhoiHanhBetweenAndMaChuyenNot(
-                maXe, start, end, excludeId);
+            ? tripRepository.existsByVehicleIdAndDepartureTimeBetween(vehicleId, start, end)
+            : tripRepository.existsByVehicleIdAndDepartureTimeBetweenAndTripIdNot(
+                vehicleId, start, end, excludeId);
     if (conflict) {
       throw ApiException.conflict(
           "Xe này đã được lên chuyến vào cùng thời điểm. Vui lòng chọn xe hoặc giờ khác.");
     }
   }
 
-  private Duration durationOf(TuyenDuong tuyen) {
-    return tuyen.getThoiGianDuKien() == null
+  private Duration durationOf(Route route) {
+    return route.getEstimatedDuration() == null
         ? Duration.ofHours(6)
-        : Duration.ofSeconds(tuyen.getThoiGianDuKien().toSecondOfDay());
+        : Duration.ofSeconds(route.getEstimatedDuration().toSecondOfDay());
   }
 
   private String blankToNull(String value) {
@@ -235,18 +239,58 @@ public class TripService {
   }
 
   public record TripRequest(
-      @NotNull(message = "Vui lòng chọn xe.") Integer maXe,
-      @NotNull(message = "Vui lòng chọn tuyến đường.") Integer maTuyen,
-      @NotNull(message = "Vui lòng chọn tài xế.") Integer maTx,
-      @NotNull(message = "Vui lòng chọn ngày giờ khởi hành.") LocalDateTime ngayGioKhoiHanh) {}
+      @NotNull(message = "Vui lòng chọn xe.")
+          @com.fasterxml.jackson.annotation.JsonAlias({"vehicleId", "maXe"})
+          Integer vehicleId,
+      @NotNull(message = "Vui lòng chọn tuyến đường.")
+          @com.fasterxml.jackson.annotation.JsonAlias({"routeId", "maTuyen"})
+          Integer routeId,
+      @NotNull(message = "Vui lòng chọn tài xế.")
+          @com.fasterxml.jackson.annotation.JsonAlias({"driverId", "maTx"})
+          Integer driverId,
+      @NotNull(message = "Vui lòng chọn ngày giờ khởi hành.")
+          @com.fasterxml.jackson.annotation.JsonAlias({"departureTime", "ngayGioKhoiHanh"})
+          LocalDateTime departureTime) {}
 
   public record SeatMapResponse(
-      Integer maChuyen,
-      String tenLoaiXe,
-      Integer soCho,
-      BigDecimal giaVe,
-      List<Integer> gheDaDat,
-      String diemDi,
-      String diemDen,
-      LocalDateTime ngayGioKhoiHanh) {}
+      Integer tripId,
+      String typeName,
+      Integer seatCapacity,
+      BigDecimal price,
+      List<Integer> bookedSeats,
+      String departure,
+      String destination,
+      LocalDateTime departureTime) {
+    public Integer getMaChuyen() {
+      return tripId;
+    }
+
+    public String getTenLoaiXe() {
+      return typeName;
+    }
+
+    public Integer getSoCho() {
+      return seatCapacity;
+    }
+
+    public BigDecimal getGiaVe() {
+      return price;
+    }
+
+    public List<Integer> getGheDaDat() {
+      return bookedSeats;
+    }
+
+    public String getDiemDi() {
+      return departure;
+    }
+
+    public String getDiemDen() {
+      return destination;
+    }
+
+    public LocalDateTime getNgayGioKhoiHanh() {
+      return departureTime;
+    }
+  }
 }

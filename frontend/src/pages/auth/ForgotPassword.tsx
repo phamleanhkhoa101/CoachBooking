@@ -4,30 +4,34 @@ import { apiRequest, getErrorMessage } from '../../api/client';
 import { FormField } from '../../components/common/FormField';
 
 export function ForgotPassword() {
-  const [tenDangNhap, setTenDangNhap] = useState('');
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
-  const [matKhauTam, setMatKhauTam] = useState('');
+  const [temporaryPassword, setTemporaryPassword] = useState('');
   const [busy, setBusy] = useState(false);
 
   const handleSubmit = async () => {
-    if (!tenDangNhap.trim() || !email.trim()) {
+    if (!username.trim() || !email.trim()) {
       setError('Vui lòng nhập tên đăng nhập và email.');
       return;
     }
     setBusy(true);
     setError('');
-    setMatKhauTam('');
+    setTemporaryPassword('');
     try {
-      const data = await apiRequest<{ matKhauTam: string }>(
-        '/auth/quen-mat-khau',
+      const data = await apiRequest<{ temporaryPassword?: string; matKhauTam?: string }>(
+        '/auth/forgot-password',
         {
           method: 'POST',
-          body: JSON.stringify({ tenDangNhap: tenDangNhap.trim(), email: email.trim() }),
+          body: JSON.stringify({
+            username: username.trim(),
+            email: email.trim(),
+            tenDangNhap: username.trim(),
+          }),
         },
         { redirectOn401: false },
       );
-      setMatKhauTam(data?.matKhauTam ?? '');
+      setTemporaryPassword(data?.temporaryPassword ?? data?.matKhauTam ?? '');
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -53,9 +57,9 @@ export function ForgotPassword() {
         </p>
 
         {error ? <div className="alert alert-error">{error}</div> : null}
-        {matKhauTam ? (
+        {temporaryPassword ? (
           <div className="alert alert-success">
-            Mật khẩu tạm của bạn là: <strong className="mono">{matKhauTam}</strong>
+            Mật khẩu tạm của bạn là: <strong className="mono">{temporaryPassword}</strong>
             <br />
             Hãy đăng nhập và đổi mật khẩu ngay sau đó.
           </div>
@@ -70,8 +74,8 @@ export function ForgotPassword() {
         >
           <FormField
             label="Tên đăng nhập"
-            value={tenDangNhap}
-            onChange={setTenDangNhap}
+            value={username}
+            onChange={setUsername}
             placeholder="Nhập tên đăng nhập"
             required
           />

@@ -36,11 +36,12 @@ Before editing, verify actual packages, components, build scripts, configuration
 1. Read `README.md` and the relevant parts of `docs/API.md`.
 2. Inspect related backend/frontend files, their callers, and relevant Flyway migrations.
 3. Check `git status` and preserve all existing user changes.
-4. For non-trivial tasks, give a brief plan and identify affected files and data flows.
-5. Make the smallest coherent change; reuse existing patterns.
-6. Add or update relevant tests; run checks appropriate to touched code.
-7. Review the diff for unintended modifications, security issues, and API/schema drift.
-8. Explain results, tests run, remaining risks, and any manual verification steps.
+4. When a problem or feature has multiple implementation approaches or technical trade-offs, present the options clearly (pros/cons) and ask the user to decide/agree on the approach before coding.
+5. For non-trivial tasks, give a brief plan and identify affected files and data flows.
+6. Make the smallest coherent change; reuse existing patterns.
+7. Add or update relevant tests; run checks appropriate to touched code.
+8. Review the diff for unintended modifications, security issues, and API/schema drift.
+9. Explain results, tests run, remaining risks, and any manual verification steps.
 
 For bug fixes, reproduce or characterize the failure before changing the implementation when practical. Do not claim tests or builds passed without actually running them.
 
@@ -164,6 +165,7 @@ For every change:
 - For meaningful Java/Spring Boot changes, briefly explain the request flow (controller → service → repository), relevant transaction/security concepts, and the reasoning behind the solution.
 - Prefer clear, maintainable code rather than overly clever abstractions.
 - Highlight one or two important methods/classes the developer should review manually, especially for concurrency or business-rule changes.
+- **Hỏi và chốt phương án trước khi code (Consult before implementing):** Khi một bài toán có nhiều hướng tiếp cận (về kiến trúc, giải thuật, thư viện, hoặc luồng UX/giao diện), agent phải phân tích ngắn gọn ưu/nhược điểm của từng cách và hỏi người dùng để thống nhất hướng xử lý trước khi thay đổi mã nguồn.
 - For substantial changes, explain technical trade-offs before implementing them; for small fixes, stay concise.
 
 ## 12. Definition of Done / Final Report

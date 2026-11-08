@@ -79,17 +79,12 @@ export function Profile() {
     try {
       const body: Record<string, unknown> = {
         fullName: fullName.trim(),
-        hoTen: fullName.trim(),
         dateOfBirth,
-        namSinh: dateOfBirth,
         phone: phone.trim(),
-        sdt: phone.trim(),
         gender: gender === 'true',
-        gioiTinh: gender === 'true',
       };
       if (isEmployee) {
         body.address = address.trim() || null;
-        body.diaChi = address.trim() || null;
       }
       const data = await api.put<ProfileType>('/profile', body);
       applyData(data);
@@ -120,8 +115,6 @@ export function Profile() {
       await api.put('/auth/password', {
         oldPassword,
         newPassword,
-        matKhauCu: oldPassword,
-        matKhauMoi: newPassword,
       });
       showToast('Đã đổi mật khẩu thành công.');
       setOldPassword('');

@@ -26,7 +26,6 @@ export function ForgotPassword() {
           body: JSON.stringify({
             username: username.trim(),
             email: email.trim(),
-            tenDangNhap: username.trim(),
           }),
         },
         { redirectOn401: false },

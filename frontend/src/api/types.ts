@@ -182,12 +182,15 @@ export interface Trip {
 }
 export type ChuyenXe = Trip;
 export type ChuyenTimKiem = Trip;
+export type TripSearchResponse = Trip;
 
 export interface SeatMapResponse {
   tripId: number;
   vehicleTypeName: string;
+  typeName?: string;
   seatCapacity: number;
   ticketPrice: number;
+  price?: number;
   bookedSeats: number[];
   departure?: string;
   destination?: string;
@@ -199,6 +202,7 @@ export interface SeatMapResponse {
   soCho?: number;
   giaVe?: number;
   choDaDat?: number[];
+  gheDaDat?: number[];
   diemDi?: string;
   diemDen?: string;
   ngayGioKhoiHanh?: string;
@@ -271,6 +275,8 @@ export interface TicketItem {
   departureTime: string;
   seatNumber: number;
   price: number;
+  vehicleTypeName?: string;
+  licensePlate?: string;
 
   // Vietnamese fields / aliases
   maVe?: number;
@@ -279,7 +285,11 @@ export interface TicketItem {
   diemDen?: string;
   ngayGioKhoiHanh?: string;
   choNgoi?: number;
+  soGhe?: number;
   giaVe?: number;
+  gia?: number;
+  tenLoaiXe?: string;
+  bienSoXe?: string;
 }
 export type VeItem = TicketItem;
 
@@ -301,6 +311,8 @@ export interface InvoiceDetail {
   invoiceId: number;
   customerName: string;
   customerPhone: string | null;
+  phone?: string | null;
+  soDienThoai?: string | null;
   employeeName: string | null;
   createdAt: string;
   totalAmount: number;
@@ -317,10 +329,11 @@ export interface InvoiceDetail {
   tongTien?: number;
   trangThai?: boolean;
   veXes?: TicketItem[];
+  chiTietVe?: TicketItem[];
   thanhToan?: PaymentInfo | null;
 }
 export type HoaDonDetail = InvoiceDetail;
-export type HoaDonKhachHang = InvoiceItem & { veXes?: TicketItem[]; tickets?: TicketItem[] };
+export type HoaDonKhachHang = InvoiceItem & { veXes?: TicketItem[]; tickets?: TicketItem[]; ngayTao?: string };
 
 export interface Profile {
   type: string;
@@ -340,6 +353,7 @@ export interface Profile {
   maNv?: number | null;
   hoTen?: string;
   namSinh?: string | null;
+  ngaySinh?: string | null;
   sdt?: string | null;
   gioiTinh?: boolean | null;
   diaChi?: string | null;

@@ -1,0 +1,480 @@
+.eticket-page {
+  display: flex;
+  flex-direction: column;
+  background-color: #f8fafc;
+  min-height: calc(100vh - 200px);
+}
+
+.eticket-container {
+  max-width: 1000px;
+  margin: 2rem auto;
+  padding: 0 1.5rem;
+  width: 100%;
+}
+
+/* SUCCESS ALERT */
+.success-hero-alert {
+  background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  color: #ffffff;
+  border-radius: 16px;
+  padding: 1.5rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.2);
+}
+
+.hero-alert-icon {
+  width: 54px;
+  height: 54px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.hero-alert-content h2 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin-bottom: 0.25rem;
+}
+
+.hero-alert-content p {
+  font-size: 0.9375rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.booking-code-chip {
+  background: rgba(255, 255, 255, 0.25);
+  padding: 0.15rem 0.6rem;
+  border-radius: 6px;
+  font-size: 1.125rem;
+  letter-spacing: 0.05em;
+}
+
+.btn-copy-code {
+  background: #ffffff;
+  color: #059669;
+  border: none;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.hero-alert-sub {
+  font-size: 0.8125rem;
+  opacity: 0.9;
+}
+
+/* TOOLBAR */
+.ticket-action-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.btn-print-ticket {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  background: #1e40af;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.btn-print-ticket:hover {
+  background: #1d4ed8;
+}
+
+.btn-view-history,
+.btn-home-back {
+  padding: 0.65rem 1.25rem;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  text-decoration: none;
+  background: #ffffff;
+  color: #334155;
+  border: 1px solid #cbd5e1;
+  transition: all 0.15s ease;
+}
+
+.btn-view-history:hover,
+.btn-home-back:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+/* BOARDING PASS CARD */
+.boarding-pass-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  display: grid;
+  grid-template-columns: 1fr 24px 260px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.07);
+  overflow: hidden;
+  margin-bottom: 2.5rem;
+}
+
+/* LEFT BODY */
+.pass-main-body {
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.pass-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.pass-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.pass-logo-badge {
+  width: 40px;
+  height: 40px;
+  background: #1e40af;
+  color: #ffffff;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.125rem;
+}
+
+.pass-brand-title {
+  display: block;
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: #1e40af;
+}
+
+.pass-brand-sub {
+  display: block;
+  font-size: 0.6875rem;
+  color: #64748b;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+
+.pass-status-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.status-tag {
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+}
+
+.status-tag.paid {
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+.status-tag.unpaid {
+  background: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fde68a;
+}
+
+.pass-serial {
+  font-size: 0.6875rem;
+  color: #94a3b8;
+  font-family: monospace;
+}
+
+/* ROUTE ROW */
+.pass-route-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8fafc;
+  padding: 1.25rem 1.5rem;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.route-point {
+  display: flex;
+  flex-direction: column;
+}
+
+.route-point.right {
+  align-items: flex-end;
+}
+
+.point-city {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.point-sub {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.route-arrow-center {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #1e40af;
+}
+
+.arrow-line {
+  width: 60px;
+  height: 2px;
+  background: #cbd5e1;
+}
+
+/* DETAILS GRID */
+.pass-details-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem 1rem;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.d-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.d-val {
+  font-size: 0.9375rem;
+  color: #0f172a;
+}
+
+.text-blue {
+  color: #1e40af;
+}
+
+.seat-text {
+  font-size: 1.1rem;
+  color: #f97316;
+}
+
+.pass-footer-price {
+  padding-top: 1rem;
+  border-top: 1px solid #f1f5f9;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #475569;
+}
+
+.pass-price-val {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: #1e40af;
+}
+
+.vat-hint {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+/* DIVIDER */
+.pass-divider {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.dashed-line {
+  width: 1px;
+  height: 100%;
+  border-left: 2px dashed #cbd5e1;
+}
+
+.notch {
+  width: 24px;
+  height: 24px;
+  background: #f8fafc;
+  border-radius: 50%;
+  position: absolute;
+  left: 0;
+  border: 1px solid #e2e8f0;
+}
+
+.notch.top {
+  top: -12px;
+}
+
+.notch.bottom {
+  bottom: -12px;
+}
+
+/* RIGHT QR STUB */
+.pass-qr-stub {
+  background: #fdfefe;
+  padding: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 0.75rem;
+}
+
+.stub-title {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #1e40af;
+  letter-spacing: 0.05em;
+}
+
+.stub-qr-box {
+  background: #ffffff;
+  padding: 0.5rem;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+
+.qr-image {
+  width: 140px;
+  height: 140px;
+  display: block;
+}
+
+.stub-pin {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.stub-pin strong {
+  color: #0f172a;
+  margin-left: 0.25rem;
+}
+
+.stub-hint {
+  font-size: 0.6875rem;
+  color: #94a3b8;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* GUIDELINES */
+.passenger-guidelines {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 1.5rem 2rem;
+}
+
+.passenger-guidelines h3 {
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 1.25rem;
+}
+
+.guidelines-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+}
+
+.guide-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.guide-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.guide-card strong {
+  font-size: 0.875rem;
+  color: #0f172a;
+}
+
+.guide-card p {
+  font-size: 0.8125rem;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.45;
+}
+
+/* PRINT MEDIA */
+@media print {
+  .no-print,
+  .customer-navbar,
+  .customer-footer {
+    display: none !important;
+  }
+  body,
+  .customer-layout,
+  .eticket-page {
+    background: #ffffff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .eticket-container {
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .boarding-pass-card {
+    border: 2px solid #000000 !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+  }
+}
+
+@media (max-width: 800px) {
+  .boarding-pass-card {
+    grid-template-columns: 1fr;
+  }
+  .pass-divider {
+    display: none;
+  }
+  .pass-details-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}

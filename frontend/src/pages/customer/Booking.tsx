@@ -206,19 +206,12 @@ export function Booking({ mode }: BookingProps) {
       tripId,
       seatNumbers: selectedSeats,
       paymentMethod,
-      maChuyen: tripId,
-      choNgois: selectedSeats,
-      phuongThuc: paymentMethod,
     };
     if (needCustomerInfo) {
       body.customerName = customerName.trim();
       body.phone = phone.trim();
       body.dateOfBirth = dateOfBirth;
       body.gender = gender === 'true';
-      body.tenKhachHang = customerName.trim();
-      body.sdt = phone.trim();
-      body.namSinh = dateOfBirth;
-      body.gioiTinh = gender === 'true';
     }
 
     setSubmitting(true);

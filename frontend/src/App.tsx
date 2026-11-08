@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider, RequireRole, useAuth } from './auth/AuthContext';
 import { AppLayout } from './components/layout/AppLayout';
+import { CustomerLayout } from './components/layout/CustomerLayout';
 import { ToastProvider } from './components/common/Toast';
 import { isAdminPortal } from './auth/portal';
 import { Accounts } from './pages/admin/system/Accounts';
@@ -23,6 +24,12 @@ import { RoutesPage } from './pages/admin/operations/Routes';
 import { Trips } from './pages/admin/operations/Trips';
 import { VehicleTypes } from './pages/admin/operations/VehicleTypes';
 import { Vehicles } from './pages/admin/operations/Vehicles';
+import { TripSearchPage } from './pages/customer/TripSearchPage';
+import { SeatSelectionPage } from './pages/customer/SeatSelectionPage';
+import { CheckoutPage } from './pages/customer/CheckoutPage';
+import { ETicketPage } from './pages/customer/ETicketPage';
+import { TicketLookupPage } from './pages/customer/TicketLookupPage';
+import { CustomerTicketsPage } from './pages/customer/CustomerTicketsPage';
 
 function HomeRoute() {
   const { nguoiDung, loading } = useAuth();
@@ -52,6 +59,16 @@ export function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
+
+            {/* Cổng Đặt vé Khách hàng & Dịch vụ bến xe */}
+            <Route element={<CustomerLayout />}>
+              <Route path="/tim-chuyen" element={<TripSearchPage />} />
+              <Route path="/dat-ve/chon-ghe/:tripId" element={<SeatSelectionPage />} />
+              <Route path="/dat-ve/thanh-toan" element={<CheckoutPage />} />
+              <Route path="/ve-dien-tu/:invoiceId" element={<ETicketPage />} />
+              <Route path="/tra-cuu-ve" element={<TicketLookupPage />} />
+              <Route path="/ve-cua-toi" element={<CustomerTicketsPage />} />
+            </Route>
 
             <Route
               path="/admin"

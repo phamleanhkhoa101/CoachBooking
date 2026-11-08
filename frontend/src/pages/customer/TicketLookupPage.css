@@ -1,0 +1,336 @@
+.ticket-lookup-page {
+  display: flex;
+  flex-direction: column;
+  background-color: #f8fafc;
+  min-height: calc(100vh - 200px);
+}
+
+.lookup-hero {
+  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+  color: #ffffff;
+  padding: 3rem 1.5rem;
+  text-align: center;
+}
+
+.lookup-hero h1 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+
+.lookup-hero p {
+  font-size: 0.9375rem;
+  max-width: 600px;
+  margin: 0 auto;
+  opacity: 0.9;
+  line-height: 1.5;
+}
+
+.lookup-container {
+  max-width: 800px;
+  margin: -2rem auto 3rem;
+  padding: 0 1.5rem;
+  width: 100%;
+}
+
+.lookup-form-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.08);
+}
+
+.lookup-inputs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.lookup-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.lookup-field label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.input-with-icon {
+  display: flex;
+  align-items: center;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.input-prefix {
+  padding: 0 0.75rem;
+  background: #f1f5f9;
+  border-right: 1px solid #cbd5e1;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #64748b;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  border-radius: 7px 0 0 7px;
+}
+
+.input-with-icon input {
+  border: none;
+  height: 44px;
+  padding: 0 0.75rem;
+  font-family: inherit;
+  font-size: 0.9375rem;
+  outline: none;
+  width: 100%;
+}
+
+.lookup-field input {
+  height: 44px;
+  padding: 0 0.875rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.9375rem;
+  outline: none;
+}
+
+.btn-lookup-submit {
+  height: 44px;
+  padding: 0 1.5rem;
+  background: #f97316;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.btn-lookup-submit:hover:not(:disabled) {
+  background: #ea580c;
+}
+
+.btn-lookup-submit:disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
+}
+
+.lookup-error-box {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  border-radius: 8px;
+  font-size: 0.875rem;
+}
+
+/* RESULT CARD */
+.lookup-result-card {
+  margin-top: 2rem;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+.result-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.invoice-tag {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  background: #eff6ff;
+  color: #1e40af;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.result-title-col h2 {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+}
+
+.created-date {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.result-status-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.badge-paid {
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+  background: #ecfdf5;
+  color: #059669;
+  border: 1px solid #a7f3d0;
+}
+
+.badge-unpaid {
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+  background: #fffbeb;
+  color: #d97706;
+  border: 1px solid #fde68a;
+}
+
+.total-val {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #1e40af;
+}
+
+.result-passenger-info {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  padding: 1.25rem 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.info-cell {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.875rem;
+}
+
+.info-cell .label {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.result-tickets-table {
+  padding-top: 1.25rem;
+}
+
+.result-tickets-table h4 {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #334155;
+  margin-bottom: 0.75rem;
+}
+
+.tickets-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.ticket-item-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f8fafc;
+  padding: 0.875rem 1rem;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.ticket-route-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.ticket-route-info strong {
+  font-size: 0.9375rem;
+  color: #0f172a;
+}
+
+.ticket-route-info span {
+  font-size: 0.75rem;
+  color: #64748b;
+}
+
+.ticket-meta-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.seat-badge {
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: #fff7ed;
+  color: #ea580c;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #fed7aa;
+}
+
+.type-badge {
+  font-size: 0.75rem;
+  background: #f1f5f9;
+  color: #475569;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+}
+
+.ticket-price {
+  font-size: 1rem;
+  color: #1e40af;
+}
+
+.result-actions-footer {
+  margin-top: 1.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #f1f5f9;
+  text-align: center;
+}
+
+.btn-open-eticket {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: #1e40af;
+  color: #ffffff;
+  border-radius: 8px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.btn-open-eticket:hover {
+  background: #1d4ed8;
+}
+
+@media (max-width: 768px) {
+  .lookup-inputs-grid {
+    grid-template-columns: 1fr;
+  }
+  .result-passenger-info {
+    grid-template-columns: 1fr;
+  }
+  .ticket-item-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}

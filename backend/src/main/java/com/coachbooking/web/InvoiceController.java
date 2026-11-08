@@ -75,6 +75,19 @@ public class InvoiceController {
     return invoiceService.cancel(id, currentUserService.requireAccount());
   }
 
+  @PostMapping({"/lookup", "/tra-cuu"})
+  public InvoiceService.InvoiceDetail lookup(@Valid @RequestBody LookupRequest request) {
+    Integer id = request.invoiceId() != null ? request.invoiceId() : request.maHoaDon();
+    String ph = request.phone() != null ? request.phone() : request.soDienThoai();
+    return invoiceService.lookup(id, ph);
+  }
+
+  public record LookupRequest(
+      @JsonAlias({"maHoaDon", "invoiceId"}) Integer invoiceId,
+      @JsonAlias({"maHoaDon", "invoiceId"}) Integer maHoaDon,
+      @JsonAlias({"sdt", "phone", "soDienThoai"}) String phone,
+      @JsonAlias({"sdt", "phone", "soDienThoai"}) String soDienThoai) {}
+
   public record PayRequest(
       @NotBlank(message = "Vui lòng chọn phương thức thanh toán.")
           @JsonAlias({"phuongThuc", "paymentMethod"})

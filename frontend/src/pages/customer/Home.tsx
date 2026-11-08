@@ -2,8 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { api, getErrorMessage } from '../../api/client';
 import type { BusCompany, Route, Trip } from '../../api/types';
-import { useAuth } from '../../auth/AuthContext';
 import { formatVnd, todayISO } from '../../utils/format';
+import { CustomerNavbar } from '../../components/layout/CustomerNavbar';
 import './Home.css';
 
 const DEFAULT_LOCATIONS = [
@@ -54,8 +54,6 @@ function formatVietnameseDate(isoDate: string): { formatted: string; weekday: st
 }
 
 export function Home() {
-  const { user, nguoiDung, logout } = useAuth();
-  const currentUser = user ?? nguoiDung;
   const navigate = useNavigate();
 
   // Dữ liệu thực từ database
@@ -81,16 +79,9 @@ export function Home() {
   const [loadingTrips, setLoadingTrips] = useState(false);
   const [searchError, setSearchError] = useState('');
 
-  // Dropdown menu người dùng
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
-  const userMenuRef = useRef<HTMLDivElement>(null);
-
   // Đóng dropdowns khi click bên ngoài
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
-        setUserMenuOpen(false);
-      }
       if (departureRef.current && !departureRef.current.contains(e.target as Node)) {
         setOpenDeparture(false);
       }
@@ -244,186 +235,21 @@ export function Home() {
   };
 
   const handleSelectTrip = (trip: Trip) => {
-    if (currentUser) {
-      const role = currentUser.role ?? currentUser.quyen;
-      if (role === 'KhachHang') {
-        navigate('/app/dat-ve', { state: { selectedChuyen: trip } });
-      } else {
-        navigate('/admin/ban-ve');
-      }
-    } else {
-      navigate('/login');
-    }
+    const id = trip.tripId ?? trip.maChuyen;
+    navigate(`/dat-ve/chon-ghe/${id}`, {
+      state: {
+        trip,
+        travelDate,
+        departure: trip.departure ?? trip.diemDi ?? departure,
+        destination: trip.destination ?? trip.diemDen ?? destination,
+      },
+    });
   };
-
-  const userDisplayName =
-    currentUser?.fullName ??
-    currentUser?.username ??
-    currentUser?.hoTen ??
-    currentUser?.tenDangNhap ??
-    '';
 
   return (
     <div className="home-container">
       {/* 1. TOP NAVIGATION BAR */}
-      <header className="home-header">
-        <div className="home-header-inner">
-          <div className="home-brand">
-            <Link to="/" className="brand-link">
-              <div className="brand-badge-logo">BX</div>
-              <div className="brand-text">
-                <span className="brand-title">CoachBooking</span>
-                <span className="brand-subtitle">Bến xe Miền Đông Mới</span>
-              </div>
-            </Link>
-          </div>
-
-          <nav className="home-nav">
-            <Link to="/" className="nav-item active">
-              Trang chủ
-            </Link>
-            <a href="#tuyen-duong" className="nav-item">
-              Lịch trình tuyến xe
-            </a>
-            <a href="#doi-tac" className="nav-item">
-              Nhà xe đối tác ({busCompanies.length})
-            </a>
-          </nav>
-
-          <div className="home-actions">
-            {currentUser ? (
-              <div className="user-dropdown-wrap" ref={userMenuRef}>
-                <button
-                  type="button"
-                  className={`btn-user-profile ${userMenuOpen ? 'active' : ''}`}
-                  onClick={() => setUserMenuOpen((prev) => !prev)}
-                  aria-expanded={userMenuOpen}
-                  aria-haspopup="true"
-                >
-                  <span className="user-avatar-badge">
-                    {userDisplayName.charAt(0).toUpperCase()}
-                  </span>
-                  <span className="user-name">{userDisplayName}</span>
-                  <svg
-                    className={`user-chevron ${userMenuOpen ? 'open' : ''}`}
-                    width="14"
-                    height="14"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2.5"
-                  >
-                    <polyline points="6 9 12 15 18 9" />
-                  </svg>
-                </button>
-
-                {userMenuOpen && (
-                  <div className="user-dropdown-menu">
-                    <div className="user-menu-header">
-                      <div className="user-menu-avatar">
-                        {userDisplayName.charAt(0).toUpperCase()}
-                      </div>
-                      <div className="user-menu-info">
-                        <span className="user-menu-name">{userDisplayName}</span>
-                        <span className="user-menu-role">
-                          {(currentUser.role ?? currentUser.quyen) === 'KhachHang'
-                            ? 'Khách hàng thân thiết'
-                            : (currentUser.role ?? currentUser.quyen) === 'Admin'
-                              ? 'Quản trị viên bến'
-                              : 'Nhân viên bán vé'}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="user-menu-divider" />
-
-                    {(currentUser.role ?? currentUser.quyen) === 'KhachHang' ? (
-                      <>
-                        <Link
-                          to="/app/ho-so"
-                          className="user-menu-item"
-                          onClick={() => setUserMenuOpen(false)}
-                        >
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                            <circle cx="12" cy="7" r="4" />
-                          </svg>
-                          <span>Thông tin</span>
-                        </Link>
-
-                        <Link
-                          to="/app/lich-su"
-                          className="user-menu-item"
-                          onClick={() => setUserMenuOpen(false)}
-                        >
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <rect x="3" y="4" width="18" height="16" rx="2" />
-                            <path d="M7 8h10M7 12h10M7 16h6" />
-                          </svg>
-                          <span>Vé đã đặt</span>
-                        </Link>
-                      </>
-                    ) : (
-                      <>
-                        <Link
-                          to="/admin"
-                          className="user-menu-item"
-                          onClick={() => setUserMenuOpen(false)}
-                        >
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <rect x="3" y="3" width="7" height="7" />
-                            <rect x="14" y="3" width="7" height="7" />
-                            <rect x="14" y="14" width="7" height="7" />
-                            <rect x="3" y="14" width="7" height="7" />
-                          </svg>
-                          <span>Bàn làm việc quản trị</span>
-                        </Link>
-
-                        <Link
-                          to="/admin/ho-so"
-                          className="user-menu-item"
-                          onClick={() => setUserMenuOpen(false)}
-                        >
-                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                            <circle cx="12" cy="7" r="4" />
-                          </svg>
-                          <span>Thông tin</span>
-                        </Link>
-                      </>
-                    )}
-
-                    <div className="user-menu-divider" />
-
-                    <button
-                      type="button"
-                      className="user-menu-item logout"
-                      onClick={() => {
-                        setUserMenuOpen(false);
-                        logout();
-                      }}
-                    >
-                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9" />
-                      </svg>
-                      <span>Đăng xuất</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="guest-auth-buttons">
-                <Link to="/login" className="btn-home-login">
-                  Đăng nhập
-                </Link>
-                <Link to="/register" className="btn-home-register">
-                  Đăng ký
-                </Link>
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
+      <CustomerNavbar />
 
       {/* 2. HERO SECTION */}
       <section className="hero-section">

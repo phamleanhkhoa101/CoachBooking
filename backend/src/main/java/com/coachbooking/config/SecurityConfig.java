@@ -57,10 +57,18 @@ public class SecurityConfig {
                         "/api/tuyen-duong/*",
                         "/api/trips/search",
                         "/api/chuyen-xe/tim",
+                        "/api/trips/*/seats",
+                        "/api/trips/*/ghe",
+                        "/api/chuyen-xe/*/seats",
+                        "/api/chuyen-xe/*/ghe",
                         "/api/bus-companies",
                         "/api/bus-companies/*",
                         "/api/nha-xe",
-                        "/api/nha-xe/*")
+                        "/api/nha-xe/*",
+                        "/api/invoices/lookup",
+                        "/api/invoices/tra-cuu",
+                        "/api/hoa-don/lookup",
+                        "/api/hoa-don/tra-cuu")
                     .permitAll()
                     .requestMatchers("/actuator/health")
                     .permitAll()

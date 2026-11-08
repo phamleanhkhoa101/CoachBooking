@@ -7,6 +7,8 @@ export function formatVnd(value: number | null | undefined): string {
   return `${new Intl.NumberFormat('vi-VN').format(value)} đ`;
 }
 
+export const formatCurrency = formatVnd;
+
 export function formatNumber(value: number | null | undefined): string {
   if (value === null || value === undefined || Number.isNaN(value)) return '0';
   return new Intl.NumberFormat('vi-VN').format(value);

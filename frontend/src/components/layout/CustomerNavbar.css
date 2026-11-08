@@ -1,0 +1,340 @@
+.shared-customer-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: #ffffff;
+  border-bottom: 1px solid #dae2fd;
+  box-shadow: 0 1px 3px rgba(19, 27, 46, 0.05);
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+/* Loại bỏ triệt để mọi hiệu ứng gạch dưới khi hover trong toàn bộ thanh navbar */
+.shared-customer-header a,
+.shared-customer-header a:hover,
+.shared-customer-header a:focus,
+.shared-customer-header a:active {
+  text-decoration: none !important;
+}
+
+.shared-customer-header-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  height: 4.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+}
+
+/* BRAND LOGO */
+.shared-brand-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.shared-brand-badge {
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, #1e40af 0%, #00288e 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.125rem;
+  font-weight: 800;
+  box-shadow: 0 4px 12px rgba(0, 40, 142, 0.25);
+  flex-shrink: 0;
+}
+
+.shared-brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.shared-brand-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #00288e;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.shared-brand-subtitle {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  color: #757684;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-top: 0.1rem;
+}
+
+/* NAVIGATION */
+.shared-customer-nav {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.shared-nav-item {
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #444653;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.shared-brand-link:hover {
+  text-decoration: none !important;
+}
+
+.shared-nav-item:hover {
+  color: #00288e;
+  background-color: #f2f3ff;
+  text-decoration: none !important;
+}
+
+.shared-nav-item.active {
+  color: #00288e;
+  background-color: #eaedff;
+  font-weight: 700;
+}
+
+/* ACTIONS */
+.shared-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+}
+
+/* USER PROFILE BUTTON */
+.shared-user-wrap {
+  position: relative;
+  display: inline-block;
+}
+
+.shared-btn-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  background-color: #f2f3ff;
+  color: #00288e;
+  padding: 0.375rem 0.875rem;
+  border-radius: 9999px;
+  border: 1px solid #dae2fd;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.shared-btn-profile:hover,
+.shared-btn-profile.active {
+  background-color: #eaedff;
+  border-color: #b8c4ff;
+  box-shadow: 0 2px 6px rgba(0, 40, 142, 0.08);
+}
+
+.shared-avatar-badge {
+  width: 1.875rem;
+  height: 1.875rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1e40af 0%, #00288e 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8125rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.shared-user-name {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.shared-chevron {
+  transition: transform 0.2s ease;
+  color: #00288e;
+}
+
+.shared-chevron.open {
+  transform: rotate(180deg);
+}
+
+/* DROPDOWN MENU */
+.shared-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  min-width: 240px;
+  background-color: #ffffff;
+  border-radius: 0.875rem;
+  border: 1px solid #dae2fd;
+  box-shadow: 0 12px 28px rgba(19, 27, 46, 0.12), 0 4px 10px rgba(19, 27, 46, 0.06);
+  padding: 0.5rem;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+}
+
+.shared-menu-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  background-color: #faf8ff;
+}
+
+.shared-menu-avatar {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1e40af 0%, #00288e 100%);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.9375rem;
+  flex-shrink: 0;
+}
+
+.shared-menu-info {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.shared-menu-name {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #131b2e;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.shared-menu-role {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  color: #757684;
+}
+
+.shared-menu-divider {
+  height: 1px;
+  background-color: #eaedff;
+  margin: 0.375rem 0;
+}
+
+.shared-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #444653;
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  font-family: inherit;
+}
+
+.shared-menu-item:hover {
+  background-color: #f2f3ff;
+  color: #00288e;
+  text-decoration: none !important;
+}
+
+.shared-menu-item svg {
+  flex-shrink: 0;
+  color: #757684;
+  transition: color 0.12s ease;
+}
+
+.shared-menu-item:hover svg {
+  color: #00288e;
+}
+
+.shared-menu-item.logout {
+  color: #ba1a1a;
+}
+
+.shared-menu-item.logout svg {
+  color: #ba1a1a;
+}
+
+.shared-menu-item.logout:hover {
+  background-color: #ffdad6;
+  color: #93000a;
+}
+
+.shared-menu-item.logout:hover svg {
+  color: #93000a;
+}
+
+/* GUEST BUTTONS */
+.shared-guest-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.shared-btn-login {
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #00288e;
+  text-decoration: none;
+  border: 1px solid #dae2fd;
+  background: #ffffff;
+  transition: all 0.15s ease;
+}
+
+.shared-btn-login:hover {
+  background-color: #f2f3ff;
+  border-color: #b8c4ff;
+  text-decoration: none !important;
+}
+
+.shared-btn-register {
+  padding: 0.5rem 1.125rem;
+  border-radius: 9999px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-decoration: none;
+  background: linear-gradient(135deg, #fd761a 0%, #f97316 100%);
+  box-shadow: 0 4px 10px rgba(253, 118, 26, 0.25);
+  transition: all 0.15s ease;
+}
+
+.shared-btn-register:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(253, 118, 26, 0.35);
+  text-decoration: none !important;
+}
+
+@media (max-width: 900px) {
+  .shared-customer-nav {
+    display: none;
+  }
+}

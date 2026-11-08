@@ -1,0 +1,99 @@
+.booking-stepper-wrap {
+  background: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.booking-stepper-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.stepper-node {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.stepper-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.875rem;
+  background: #f1f5f9;
+  color: #64748b;
+  border: 2px solid #cbd5e1;
+  transition: all 0.2s ease;
+}
+
+.stepper-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.stepper-title {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.stepper-desc {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+/* Active State */
+.stepper-node.active .stepper-circle {
+  background: #1e40af;
+  border-color: #1e40af;
+  color: #ffffff;
+  box-shadow: 0 0 0 4px #dbeafe;
+}
+
+.stepper-node.active .stepper-title {
+  color: #1e40af;
+}
+
+/* Done State */
+.stepper-node.done .stepper-circle {
+  background: #10b981;
+  border-color: #10b981;
+  color: #ffffff;
+}
+
+.stepper-node.done .stepper-title {
+  color: #0f172a;
+}
+
+/* Connecting Line */
+.stepper-line {
+  flex: 1;
+  height: 2px;
+  background: #e2e8f0;
+  margin: 0 1rem;
+  transition: background 0.3s ease;
+}
+
+.stepper-line.done {
+  background: #10b981;
+}
+
+@media (max-width: 768px) {
+  .stepper-desc {
+    display: none;
+  }
+  .stepper-title {
+    font-size: 0.8125rem;
+  }
+  .stepper-line {
+    margin: 0 0.5rem;
+  }
+}

@@ -70,8 +70,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           body: JSON.stringify({
             username,
             password,
-            tenDangNhap: username,
-            matKhau: password,
           }),
         },
         { redirectOn401: false },

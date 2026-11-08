@@ -60,7 +60,6 @@ public class TripController {
   }
 
   @GetMapping({"/{id}/seats", "/{id}/ghe"})
-  @PreAuthorize("isAuthenticated()")
   public TripService.SeatMapResponse seatMap(@PathVariable Integer id) {
     return tripService.seatMap(id);
   }

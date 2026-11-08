@@ -92,19 +92,43 @@ public class InvoiceService {
         invoice.getCustomerId() == null
             ? null
             : customerRepository.findById(invoice.getCustomerId()).orElse(null);
+    return buildInvoiceDetail(invoice, customer);
+  }
+
+  public InvoiceDetail lookup(Integer invoiceId, String phone) {
+    if (invoiceId == null || Validators.isBlank(phone)) {
+      throw ApiException.badRequest("Vui lòng nhập mã hóa đơn và số điện thoại.");
+    }
+    Invoice invoice = findInvoice(invoiceId);
+    Customer customer =
+        invoice.getCustomerId() == null
+            ? null
+            : customerRepository.findById(invoice.getCustomerId()).orElse(null);
+    String customerPhone = customer == null ? null : customer.getPhone();
+    String normalizedInput = phone.replaceAll("[^0-9]", "");
+    String normalizedCustomerPhone =
+        customerPhone == null ? "" : customerPhone.replaceAll("[^0-9]", "");
+    if (normalizedCustomerPhone.isEmpty() || !normalizedCustomerPhone.equals(normalizedInput)) {
+      throw ApiException.notFound(
+          "Không tìm thấy thông tin vé phù hợp với mã hóa đơn và số điện thoại đã cung cấp.");
+    }
+    return buildInvoiceDetail(invoice, customer);
+  }
+
+  private InvoiceDetail buildInvoiceDetail(Invoice invoice, Customer customer) {
     Employee employee =
         invoice.getEmployeeId() == null
             ? null
             : employeeRepository.findById(invoice.getEmployeeId()).orElse(null);
 
-    List<Ticket> tickets = ticketRepository.findByInvoiceId(invoiceId);
+    List<Ticket> tickets = ticketRepository.findByInvoiceId(invoice.getInvoiceId());
     Map<Integer, Trip> tripMap = loadTrips(tickets);
     Map<Integer, Route> routeMap = loadRoutes(tripMap.values());
     List<TicketRow> ticketRows =
         tickets.stream()
             .map(ticket -> toTicketRow(ticket, tripMap.get(ticket.getTripId()), routeMap))
             .toList();
-    Payment payment = paymentRepository.findByInvoiceId(invoiceId).orElse(null);
+    Payment payment = paymentRepository.findByInvoiceId(invoice.getInvoiceId()).orElse(null);
 
     return new InvoiceDetail(
         invoice.getInvoiceId(),

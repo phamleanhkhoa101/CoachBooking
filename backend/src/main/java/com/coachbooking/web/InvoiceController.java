@@ -1,10 +1,12 @@
 package com.coachbooking.web;
 
+import com.coachbooking.dto.invoice.InvoiceDetail;
+import com.coachbooking.dto.invoice.InvoiceRow;
+import com.coachbooking.dto.invoice.LookupRequest;
+import com.coachbooking.dto.invoice.PayRequest;
 import com.coachbooking.service.CurrentUserService;
 import com.coachbooking.service.InvoiceService;
-import com.fasterxml.jackson.annotation.JsonAlias;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +34,7 @@ public class InvoiceController {
 
   @GetMapping
   @PreAuthorize("hasAnyRole('Admin','NhanVien')")
-  public List<InvoiceService.InvoiceRow> list(
+  public List<InvoiceRow> list(
       @RequestParam(value = "tu", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
           LocalDate tu,
       @RequestParam(value = "den", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
@@ -53,13 +55,13 @@ public class InvoiceController {
 
   @GetMapping({"/my", "/cua-toi"})
   @PreAuthorize("isAuthenticated()")
-  public List<InvoiceService.InvoiceRow> myInvoices() {
+  public List<InvoiceRow> myInvoices() {
     return invoiceService.myInvoices(currentUserService.requireAccount());
   }
 
   @GetMapping("/{id}")
   @PreAuthorize("isAuthenticated()")
-  public InvoiceService.InvoiceDetail detail(@PathVariable Integer id) {
+  public InvoiceDetail detail(@PathVariable Integer id) {
     return invoiceService.detail(id, currentUserService.requireAccount());
   }
 
@@ -76,70 +78,7 @@ public class InvoiceController {
   }
 
   @PostMapping({"/lookup", "/tra-cuu"})
-  public InvoiceService.InvoiceDetail lookup(@Valid @RequestBody LookupRequest request) {
+  public InvoiceDetail lookup(@Valid @RequestBody LookupRequest request) {
     return invoiceService.lookup(request.invoiceId(), request.phone());
   }
-
-  public static class LookupRequest {
-    private Integer invoiceId;
-    private String phone;
-
-    public LookupRequest() {}
-
-    public LookupRequest(Integer invoiceId, String phone) {
-      this.invoiceId = invoiceId;
-      this.phone = phone;
-    }
-
-    public Integer invoiceId() {
-      return invoiceId;
-    }
-
-    public String phone() {
-      return phone;
-    }
-
-    public Integer getInvoiceId() {
-      return invoiceId;
-    }
-
-    public void setInvoiceId(Integer invoiceId) {
-      if (this.invoiceId == null) {
-        this.invoiceId = invoiceId;
-      }
-    }
-
-    public void setMaHoaDon(Integer maHoaDon) {
-      if (this.invoiceId == null) {
-        this.invoiceId = maHoaDon;
-      }
-    }
-
-    public String getPhone() {
-      return phone;
-    }
-
-    public void setPhone(String phone) {
-      if (this.phone == null || !phone.isBlank()) {
-        this.phone = phone;
-      }
-    }
-
-    public void setSdt(String sdt) {
-      if (this.phone == null || this.phone.isBlank()) {
-        this.phone = sdt;
-      }
-    }
-
-    public void setSoDienThoai(String soDienThoai) {
-      if (this.phone == null || this.phone.isBlank()) {
-        this.phone = soDienThoai;
-      }
-    }
-  }
-
-  public record PayRequest(
-      @NotBlank(message = "Vui lòng chọn phương thức thanh toán.")
-          @JsonAlias({"phuongThuc", "paymentMethod"})
-          String paymentMethod) {}
 }

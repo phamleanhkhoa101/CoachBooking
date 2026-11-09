@@ -1,5 +1,7 @@
 package com.coachbooking.web;
 
+import com.coachbooking.dto.booking.BookingRequest;
+import com.coachbooking.dto.booking.BookingResponse;
 import com.coachbooking.service.BookingService;
 import com.coachbooking.service.CurrentUserService;
 import jakarta.validation.Valid;
@@ -23,8 +25,7 @@ public class BookingController {
 
   @PostMapping
   @PreAuthorize("isAuthenticated()")
-  public BookingService.BookingResponse bookTickets(
-      @Valid @RequestBody BookingService.BookingRequest request) {
+  public BookingResponse bookTickets(@Valid @RequestBody BookingRequest request) {
     return bookingService.bookTickets(currentUserService.requireAccount(), request);
   }
 }

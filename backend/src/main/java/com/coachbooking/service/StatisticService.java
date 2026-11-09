@@ -5,6 +5,9 @@ import com.coachbooking.domain.Invoice;
 import com.coachbooking.domain.Route;
 import com.coachbooking.domain.Ticket;
 import com.coachbooking.domain.Trip;
+import com.coachbooking.dto.statistic.PopularRoute;
+import com.coachbooking.dto.statistic.RevenuePoint;
+import com.coachbooking.dto.statistic.StatisticResponse;
 import com.coachbooking.repo.InvoiceRepository;
 import com.coachbooking.repo.RouteRepository;
 import com.coachbooking.repo.TicketRepository;
@@ -140,61 +143,5 @@ public class StatisticService {
         .limit(10)
         .map(entry -> new PopularRoute(entry.getKey(), entry.getValue()))
         .toList();
-  }
-
-  public record RevenuePoint(String date, BigDecimal revenue, Long ticketCount) {
-    public String getNgay() {
-      return date;
-    }
-
-    public BigDecimal getDoanhThu() {
-      return revenue;
-    }
-
-    public Long getSoVe() {
-      return ticketCount;
-    }
-  }
-
-  public record PopularRoute(String routeName, Long ticketCount) {
-    public String getTenTuyen() {
-      return routeName;
-    }
-
-    public Long getSoVe() {
-      return ticketCount;
-    }
-  }
-
-  public record StatisticResponse(
-      long customerCount,
-      long tripCount,
-      BigDecimal totalRevenue,
-      long ticketCount,
-      List<RevenuePoint> dailyRevenue,
-      List<PopularRoute> popularRoutes) {
-    public long getSoKhachHang() {
-      return customerCount;
-    }
-
-    public long getSoChuyenXe() {
-      return tripCount;
-    }
-
-    public BigDecimal getTongDoanhThu() {
-      return totalRevenue;
-    }
-
-    public long getSoVe() {
-      return ticketCount;
-    }
-
-    public List<RevenuePoint> getDoanhThuTheoNgay() {
-      return dailyRevenue;
-    }
-
-    public List<PopularRoute> getTuyenPhoBien() {
-      return popularRoutes;
-    }
   }
 }

@@ -388,3 +388,6 @@ frontend/.vite/
 .idea/
 *.iml
 .vscode/
+
+postman/
+jmeter/

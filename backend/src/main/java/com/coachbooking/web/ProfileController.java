@@ -1,5 +1,7 @@
 package com.coachbooking.web;
 
+import com.coachbooking.dto.profile.ProfileResponse;
+import com.coachbooking.dto.profile.UpdateProfileRequest;
 import com.coachbooking.service.CurrentUserService;
 import com.coachbooking.service.ProfileService;
 import jakarta.validation.Valid;
@@ -24,13 +26,12 @@ public class ProfileController {
   }
 
   @GetMapping
-  public ProfileService.ProfileResponse get() {
+  public ProfileResponse get() {
     return profileService.get(currentUserService.requireAccount());
   }
 
   @PutMapping
-  public ProfileService.ProfileResponse update(
-      @Valid @RequestBody ProfileService.UpdateProfileRequest request) {
+  public ProfileResponse update(@Valid @RequestBody UpdateProfileRequest request) {
     return profileService.update(currentUserService.requireAccount(), request);
   }
 }

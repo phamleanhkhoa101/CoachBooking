@@ -1,5 +1,11 @@
 package com.coachbooking.web;
 
+import com.coachbooking.dto.auth.AuthResponse;
+import com.coachbooking.dto.auth.ChangePasswordRequest;
+import com.coachbooking.dto.auth.ForgotPasswordRequest;
+import com.coachbooking.dto.auth.LoginRequest;
+import com.coachbooking.dto.auth.RegisterRequest;
+import com.coachbooking.dto.auth.UserResponse;
 import com.coachbooking.service.AuthService;
 import com.coachbooking.service.CurrentUserService;
 import jakarta.validation.Valid;
@@ -23,39 +29,37 @@ public class AuthController {
   }
 
   @PostMapping("/login")
-  public AuthService.AuthResponse login(@Valid @RequestBody AuthService.LoginRequest request) {
+  public AuthResponse login(@Valid @RequestBody LoginRequest request) {
     return authService.login(request);
   }
 
   @PostMapping("/user/login")
-  public AuthService.AuthResponse loginUser(@Valid @RequestBody AuthService.LoginRequest request) {
+  public AuthResponse loginUser(@Valid @RequestBody LoginRequest request) {
     return authService.loginUser(request);
   }
 
   @PostMapping("/admin/login")
-  public AuthService.AuthResponse loginAdmin(@Valid @RequestBody AuthService.LoginRequest request) {
+  public AuthResponse loginAdmin(@Valid @RequestBody LoginRequest request) {
     return authService.loginAdmin(request);
   }
 
   @PostMapping("/register")
-  public Map<String, String> register(@Valid @RequestBody AuthService.RegisterRequest request) {
+  public Map<String, String> register(@Valid @RequestBody RegisterRequest request) {
     return authService.register(request);
   }
 
   @PostMapping({"/forgot-password", "/quen-mat-khau"})
-  public Map<String, String> forgotPassword(
-      @Valid @RequestBody AuthService.ForgotPasswordRequest request) {
+  public Map<String, String> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
     return authService.forgotPassword(request);
   }
 
   @GetMapping("/me")
-  public AuthService.UserResponse me() {
+  public UserResponse me() {
     return authService.me(currentUserService.requireAccount());
   }
 
   @PostMapping({"/change-password", "/doi-mat-khau"})
-  public Map<String, String> changePassword(
-      @Valid @RequestBody AuthService.ChangePasswordRequest request) {
+  public Map<String, String> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
     return authService.changePassword(currentUserService.requireAccount(), request);
   }
 }

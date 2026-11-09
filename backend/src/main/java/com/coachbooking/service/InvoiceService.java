@@ -10,6 +10,10 @@ import com.coachbooking.domain.Payment;
 import com.coachbooking.domain.Route;
 import com.coachbooking.domain.Ticket;
 import com.coachbooking.domain.Trip;
+import com.coachbooking.dto.invoice.InvoiceDetail;
+import com.coachbooking.dto.invoice.InvoiceRow;
+import com.coachbooking.dto.invoice.PaymentRow;
+import com.coachbooking.dto.invoice.TicketRow;
 import com.coachbooking.repo.CustomerRepository;
 import com.coachbooking.repo.EmployeeRepository;
 import com.coachbooking.repo.InvoiceRepository;
@@ -339,152 +343,6 @@ public class InvoiceService {
             .orElse(null);
     if (customerId == null || !customerId.equals(invoice.getCustomerId())) {
       throw ApiException.forbidden("Bạn không có quyền thao tác trên hóa đơn này.");
-    }
-  }
-
-  public record InvoiceRow(
-      Integer invoiceId,
-      String customerName,
-      String employeeName,
-      LocalDateTime createdAt,
-      BigDecimal totalAmount,
-      Boolean isPaid,
-      Long ticketCount,
-      String paymentMethod) {
-    // Backwards compatibility getters
-    public Integer getMaHd() {
-      return invoiceId;
-    }
-
-    public String getTenKhachHang() {
-      return customerName;
-    }
-
-    public String getTenNhanVien() {
-      return employeeName;
-    }
-
-    public LocalDateTime getNgayLap() {
-      return createdAt;
-    }
-
-    public BigDecimal getTongTien() {
-      return totalAmount;
-    }
-
-    public Boolean getTrangThai() {
-      return isPaid;
-    }
-
-    public Long getSoVe() {
-      return ticketCount;
-    }
-
-    public String getPhuongThuc() {
-      return paymentMethod;
-    }
-  }
-
-  public record TicketRow(
-      Integer ticketId,
-      Integer tripId,
-      String departure,
-      String destination,
-      LocalDateTime departureTime,
-      Integer seatNumber,
-      BigDecimal price) {
-    public Integer getMaVe() {
-      return ticketId;
-    }
-
-    public Integer getMaChuyen() {
-      return tripId;
-    }
-
-    public String getDiemDi() {
-      return departure;
-    }
-
-    public String getDiemDen() {
-      return destination;
-    }
-
-    public LocalDateTime getNgayGioKhoiHanh() {
-      return departureTime;
-    }
-
-    public Integer getChoNgoi() {
-      return seatNumber;
-    }
-
-    public BigDecimal getGiaVe() {
-      return price;
-    }
-  }
-
-  public record PaymentRow(
-      Integer paymentId, BigDecimal amount, LocalDateTime paymentDate, String paymentMethod) {
-    public Integer getMaTt() {
-      return paymentId;
-    }
-
-    public BigDecimal getTongTien() {
-      return amount;
-    }
-
-    public LocalDateTime getNgayTt() {
-      return paymentDate;
-    }
-
-    public String getPhuongThuc() {
-      return paymentMethod;
-    }
-  }
-
-  public record InvoiceDetail(
-      Integer invoiceId,
-      String customerName,
-      String customerPhone,
-      String employeeName,
-      LocalDateTime createdAt,
-      BigDecimal totalAmount,
-      Boolean isPaid,
-      List<TicketRow> tickets,
-      PaymentRow payment) {
-    public Integer getMaHd() {
-      return invoiceId;
-    }
-
-    public String getTenKhachHang() {
-      return customerName;
-    }
-
-    public String getSdtKhachHang() {
-      return customerPhone;
-    }
-
-    public String getTenNhanVien() {
-      return employeeName;
-    }
-
-    public LocalDateTime getNgayLap() {
-      return createdAt;
-    }
-
-    public BigDecimal getTongTien() {
-      return totalAmount;
-    }
-
-    public Boolean getTrangThai() {
-      return isPaid;
-    }
-
-    public List<TicketRow> getVeXes() {
-      return tickets;
-    }
-
-    public PaymentRow getThanhToan() {
-      return payment;
     }
   }
 }

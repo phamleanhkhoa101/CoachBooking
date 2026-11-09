@@ -6,6 +6,8 @@ import static org.mockito.Mockito.*;
 import com.coachbooking.common.ApiException;
 import com.coachbooking.domain.Account;
 import com.coachbooking.domain.Role;
+import com.coachbooking.dto.auth.AuthResponse;
+import com.coachbooking.dto.auth.LoginRequest;
 import com.coachbooking.repo.AccountRepository;
 import com.coachbooking.repo.CustomerRepository;
 import com.coachbooking.repo.EmployeeRepository;
@@ -68,8 +70,7 @@ class AuthServiceTest {
     when(roleRepository.findById(3)).thenReturn(Optional.of(role));
     when(jwtService.generate(acc, "KhachHang")).thenReturn("mock_token");
 
-    AuthService.AuthResponse response =
-        authService.loginUser(new AuthService.LoginRequest("kh1", "pass123"));
+    AuthResponse response = authService.loginUser(new LoginRequest("kh1", "pass123"));
 
     assertNotNull(response);
     assertEquals("mock_token", response.token());
@@ -89,8 +90,7 @@ class AuthServiceTest {
 
     ApiException ex =
         assertThrows(
-            ApiException.class,
-            () -> authService.loginUser(new AuthService.LoginRequest("admin", "pass123")));
+            ApiException.class, () -> authService.loginUser(new LoginRequest("admin", "pass123")));
     assertEquals(HttpStatus.FORBIDDEN, ex.getStatus());
     assertTrue(ex.getMessage().contains("Quản trị viên"));
   }
@@ -107,8 +107,7 @@ class AuthServiceTest {
     when(roleRepository.findById(1)).thenReturn(Optional.of(role));
     when(jwtService.generate(acc, "Admin")).thenReturn("admin_token");
 
-    AuthService.AuthResponse response =
-        authService.loginAdmin(new AuthService.LoginRequest("admin", "pass123"));
+    AuthResponse response = authService.loginAdmin(new LoginRequest("admin", "pass123"));
 
     assertNotNull(response);
     assertEquals("admin_token", response.token());
@@ -128,8 +127,7 @@ class AuthServiceTest {
 
     ApiException ex =
         assertThrows(
-            ApiException.class,
-            () -> authService.loginAdmin(new AuthService.LoginRequest("kh1", "pass123")));
+            ApiException.class, () -> authService.loginAdmin(new LoginRequest("kh1", "pass123")));
     assertEquals(HttpStatus.FORBIDDEN, ex.getStatus());
     assertTrue(ex.getMessage().contains("không có quyền truy cập quản trị"));
   }
@@ -141,9 +139,7 @@ class AuthServiceTest {
     when(passwordEncoder.matches("wrong", "encoded_secret")).thenReturn(false);
 
     ApiException ex =
-        assertThrows(
-            ApiException.class,
-            () -> authService.login(new AuthService.LoginRequest("kh1", "wrong")));
+        assertThrows(ApiException.class, () -> authService.login(new LoginRequest("kh1", "wrong")));
     assertEquals(HttpStatus.BAD_REQUEST, ex.getStatus());
   }
 }

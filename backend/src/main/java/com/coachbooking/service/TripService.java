@@ -8,6 +8,8 @@ import com.coachbooking.domain.TicketPrice;
 import com.coachbooking.domain.Trip;
 import com.coachbooking.domain.Vehicle;
 import com.coachbooking.domain.VehicleType;
+import com.coachbooking.dto.trip.SeatMapResponse;
+import com.coachbooking.dto.trip.TripRequest;
 import com.coachbooking.repo.DriverRepository;
 import com.coachbooking.repo.RouteRepository;
 import com.coachbooking.repo.TicketPriceRepository;
@@ -15,7 +17,6 @@ import com.coachbooking.repo.TicketRepository;
 import com.coachbooking.repo.TripRepository;
 import com.coachbooking.repo.VehicleRepository;
 import com.coachbooking.repo.VehicleTypeRepository;
-import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -236,61 +237,5 @@ public class TripService {
 
   private String blankToNull(String value) {
     return Validators.isBlank(value) ? null : value.trim();
-  }
-
-  public record TripRequest(
-      @NotNull(message = "Vui lòng chọn xe.")
-          @com.fasterxml.jackson.annotation.JsonAlias({"vehicleId", "maXe"})
-          Integer vehicleId,
-      @NotNull(message = "Vui lòng chọn tuyến đường.")
-          @com.fasterxml.jackson.annotation.JsonAlias({"routeId", "maTuyen"})
-          Integer routeId,
-      @NotNull(message = "Vui lòng chọn tài xế.")
-          @com.fasterxml.jackson.annotation.JsonAlias({"driverId", "maTx"})
-          Integer driverId,
-      @NotNull(message = "Vui lòng chọn ngày giờ khởi hành.")
-          @com.fasterxml.jackson.annotation.JsonAlias({"departureTime", "ngayGioKhoiHanh"})
-          LocalDateTime departureTime) {}
-
-  public record SeatMapResponse(
-      Integer tripId,
-      String typeName,
-      Integer seatCapacity,
-      BigDecimal price,
-      List<Integer> bookedSeats,
-      String departure,
-      String destination,
-      LocalDateTime departureTime) {
-    public Integer getMaChuyen() {
-      return tripId;
-    }
-
-    public String getTenLoaiXe() {
-      return typeName;
-    }
-
-    public Integer getSoCho() {
-      return seatCapacity;
-    }
-
-    public BigDecimal getGiaVe() {
-      return price;
-    }
-
-    public List<Integer> getGheDaDat() {
-      return bookedSeats;
-    }
-
-    public String getDiemDi() {
-      return departure;
-    }
-
-    public String getDiemDen() {
-      return destination;
-    }
-
-    public LocalDateTime getNgayGioKhoiHanh() {
-      return departureTime;
-    }
   }
 }

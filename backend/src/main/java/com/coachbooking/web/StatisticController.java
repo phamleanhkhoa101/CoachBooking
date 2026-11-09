@@ -1,5 +1,6 @@
 package com.coachbooking.web;
 
+import com.coachbooking.dto.statistic.StatisticResponse;
 import com.coachbooking.service.StatisticService;
 import java.time.LocalDate;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -21,7 +22,7 @@ public class StatisticController {
   }
 
   @GetMapping
-  public StatisticService.StatisticResponse getStatistics(
+  public StatisticResponse getStatistics(
       @RequestParam(value = "tu", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
           LocalDate tu,
       @RequestParam(value = "den", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)

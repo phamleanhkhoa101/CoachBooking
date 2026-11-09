@@ -1,6 +1,8 @@
 package com.coachbooking.web;
 
 import com.coachbooking.domain.Trip;
+import com.coachbooking.dto.trip.SeatMapResponse;
+import com.coachbooking.dto.trip.TripRequest;
 import com.coachbooking.repo.TripRepository;
 import com.coachbooking.service.TripService;
 import jakarta.validation.Valid;
@@ -60,7 +62,7 @@ public class TripController {
   }
 
   @GetMapping({"/{id}/seats", "/{id}/ghe"})
-  public TripService.SeatMapResponse seatMap(@PathVariable Integer id) {
+  public SeatMapResponse seatMap(@PathVariable Integer id) {
     return tripService.seatMap(id);
   }
 
@@ -75,14 +77,13 @@ public class TripController {
 
   @PostMapping
   @PreAuthorize("hasRole('Admin')")
-  public Trip create(@Valid @RequestBody TripService.TripRequest request) {
+  public Trip create(@Valid @RequestBody TripRequest request) {
     return tripService.create(request);
   }
 
   @PutMapping("/{id}")
   @PreAuthorize("hasRole('Admin')")
-  public Trip update(
-      @PathVariable Integer id, @Valid @RequestBody TripService.TripRequest request) {
+  public Trip update(@PathVariable Integer id, @Valid @RequestBody TripRequest request) {
     return tripService.update(id, request);
   }
 

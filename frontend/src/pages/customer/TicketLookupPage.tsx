@@ -160,13 +160,13 @@ export function TicketLookupPage() {
 
                     <div className="ticket-meta-info">
                       <span className="seat-badge">
-                        Ghế: {t.seatNumber ?? t.soGhe}
+                        Ghế: {t.seatNumber}
                       </span>
                       <span className="type-badge">
-                        {t.vehicleTypeName ?? t.tenLoaiXe}
+                        {t.typeName ?? t.vehicleTypeName ?? 'Xe khách'}
                       </span>
                       <strong className="ticket-price">
-                        {formatCurrency(t.price ?? t.gia)}
+                        {formatCurrency(t.price ?? 0)}
                       </strong>
                     </div>
                   </div>

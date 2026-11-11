@@ -12,36 +12,4 @@ public record SeatMapResponse(
     List<Integer> bookedSeats,
     String departure,
     String destination,
-    LocalDateTime departureTime) {
-  public Integer getMaChuyen() {
-    return tripId;
-  }
-
-  public String getTenLoaiXe() {
-    return typeName;
-  }
-
-  public Integer getSoCho() {
-    return seatCapacity;
-  }
-
-  public BigDecimal getGiaVe() {
-    return price;
-  }
-
-  public List<Integer> getGheDaDat() {
-    return bookedSeats;
-  }
-
-  public String getDiemDi() {
-    return departure;
-  }
-
-  public String getDiemDen() {
-    return destination;
-  }
-
-  public LocalDateTime getNgayGioKhoiHanh() {
-    return departureTime;
-  }
-}
+    LocalDateTime departureTime) {}

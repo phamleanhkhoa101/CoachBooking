@@ -77,37 +77,33 @@ export function ETicketPage() {
   const totalAmount =
     invoice?.totalAmount ?? invoice?.tongTien ?? state?.totalPrice ?? 0;
   const isPaid = invoice?.isPaid ?? invoice?.trangThai ?? (state?.paymentMethod !== 'Thanh toán sau');
-  const tickets = invoice?.tickets ?? invoice?.chiTietVe ?? [];
+  const tickets = invoice?.tickets ?? [];
 
   const firstTicket = tickets.length > 0 ? tickets[0] : null;
   const departure =
     firstTicket?.departure ??
-    firstTicket?.diemDi ??
     state?.dep ??
     'TP. Hồ Chí Minh';
   const destination =
     firstTicket?.destination ??
-    firstTicket?.diemDen ??
     state?.dest ??
     'Điểm đến';
   const depTime =
     firstTicket?.departureTime ??
-    firstTicket?.ngayGioKhoiHanh ??
     state?.depTime;
   const vehicleType =
+    firstTicket?.typeName ??
     firstTicket?.vehicleTypeName ??
-    firstTicket?.tenLoaiXe ??
     state?.typeName ??
     'Xe khách Limousine';
   const licensePlate =
     firstTicket?.licensePlate ??
-    firstTicket?.bienSoXe ??
     state?.trip?.licensePlate ??
     '51B-342.89';
 
   const seatLabels =
     tickets.length > 0
-      ? tickets.map((t: any) => t.seatNumber ?? t.soGhe).join(', ')
+      ? tickets.map((t: any) => t.seatNumber).join(', ')
       : state?.selectedSeats
       ? state.selectedSeats.join(', ')
       : 'Theo sơ đồ';

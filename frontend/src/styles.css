@@ -151,6 +151,25 @@ textarea {
   gap: 16px;
   overflow-y: auto;
   padding-right: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.nav::-webkit-scrollbar {
+  width: 5px;
+}
+
+.nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.nav::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.35);
 }
 
 .nav-group {
@@ -197,7 +216,8 @@ textarea {
   opacity: 0.9;
 }
 
-.sidebar-footer {
+.sidebar-footer,
+.sidebar-foot {
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -207,11 +227,21 @@ textarea {
   font-size: 0.68rem;
 }
 
+.sidebar-foot-brand {
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.sidebar-foot-sub {
+  color: #64748b;
+}
+
 .sidebar-overlay {
   display: none;
 }
 
-.app-main {
+.app-main,
+.main {
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -232,14 +262,23 @@ textarea {
   backdrop-filter: blur(8px);
 }
 
-.topbar-title {
+.topbar-title,
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   flex: 1;
   min-width: 0;
 }
 
-.topbar-app {
+.topbar-app,
+.topbar-context {
   color: var(--muted);
   font-size: 0.85rem;
+}
+
+.topbar-menu-btn {
+  display: none;
 }
 
 .topbar-user {
@@ -248,7 +287,8 @@ textarea {
   align-items: center;
 }
 
-.avatar {
+.avatar,
+.user-avatar {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -259,6 +299,7 @@ textarea {
   color: #fff;
   font-size: 0.8rem;
   font-weight: 700;
+  flex-shrink: 0;
 }
 
 .user-meta {
@@ -267,11 +308,15 @@ textarea {
   line-height: 1.2;
 }
 
-.user-meta strong {
+.user-meta strong,
+.user-name {
   font-size: 0.86rem;
+  font-weight: 700;
+  color: var(--text);
 }
 
-.role-chip {
+.role-chip,
+.user-role {
   align-self: flex-start;
   margin-top: 2px;
   padding: 1px 8px;
@@ -280,6 +325,12 @@ textarea {
   color: var(--primary-strong);
   font-size: 0.7rem;
   font-weight: 600;
+}
+
+.btn-logout {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .only-mobile {
@@ -1192,7 +1243,8 @@ textarea {
   width: 100%;
 }
 
-.bar {
+.bar,
+.bar-fill {
   width: 100%;
   min-height: 3px;
   border-radius: 5px 5px 2px 2px;
@@ -1200,7 +1252,8 @@ textarea {
   transition: height 0.2s;
 }
 
-.bar-col:hover .bar {
+.bar-col:hover .bar,
+.bar-col:hover .bar-fill {
   filter: brightness(1.08);
 }
 
@@ -1214,47 +1267,58 @@ textarea {
   display: flex;
   flex-direction: column;
   gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .rank-item {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   align-items: flex-start;
 }
 
-.rank-index {
+.rank-index,
+.rank-pos {
   display: flex;
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  width: 22px;
+  min-width: 26px;
   height: 22px;
+  padding: 0 4px;
   margin-top: 2px;
-  border-radius: 50%;
+  border-radius: 999px;
   background: #eef2ff;
   color: #4f46e5;
   font-size: 0.72rem;
   font-weight: 700;
 }
 
-.rank-body {
+.rank-body,
+.rank-main {
   flex: 1;
   min-width: 0;
 }
 
-.rank-head {
+.rank-head,
+.rank-header {
   display: flex;
   gap: 10px;
   justify-content: space-between;
+  align-items: center;
   font-size: 0.86rem;
 }
 
-.rank-head span {
+.rank-head span,
+.rank-header span,
+.rank-header .text-muted {
   color: var(--muted);
   white-space: nowrap;
 }
 
-.rank-track {
+.rank-track,
+.rank-bar-bg {
   height: 7px;
   margin-top: 6px;
   overflow: hidden;
@@ -1262,10 +1326,12 @@ textarea {
   background: #f1f5f9;
 }
 
-.rank-fill {
+.rank-fill,
+.rank-bar-fg {
   height: 100%;
   border-radius: 999px;
   background: linear-gradient(90deg, #0d9488, #4f46e5);
+  transition: width 0.3s ease;
 }
 
 /* ===================== Đặt vé ===================== */
@@ -1599,6 +1665,92 @@ textarea {
   min-width: 180px;
 }
 
+/* ===================== Hồ sơ cá nhân ===================== */
+
+.profile-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.profile-card-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.profile-card-header-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.profile-view-box {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profile-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0 10px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.profile-section-title:first-child {
+  margin-top: 0;
+}
+
+.profile-info-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px 20px;
+  padding: 16px 18px;
+  border-radius: var(--radius-sm);
+  background: #f8fafc;
+  border: 1px solid var(--border);
+}
+
+.info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.info-item-full {
+  grid-column: span 2;
+}
+
+.info-label {
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.info-value {
+  color: var(--text);
+  font-size: 0.95rem;
+  word-break: break-word;
+}
+
+.info-value.text-strong {
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--text);
+}
+
+.profile-divider {
+  height: 1px;
+  margin: 16px 0 12px;
+  background: var(--border);
+}
+
 /* ===================== Tiện ích ===================== */
 
 .grid-2 {
@@ -1696,7 +1848,8 @@ textarea {
     background: rgba(15, 23, 42, 0.45);
   }
 
-  .only-mobile {
+  .only-mobile,
+  .topbar-menu-btn {
     display: inline-flex;
   }
 
@@ -1750,8 +1903,13 @@ textarea {
   .info-grid,
   .info-grid-tight,
   .detail-grid,
-  .result-grid {
+  .result-grid,
+  .profile-info-grid {
     grid-template-columns: 1fr;
+  }
+
+  .info-item-full {
+    grid-column: span 1;
   }
 
   .page-header {

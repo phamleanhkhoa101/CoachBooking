@@ -11,8 +11,11 @@ const config: CrudConfig = {
   searchPlaceholder: 'Tìm theo tên đăng nhập, email…',
   refs: [{ key: 'roles', endpoint: 'roles' }],
   transform: (payload, isEdit) => {
-    if (isEdit && !payload.password) {
-      delete payload.password;
+    if (isEdit) {
+      delete payload.username;
+      if (!payload.password) {
+        delete payload.password;
+      }
     }
     return payload;
   },
@@ -60,7 +63,7 @@ const config: CrudConfig = {
     },
   ],
   fields: [
-    { name: 'username', label: 'Tên đăng nhập', required: true, placeholder: 'Ít nhất 6 ký tự' },
+    { name: 'username', label: 'Tên đăng nhập', required: true, placeholder: 'Ít nhất 6 ký tự', hideOnEdit: true },
     {
       name: 'password',
       label: 'Mật khẩu',

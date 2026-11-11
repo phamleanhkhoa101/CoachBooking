@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { api, getErrorMessage } from '../../api/client';
-import type { Quyen, Row } from '../../api/types';
+import type { Role, Row } from '../../api/types';
 import { useAuth } from '../../auth/AuthContext';
 import { DataTable, type DataTableColumn } from './DataTable';
 import { FormField, type FormFieldType, type SelectOption } from '../common/FormField';
@@ -55,8 +55,8 @@ export interface CrudConfig {
   refs?: CrudRefDef[];
   searchKeys?: string[];
   searchPlaceholder?: string;
-  writeRoles?: Quyen[];
-  deleteRoles?: Quyen[];
+  writeRoles?: Role[];
+  deleteRoles?: Role[];
   createLabel?: string;
   emptyText?: string;
   defaults?: Record<string, string>;
@@ -81,14 +81,14 @@ export function refName(
   return value === null || value === undefined || value === '' ? '—' : String(value);
 }
 
-function isNeedWrite(quyen: Quyen | undefined, roles: Quyen[] | undefined): boolean {
-  if (!quyen) return false;
-  if (roles && roles.length > 0) return roles.includes(quyen);
-  return quyen === 'Admin';
+function isNeedWrite(role: Role | undefined, roles: Role[] | undefined): boolean {
+  if (!role) return false;
+  if (roles && roles.length > 0) return roles.includes(role);
+  return role === 'Admin';
 }
 
 export function CrudPage({ config }: { config: CrudConfig }) {
-  const { nguoiDung } = useAuth();
+  const { user } = useAuth();
   const { showToast } = useToast();
 
   const [rows, setRows] = useState<Row[]>([]);
@@ -104,8 +104,8 @@ export function CrudPage({ config }: { config: CrudConfig }) {
   const [deleting, setDeleting] = useState<Row | null>(null);
   const [deleteBusy, setDeleteBusy] = useState(false);
 
-  const canWrite = isNeedWrite(nguoiDung?.quyen, config.writeRoles);
-  const canDelete = isNeedWrite(nguoiDung?.quyen, config.deleteRoles);
+  const canWrite = isNeedWrite(user?.role, config.writeRoles);
+  const canDelete = isNeedWrite(user?.role, config.deleteRoles);
 
   const loadRows = useCallback(async () => {
     setLoading(true);

@@ -6,8 +6,7 @@ import { isAdminPortal } from '../../auth/portal';
 import { FormField } from '../../components/common/FormField';
 
 export function Login() {
-  const { user, nguoiDung, login } = useAuth();
-  const currentUser = user ?? nguoiDung;
+  const { user, login } = useAuth();
   const navigate = useNavigate();
   const admin = isAdminPortal();
 
@@ -16,8 +15,8 @@ export function Login() {
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
-  if (currentUser) {
-    const role = currentUser.role ?? currentUser.quyen;
+  if (user) {
+    const role = user.role;
     return <Navigate to={homePathFor(role)} replace />;
   }
 
@@ -30,7 +29,7 @@ export function Login() {
     setError('');
     try {
       const loggedUser = await login(username.trim(), password, admin ? 'admin' : 'user');
-      const role = loggedUser.role ?? loggedUser.quyen;
+      const role = loggedUser.role;
       navigate(homePathFor(role), { replace: true });
     } catch (err) {
       setError(getErrorMessage(err));

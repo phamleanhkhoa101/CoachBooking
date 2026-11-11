@@ -49,6 +49,8 @@ export function AdminDashboard() {
   const displayName =
     currentUser?.fullName ??
     currentUser?.username ??
+    currentUser?.hoTen ??
+    currentUser?.tenDangNhap ??
     'Quản trị viên';
 
   return (

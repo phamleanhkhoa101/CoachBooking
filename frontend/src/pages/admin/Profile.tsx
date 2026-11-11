@@ -55,9 +55,8 @@ export function Profile() {
   }, [applyData, showToast]);
 
   const profileType = profile?.type ?? profile?.loai;
-  const isEmployee = profileType === 'EMPLOYEE' || profileType === 'NHANVIEN';
-  const isCustomer = profileType === 'CUSTOMER' || profileType === 'KHACHHANG';
-  const isUnlinked = profileType === 'UNLINKED' || profileType === 'CHUA_GAN';
+  const isEmployee = profileType === 'NHANVIEN';
+  const isUnlinked = profileType === 'CHUA_GAN';
 
   const handleSave = async () => {
     if (isUnlinked) {
@@ -113,7 +112,7 @@ export function Profile() {
     setPwBusy(true);
     setPwError('');
     try {
-      await api.post('/auth/change-password', {
+      await api.put('/auth/password', {
         oldPassword,
         newPassword,
       });
@@ -150,14 +149,14 @@ export function Profile() {
           <div className="card-header">
             <h2>Thông tin cá nhân</h2>
             <span className="text-muted">
-              {isEmployee ? 'Nhân viên bến xe' : isCustomer ? 'Khách hàng' : 'Chưa gắn hồ sơ'}
+              {isEmployee ? 'Nhân viên bến xe' : profileType === 'KHACHHANG' ? 'Khách hàng' : 'Chưa gắn hồ sơ'}
             </span>
           </div>
 
           <div className="read-grid">
             <div>
               <span className="text-muted">Tên đăng nhập</span>
-              <strong>{profile?.username}</strong>
+              <strong>{profile?.username ?? profile?.tenDangNhap}</strong>
             </div>
             <div>
               <span className="text-muted">Email</span>

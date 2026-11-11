@@ -134,7 +134,7 @@ export function CustomerNavbar() {
                   <div className="shared-menu-divider" />
 
                   <Link
-                    to={role === 'KhachHang' ? '/app/ho-so' : '/admin/ho-so'}
+                    to={role === 'KhachHang' ? '/ho-so' : '/admin/ho-so'}
                     className="shared-menu-item"
                     onClick={() => setUserMenuOpen(false)}
                   >

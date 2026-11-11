@@ -156,7 +156,7 @@ export function Profile() {
           <div className="read-grid">
             <div>
               <span className="text-muted">Tên đăng nhập</span>
-              <strong>{profile?.username ?? profile?.tenDangNhap}</strong>
+              <strong>{profile?.username}</strong>
             </div>
             <div>
               <span className="text-muted">Email</span>

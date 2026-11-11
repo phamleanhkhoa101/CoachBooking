@@ -13,40 +13,4 @@ public record InvoiceDetail(
     BigDecimal totalAmount,
     Boolean isPaid,
     List<TicketRow> tickets,
-    PaymentRow payment) {
-  public Integer getMaHd() {
-    return invoiceId;
-  }
-
-  public String getTenKhachHang() {
-    return customerName;
-  }
-
-  public String getSdtKhachHang() {
-    return customerPhone;
-  }
-
-  public String getTenNhanVien() {
-    return employeeName;
-  }
-
-  public LocalDateTime getNgayLap() {
-    return createdAt;
-  }
-
-  public BigDecimal getTongTien() {
-    return totalAmount;
-  }
-
-  public Boolean getTrangThai() {
-    return isPaid;
-  }
-
-  public List<TicketRow> getVeXes() {
-    return tickets;
-  }
-
-  public PaymentRow getThanhToan() {
-    return payment;
-  }
-}
+    PaymentRow payment) {}

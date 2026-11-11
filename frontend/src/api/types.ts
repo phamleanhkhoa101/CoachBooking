@@ -30,8 +30,7 @@ export type NguoiDung = User;
 
 export interface LoginResponse {
   token: string;
-  user?: User;
-  nguoiDung?: User;
+  user: User;
 }
 
 export interface BusCompany {
@@ -275,6 +274,7 @@ export interface TicketItem {
   departureTime: string;
   seatNumber: number;
   price: number;
+  typeName?: string;
   vehicleTypeName?: string;
   licensePlate?: string;
 

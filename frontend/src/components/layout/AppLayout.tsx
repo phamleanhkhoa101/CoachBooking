@@ -122,7 +122,7 @@ export function AppLayout() {
       : STAFF_NAV
     : CUSTOMER_NAV;
 
-  const displayName = currentUser.fullName ?? currentUser.username ?? currentUser.hoTen ?? currentUser.tenDangNhap ?? 'Người dùng';
+  const displayName = currentUser.fullName ?? currentUser.username ?? 'Người dùng';
   const initials = displayName
     .split(' ')
     .filter(Boolean)

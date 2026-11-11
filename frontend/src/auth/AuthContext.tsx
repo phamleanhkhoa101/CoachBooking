@@ -75,7 +75,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         { redirectOn401: false },
       );
       setToken(data.token);
-      const currentUser = data.user ?? data.nguoiDung ?? null;
+      const currentUser = data.user ?? null;
       setUser(currentUser);
       return currentUser!;
     },

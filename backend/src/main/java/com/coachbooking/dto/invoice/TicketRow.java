@@ -10,32 +10,4 @@ public record TicketRow(
     String destination,
     LocalDateTime departureTime,
     Integer seatNumber,
-    BigDecimal price) {
-  public Integer getMaVe() {
-    return ticketId;
-  }
-
-  public Integer getMaChuyen() {
-    return tripId;
-  }
-
-  public String getDiemDi() {
-    return departure;
-  }
-
-  public String getDiemDen() {
-    return destination;
-  }
-
-  public LocalDateTime getNgayGioKhoiHanh() {
-    return departureTime;
-  }
-
-  public Integer getChoNgoi() {
-    return seatNumber;
-  }
-
-  public BigDecimal getGiaVe() {
-    return price;
-  }
-}
+    BigDecimal price) {}

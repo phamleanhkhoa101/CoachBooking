@@ -30,40 +30,22 @@ public interface TripRepository extends JpaRepository<Trip, Integer> {
   @Query(
       """
             select t.tripId as tripId,
-                   t.tripId as maChuyen,
                    t.vehicleId as vehicleId,
-                   t.vehicleId as maXe,
                    v.licensePlate as licensePlate,
-                   v.licensePlate as bienSoXe,
                    bc.companyId as companyId,
-                   bc.companyId as maNhaXe,
                    bc.companyName as companyName,
-                   bc.companyName as tenNhaXe,
                    vt.typeId as typeId,
-                   vt.typeId as maLoaiXe,
                    vt.typeName as typeName,
-                   vt.typeName as tenLoaiXe,
                    vt.seatCapacity as seatCapacity,
-                   vt.seatCapacity as soCho,
                    r.routeId as routeId,
-                   r.routeId as maTuyen,
                    r.departure as departure,
-                   r.departure as diemDi,
                    r.destination as destination,
-                   r.destination as diemDen,
                    d.driverId as driverId,
-                   d.driverId as maTx,
                    d.fullName as driverName,
-                   d.fullName as tenTx,
                    t.departureTime as departureTime,
-                   t.departureTime as ngayGioKhoiHanh,
                    t.estimatedArrivalTime as estimatedArrivalTime,
-                   t.estimatedArrivalTime as ngayGioDenDuKien,
                    t.actualPrice as actualPrice,
-                   t.actualPrice as giaVeThucTe,
-                   (select count(tk) from Ticket tk where tk.tripId = t.tripId) as bookedSeats,
-                   (select count(tk) from Ticket tk where tk.tripId = t.tripId) as soVeDaBan,
-                   (select count(tk) from Ticket tk where tk.tripId = t.tripId) as soGheDaDat
+                   (select count(tk) from Ticket tk where tk.tripId = t.tripId) as bookedSeats
             from Trip t
             join Vehicle v on v.vehicleId = t.vehicleId
             join BusCompany bc on bc.companyId = v.companyId
@@ -77,40 +59,22 @@ public interface TripRepository extends JpaRepository<Trip, Integer> {
   @Query(
       """
             select t.tripId as tripId,
-                   t.tripId as maChuyen,
                    t.vehicleId as vehicleId,
-                   t.vehicleId as maXe,
                    v.licensePlate as licensePlate,
-                   v.licensePlate as bienSoXe,
                    bc.companyId as companyId,
-                   bc.companyId as maNhaXe,
                    bc.companyName as companyName,
-                   bc.companyName as tenNhaXe,
                    vt.typeId as typeId,
-                   vt.typeId as maLoaiXe,
                    vt.typeName as typeName,
-                   vt.typeName as tenLoaiXe,
                    vt.seatCapacity as seatCapacity,
-                   vt.seatCapacity as soCho,
                    r.routeId as routeId,
-                   r.routeId as maTuyen,
                    r.departure as departure,
-                   r.departure as diemDi,
                    r.destination as destination,
-                   r.destination as diemDen,
                    d.driverId as driverId,
-                   d.driverId as maTx,
                    d.fullName as driverName,
-                   d.fullName as tenTx,
                    t.departureTime as departureTime,
-                   t.departureTime as ngayGioKhoiHanh,
                    t.estimatedArrivalTime as estimatedArrivalTime,
-                   t.estimatedArrivalTime as ngayGioDenDuKien,
                    t.actualPrice as actualPrice,
-                   t.actualPrice as giaVeThucTe,
-                   (select count(tk) from Ticket tk where tk.tripId = t.tripId) as bookedSeats,
-                   (select count(tk) from Ticket tk where tk.tripId = t.tripId) as soVeDaBan,
-                   (select count(tk) from Ticket tk where tk.tripId = t.tripId) as soGheDaDat
+                   (select count(tk) from Ticket tk where tk.tripId = t.tripId) as bookedSeats
             from Trip t
             join Vehicle v on v.vehicleId = t.vehicleId
             join BusCompany bc on bc.companyId = v.companyId
@@ -132,72 +96,36 @@ public interface TripRepository extends JpaRepository<Trip, Integer> {
   interface TripRow {
     Integer getTripId();
 
-    Integer getMaChuyen();
-
     Integer getVehicleId();
-
-    Integer getMaXe();
 
     String getLicensePlate();
 
-    String getBienSoXe();
-
     Integer getCompanyId();
-
-    Integer getMaNhaXe();
 
     String getCompanyName();
 
-    String getTenNhaXe();
-
     Integer getTypeId();
-
-    Integer getMaLoaiXe();
 
     String getTypeName();
 
-    String getTenLoaiXe();
-
     Integer getSeatCapacity();
-
-    Integer getSoCho();
 
     Integer getRouteId();
 
-    Integer getMaTuyen();
-
     String getDeparture();
-
-    String getDiemDi();
 
     String getDestination();
 
-    String getDiemDen();
-
     Integer getDriverId();
-
-    Integer getMaTx();
 
     String getDriverName();
 
-    String getTenTx();
-
     LocalDateTime getDepartureTime();
-
-    LocalDateTime getNgayGioKhoiHanh();
 
     LocalDateTime getEstimatedArrivalTime();
 
-    LocalDateTime getNgayGioDenDuKien();
-
     BigDecimal getActualPrice();
 
-    BigDecimal getGiaVeThucTe();
-
     Long getBookedSeats();
-
-    Long getSoVeDaBan();
-
-    Long getSoGheDaDat();
   }
 }

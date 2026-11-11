@@ -18,8 +18,7 @@ function isStrongPassword(value: string): boolean {
 }
 
 export function Register() {
-  const { user, nguoiDung } = useAuth();
-  const currentUser = user ?? nguoiDung;
+  const { user } = useAuth();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -32,8 +31,8 @@ export function Register() {
     return <Navigate to="/login" replace />;
   }
 
-  if (currentUser) {
-    const role = currentUser.role ?? currentUser.quyen;
+  if (user) {
+    const role = user.role;
     return <Navigate to={homePathFor(role)} replace />;
   }
 

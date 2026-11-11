@@ -24,10 +24,9 @@ function isUpcoming(value?: string | null): boolean {
 }
 
 export function Trips() {
-  const { user, nguoiDung } = useAuth();
+  const { user } = useAuth();
   const { showToast } = useToast();
-  const currentUser = user ?? nguoiDung;
-  const isAdmin = (currentUser?.role ?? currentUser?.quyen) === 'Admin';
+  const isAdmin = user?.role === 'Admin';
 
   const [rows, setRows] = useState<Trip[]>([]);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);

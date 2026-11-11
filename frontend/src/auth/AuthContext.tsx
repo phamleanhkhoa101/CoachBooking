@@ -115,7 +115,7 @@ export function RequireRole({ roles, children }: { roles: Role[]; children: Reac
   if (!user) {
     return <Navigate to="/login" replace />;
   }
-  const currentRole = user.role ?? user.quyen;
+  const currentRole = user.role;
   if (!currentRole || !roles.includes(currentRole)) {
     return <Navigate to={homePathFor(currentRole)} replace />;
   }

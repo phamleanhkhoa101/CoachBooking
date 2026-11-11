@@ -114,7 +114,7 @@ export function AppLayout() {
 
   if (!currentUser) return null;
 
-  const currentRole = (currentUser.role ?? currentUser.quyen) as Role;
+  const currentRole = currentUser.role as Role;
   const isStaff = currentRole === 'Admin' || currentRole === 'NhanVien';
   const groups: NavGroup[] = isStaff
     ? currentRole === 'Admin'

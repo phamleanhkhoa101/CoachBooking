@@ -164,10 +164,9 @@ export function Booking({ mode }: BookingProps) {
   };
 
   const ticketPrice =
+    seatMap?.price ??
     seatMap?.ticketPrice ??
-    seatMap?.giaVe ??
     selectedTrip?.actualPrice ??
-    selectedTrip?.giaVeThucTe ??
     0;
   const totalAmount = ticketPrice * selectedSeats.length;
 
@@ -446,9 +445,9 @@ export function Booking({ mode }: BookingProps) {
               </div>
             ) : seatMap ? (
               <SeatMap
-                seatCapacity={seatMap.seatCapacity ?? seatMap.soCho}
-                vehicleTypeName={seatMap.vehicleTypeName ?? seatMap.tenLoaiXe}
-                bookedSeats={seatMap.bookedSeats ?? seatMap.choDaDat ?? []}
+                seatCapacity={seatMap.seatCapacity}
+                vehicleTypeName={seatMap.typeName ?? seatMap.vehicleTypeName}
+                bookedSeats={seatMap.bookedSeats ?? []}
                 selected={selectedSeats}
                 onToggle={toggleSeat}
               />

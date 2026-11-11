@@ -11,36 +11,4 @@ public record InvoiceRow(
     BigDecimal totalAmount,
     Boolean isPaid,
     Long ticketCount,
-    String paymentMethod) {
-  public Integer getMaHd() {
-    return invoiceId;
-  }
-
-  public String getTenKhachHang() {
-    return customerName;
-  }
-
-  public String getTenNhanVien() {
-    return employeeName;
-  }
-
-  public LocalDateTime getNgayLap() {
-    return createdAt;
-  }
-
-  public BigDecimal getTongTien() {
-    return totalAmount;
-  }
-
-  public Boolean getTrangThai() {
-    return isPaid;
-  }
-
-  public Long getSoVe() {
-    return ticketCount;
-  }
-
-  public String getPhuongThuc() {
-    return paymentMethod;
-  }
-}
+    String paymentMethod) {}

@@ -4,7 +4,7 @@ import { useAuth } from '../../auth/AuthContext';
 import './CustomerNavbar.css';
 
 export function CustomerNavbar() {
-  const { user, logout } = useAuth();
+  const { nguoiDung, logout } = useAuth();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
@@ -34,8 +34,8 @@ export function CustomerNavbar() {
   };
 
   const userDisplayName =
-    user?.fullName ?? user?.username ?? 'Khách';
-  const role = user?.role ?? 'KhachHang';
+    nguoiDung?.hoTen ?? nguoiDung?.tenDangNhap ?? 'Khách';
+  const role = nguoiDung?.quyen ?? 'KhachHang';
 
   return (
     <header className="shared-customer-header">
@@ -88,7 +88,7 @@ export function CustomerNavbar() {
 
         {/* ACTIONS: AUTH / USER MENU */}
         <div className="shared-header-actions">
-          {user ? (
+          {nguoiDung ? (
             <div className="shared-user-wrap" ref={userMenuRef}>
               <button
                 type="button"
@@ -134,7 +134,7 @@ export function CustomerNavbar() {
                   <div className="shared-menu-divider" />
 
                   <Link
-                    to={role === 'KhachHang' ? '/ho-so' : '/admin/ho-so'}
+                    to={role === 'KhachHang' ? '/app/ho-so' : '/admin/ho-so'}
                     className="shared-menu-item"
                     onClick={() => setUserMenuOpen(false)}
                   >

@@ -7,4 +7,24 @@ public record BookingResponse(
     BigDecimal totalAmount,
     Integer ticketCount,
     String paymentMethod,
-    Boolean isPaid) {}
+    Boolean isPaid) {
+  public Integer getMaHd() {
+    return invoiceId;
+  }
+
+  public BigDecimal getTongTien() {
+    return totalAmount;
+  }
+
+  public Integer getSoVe() {
+    return ticketCount;
+  }
+
+  public String getPhuongThuc() {
+    return paymentMethod;
+  }
+
+  public Boolean getTrangThai() {
+    return isPaid;
+  }
+}

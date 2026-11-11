@@ -30,7 +30,6 @@ import { CheckoutPage } from './pages/customer/CheckoutPage';
 import { ETicketPage } from './pages/customer/ETicketPage';
 import { TicketLookupPage } from './pages/customer/TicketLookupPage';
 import { CustomerTicketsPage } from './pages/customer/CustomerTicketsPage';
-import { CustomerProfilePage } from './pages/customer/CustomerProfilePage';
 
 function HomeRoute() {
   const { nguoiDung, loading } = useAuth();
@@ -69,14 +68,6 @@ export function App() {
               <Route path="/ve-dien-tu/:invoiceId" element={<ETicketPage />} />
               <Route path="/tra-cuu-ve" element={<TicketLookupPage />} />
               <Route path="/ve-cua-toi" element={<CustomerTicketsPage />} />
-              <Route
-                path="/ho-so"
-                element={
-                  <RequireRole roles={['KhachHang']}>
-                    <CustomerProfilePage />
-                  </RequireRole>
-                }
-              />
             </Route>
 
             <Route
@@ -129,7 +120,7 @@ export function App() {
               <Route index element={<Navigate to="/app/dat-ve" replace />} />
               <Route path="dat-ve" element={<CustomerBooking />} />
               <Route path="lich-su" element={<CustomerHistory />} />
-              <Route path="ho-so" element={<Navigate to="/ho-so" replace />} />
+              <Route path="ho-so" element={<Profile />} />
               <Route path="*" element={<Navigate to="/app/dat-ve" replace />} />
             </Route>
 

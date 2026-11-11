@@ -52,13 +52,13 @@ export function SeatSelectionPage() {
     })();
   }, [tripId]);
 
-  const capacity = seatData?.seatCapacity ?? passedTrip?.seatCapacity ?? 40;
-  const bookedSet = new Set(seatData?.bookedSeats ?? []);
-  const price = seatData?.price ?? passedTrip?.actualPrice ?? 0;
-  const typeName = seatData?.typeName ?? passedTrip?.typeName ?? 'Xe khách';
-  const dep = seatData?.departure ?? passedTrip?.departure ?? 'TP HCM';
-  const dest = seatData?.destination ?? passedTrip?.destination ?? 'Điểm đến';
-  const depTime = seatData?.departureTime ?? passedTrip?.departureTime;
+  const capacity = seatData?.seatCapacity ?? seatData?.soCho ?? passedTrip?.seatCapacity ?? passedTrip?.soCho ?? 40;
+  const bookedSet = new Set(seatData?.bookedSeats ?? seatData?.gheDaDat ?? []);
+  const price = seatData?.price ?? seatData?.giaVe ?? passedTrip?.actualPrice ?? passedTrip?.giaVeThucTe ?? 0;
+  const typeName = seatData?.typeName ?? seatData?.tenLoaiXe ?? passedTrip?.typeName ?? passedTrip?.tenLoaiXe ?? 'Xe khách';
+  const dep = seatData?.departure ?? seatData?.diemDi ?? passedTrip?.departure ?? passedTrip?.diemDi ?? 'TP HCM';
+  const dest = seatData?.destination ?? seatData?.diemDen ?? passedTrip?.destination ?? passedTrip?.diemDen ?? 'Điểm đến';
+  const depTime = seatData?.departureTime ?? seatData?.ngayGioKhoiHanh ?? passedTrip?.departureTime ?? passedTrip?.ngayGioKhoiHanh;
 
   // Is sleeper coach?
   const isSleeper = typeName.toLowerCase().includes('giuong') || typeName.toLowerCase().includes('limousine');

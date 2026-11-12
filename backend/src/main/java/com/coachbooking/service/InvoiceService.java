@@ -47,6 +47,7 @@ public class InvoiceService {
   private final TripRepository tripRepository;
   private final RouteRepository routeRepository;
   private final CurrentUserService currentUserService;
+  private final SeatStatusService seatStatusService;
 
   public InvoiceService(
       InvoiceRepository invoiceRepository,
@@ -56,7 +57,8 @@ public class InvoiceService {
       EmployeeRepository employeeRepository,
       TripRepository tripRepository,
       RouteRepository routeRepository,
-      CurrentUserService currentUserService) {
+      CurrentUserService currentUserService,
+      SeatStatusService seatStatusService) {
     this.invoiceRepository = invoiceRepository;
     this.ticketRepository = ticketRepository;
     this.paymentRepository = paymentRepository;
@@ -65,6 +67,7 @@ public class InvoiceService {
     this.tripRepository = tripRepository;
     this.routeRepository = routeRepository;
     this.currentUserService = currentUserService;
+    this.seatStatusService = seatStatusService;
   }
 
   public List<InvoiceRow> list(LocalDate fromDate, LocalDate toDate, Boolean isPaid) {
@@ -187,8 +190,14 @@ public class InvoiceService {
     if (Boolean.TRUE.equals(invoice.getIsPaid())) {
       throw ApiException.conflict("Không thể hủy hóa đơn đã thanh toán.");
     }
+    List<Integer> tripIds =
+        ticketRepository.findByInvoiceId(invoiceId).stream()
+            .map(Ticket::getTripId)
+            .distinct()
+            .toList();
     ticketRepository.deleteByInvoiceId(invoiceId);
     invoiceRepository.delete(invoice);
+    tripIds.forEach(seatStatusService::publishAfterCommit);
     return Map.of("message", "Hủy hóa đơn thành công.");
   }
 
@@ -213,6 +222,7 @@ public class InvoiceService {
 
     ticketRepository.delete(ticket);
     ticketRepository.flush();
+    seatStatusService.publishAfterCommit(ticket.getTripId());
 
     List<Ticket> remaining = ticketRepository.findByInvoiceId(invoice.getInvoiceId());
     if (remaining.isEmpty()) {

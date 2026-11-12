@@ -58,6 +58,7 @@ public class SecurityConfig {
                         "/api/trips/search",
                         "/api/chuyen-xe/tim",
                         "/api/trips/*/seats",
+                        "/api/trips/*/seats/events",
                         "/api/trips/*/ghe",
                         "/api/chuyen-xe/*/seats",
                         "/api/chuyen-xe/*/ghe",

@@ -64,8 +64,22 @@ export function App() {
             {/* Cổng Đặt vé Khách hàng & Dịch vụ bến xe */}
             <Route element={<CustomerLayout />}>
               <Route path="/tim-chuyen" element={<TripSearchPage />} />
-              <Route path="/dat-ve/chon-ghe/:tripId" element={<SeatSelectionPage />} />
-              <Route path="/dat-ve/thanh-toan" element={<CheckoutPage />} />
+              <Route
+                path="/dat-ve/chon-ghe/:tripId"
+                element={
+                  <RequireRole roles={['KhachHang']}>
+                    <SeatSelectionPage />
+                  </RequireRole>
+                }
+              />
+              <Route
+                path="/dat-ve/thanh-toan"
+                element={
+                  <RequireRole roles={['KhachHang']}>
+                    <CheckoutPage />
+                  </RequireRole>
+                }
+              />
               <Route path="/ve-dien-tu/:invoiceId" element={<ETicketPage />} />
               <Route path="/tra-cuu-ve" element={<TicketLookupPage />} />
               <Route path="/ve-cua-toi" element={<CustomerTicketsPage />} />

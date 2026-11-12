@@ -7,6 +7,7 @@ import com.coachbooking.domain.Customer;
 import com.coachbooking.domain.Employee;
 import com.coachbooking.domain.Invoice;
 import com.coachbooking.domain.Payment;
+import com.coachbooking.domain.SeatHold;
 import com.coachbooking.domain.Ticket;
 import com.coachbooking.domain.Trip;
 import com.coachbooking.domain.Vehicle;
@@ -17,6 +18,7 @@ import com.coachbooking.repo.CustomerRepository;
 import com.coachbooking.repo.EmployeeRepository;
 import com.coachbooking.repo.InvoiceRepository;
 import com.coachbooking.repo.PaymentRepository;
+import com.coachbooking.repo.SeatHoldRepository;
 import com.coachbooking.repo.TicketRepository;
 import com.coachbooking.repo.TripRepository;
 import com.coachbooking.repo.VehicleRepository;
@@ -28,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -46,6 +49,8 @@ public class BookingService {
   private final TicketRepository ticketRepository;
   private final PaymentRepository paymentRepository;
   private final CurrentUserService currentUserService;
+  private final SeatHoldRepository seatHoldRepository;
+  private final SeatStatusService seatStatusService;
 
   public BookingService(
       TripRepository tripRepository,
@@ -56,7 +61,9 @@ public class BookingService {
       InvoiceRepository invoiceRepository,
       TicketRepository ticketRepository,
       PaymentRepository paymentRepository,
-      CurrentUserService currentUserService) {
+      CurrentUserService currentUserService,
+      SeatHoldRepository seatHoldRepository,
+      SeatStatusService seatStatusService) {
     this.tripRepository = tripRepository;
     this.vehicleRepository = vehicleRepository;
     this.vehicleTypeRepository = vehicleTypeRepository;
@@ -66,13 +73,15 @@ public class BookingService {
     this.ticketRepository = ticketRepository;
     this.paymentRepository = paymentRepository;
     this.currentUserService = currentUserService;
+    this.seatHoldRepository = seatHoldRepository;
+    this.seatStatusService = seatStatusService;
   }
 
   @Transactional
   public BookingResponse bookTickets(Account actor, BookingRequest request) {
     Trip trip =
         tripRepository
-            .findById(request.tripId())
+            .findByIdForUpdate(request.tripId())
             .orElseThrow(() -> ApiException.notFound("Chuyến xe không tồn tại."));
     LocalDateTime now = LocalDateTime.now();
     if (!trip.getDepartureTime().isAfter(now)) {
@@ -83,6 +92,7 @@ public class BookingService {
     }
 
     List<Integer> seatNumbers = normalizeSeats(request.seatNumbers());
+    boolean customerActor = currentUserService.isCustomer(actor);
     Vehicle vehicle =
         vehicleRepository
             .findById(trip.getVehicleId())
@@ -97,11 +107,28 @@ public class BookingService {
           "Ghế chọn vượt quá số chỗ của xe (" + vehicleType.getSeatCapacity() + " chỗ).");
     }
 
+    seatHoldRepository.deleteExpiredByTripId(trip.getTripId(), now);
     List<Integer> bookedSeats = ticketRepository.findSeatNumbersByTripId(trip.getTripId());
     List<Integer> duplicates = seatNumbers.stream().filter(bookedSeats::contains).toList();
     if (!duplicates.isEmpty()) {
       throw ApiException.conflict(
           "Ghế số " + joinSeats(duplicates) + " đã được đặt. Vui lòng chọn ghế khác.");
+    }
+
+    if (customerActor) {
+      validateCustomerHold(actor, request.holdToken(), trip.getTripId(), seatNumbers, now);
+    } else {
+      List<Integer> heldSeats =
+          seatHoldRepository
+              .findByTripIdAndExpiresAtAfterOrderBySeatNumber(trip.getTripId(), now)
+              .stream()
+              .map(SeatHold::getSeatNumber)
+              .filter(seatNumbers::contains)
+              .toList();
+      if (!heldSeats.isEmpty()) {
+        throw ApiException.conflict(
+            "Ghế số " + joinSeats(heldSeats) + " đang được khách khác giữ.");
+      }
     }
 
     Customer customer = resolveCustomer(actor, request);
@@ -113,6 +140,9 @@ public class BookingService {
     String paymentMethod = payNow ? request.paymentMethod().trim() : null;
     if (payNow && !VALID_PAYMENT_METHODS.contains(paymentMethod)) {
       throw ApiException.badRequest("Phương thức thanh toán không hợp lệ.");
+    }
+    if (customerActor && !"Chuyển khoản".equals(paymentMethod)) {
+      throw ApiException.badRequest("Khách hàng chỉ có thể chọn phương thức Chuyển khoản.");
     }
 
     BigDecimal totalAmount = trip.getActualPrice().multiply(BigDecimal.valueOf(seatNumbers.size()));
@@ -134,7 +164,7 @@ public class BookingService {
       ticket.setPrice(trip.getActualPrice());
       tickets.add(ticket);
     }
-    ticketRepository.saveAll(tickets);
+    ticketRepository.saveAllAndFlush(tickets);
 
     if (payNow) {
       Payment payment = new Payment();
@@ -145,12 +175,41 @@ public class BookingService {
       paymentRepository.save(payment);
     }
 
+    if (customerActor) {
+      seatHoldRepository.deleteByHoldToken(request.holdToken());
+    }
+    seatStatusService.publishAfterCommit(trip.getTripId());
+
     return new BookingResponse(
         savedInvoice.getInvoiceId(),
         totalAmount,
         seatNumbers.size(),
         payNow ? paymentMethod : "Thanh toán sau",
         payNow);
+  }
+
+  private void validateCustomerHold(
+      Account actor, UUID token, Integer tripId, List<Integer> seatNumbers, LocalDateTime now) {
+    if (token == null) {
+      throw ApiException.conflict("Vui lòng giữ ghế trước khi xác nhận đặt vé.");
+    }
+    List<SeatHold> holds = seatHoldRepository.findByHoldTokenOrderBySeatNumber(token);
+    if (holds.isEmpty()) {
+      throw ApiException.conflict("Lượt giữ ghế không còn hiệu lực. Vui lòng chọn lại ghế.");
+    }
+    if (holds.stream().anyMatch(hold -> !hold.getAccountId().equals(actor.getAccountId()))) {
+      throw ApiException.forbidden("Bạn không có quyền sử dụng lượt giữ ghế này.");
+    }
+    if (holds.stream().anyMatch(hold -> !hold.getTripId().equals(tripId))) {
+      throw ApiException.conflict("Lượt giữ ghế không thuộc chuyến xe đã chọn.");
+    }
+    if (holds.stream().anyMatch(hold -> !hold.getExpiresAt().isAfter(now))) {
+      throw ApiException.conflict("Thời gian giữ ghế đã hết. Vui lòng chọn lại ghế.");
+    }
+    List<Integer> heldSeats = holds.stream().map(SeatHold::getSeatNumber).sorted().toList();
+    if (!heldSeats.equals(seatNumbers)) {
+      throw ApiException.conflict("Danh sách ghế không khớp với lượt giữ ghế.");
+    }
   }
 
   private List<Integer> normalizeSeats(List<Integer> seatNumbers) {

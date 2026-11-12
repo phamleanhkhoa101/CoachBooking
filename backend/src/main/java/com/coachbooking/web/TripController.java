@@ -4,12 +4,14 @@ import com.coachbooking.domain.Trip;
 import com.coachbooking.dto.trip.SeatMapResponse;
 import com.coachbooking.dto.trip.TripRequest;
 import com.coachbooking.repo.TripRepository;
+import com.coachbooking.service.SeatStatusService;
 import com.coachbooking.service.TripService;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @RestController
 @RequestMapping({"/api/trips", "/api/chuyen-xe"})
@@ -27,10 +30,13 @@ public class TripController {
 
   private final TripRepository tripRepository;
   private final TripService tripService;
+  private final SeatStatusService seatStatusService;
 
-  public TripController(TripRepository tripRepository, TripService tripService) {
+  public TripController(
+      TripRepository tripRepository, TripService tripService, SeatStatusService seatStatusService) {
     this.tripRepository = tripRepository;
     this.tripService = tripService;
+    this.seatStatusService = seatStatusService;
   }
 
   @GetMapping
@@ -64,6 +70,12 @@ public class TripController {
   @GetMapping({"/{id}/seats", "/{id}/ghe"})
   public SeatMapResponse seatMap(@PathVariable Integer id) {
     return tripService.seatMap(id);
+  }
+
+  @GetMapping(value = "/{id}/seats/events", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+  public SseEmitter seatEvents(@PathVariable Integer id) {
+    tripService.seatMap(id);
+    return seatStatusService.subscribe(id);
   }
 
   @GetMapping("/{id}")

@@ -72,7 +72,8 @@ public class GlobalExceptionHandler {
     String detail = ex.getMostSpecificCause().getMessage();
     if (detail != null
         && (detail.contains("tickets_trip_id_seat_number_key")
-            || detail.contains("ve_xe_ma_chuyen_cho_ngoi_key"))) {
+            || detail.contains("ve_xe_ma_chuyen_cho_ngoi_key")
+            || detail.contains("uq_seat_holds_trip_seat"))) {
       message = "Ghế vừa được người khác đặt. Vui lòng chọn ghế khác.";
     }
     return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("message", message));

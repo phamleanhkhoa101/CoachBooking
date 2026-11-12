@@ -162,10 +162,44 @@ kèm `soVeDaBan`, `soCho`, `giaVeThucTe`. `tuGio`/`denGio` là số nguyên 0–
 ```json
 {
   "maChuyen": 1, "tenLoaiXe": "Giường nằm", "soCho": 45,
-  "giaVe": 180000, "gheDaDat": [1, 2, 7], "diemDi": "TP HCM", "diemDen": "Vũng Tàu",
+  "giaVe": 180000, "gheDaDat": [1, 2, 7], "heldSeats": [5, 6],
+  "diemDi": "TP HCM", "diemDen": "Vũng Tàu",
   "ngayGioKhoiHanh": "2026-11-05T07:00:00"
 }
 ```
+
+`heldSeats` là các ghế đang được khách khác giữ tạm thời và chưa bán. Trình duyệt có thể
+theo dõi snapshot ghế theo thời gian thực qua SSE công khai.
+
+### `GET /api/trips/{id}/seats/events`
+
+Sự kiện `seat-status` trả `{ tripId, bookedSeats, heldSeats, occurredAt }`.
+
+### Giữ ghế tạm thời
+
+Khách hàng phải đăng nhập và giữ ghế trước khi xác nhận đặt vé. Hold tồn tại 10 phút,
+thuộc về đúng tài khoản tạo ra và áp dụng nguyên tử cho toàn bộ danh sách ghế.
+
+`POST /api/seat-holds` nhận:
+
+```json
+{ "tripId": 1, "seatNumbers": [3, 4] }
+```
+
+Trả về HTTP `201`:
+
+```json
+{
+  "holdToken": "6ef80623-073d-4be7-a900-f9b9ac28a48a",
+  "tripId": 1,
+  "seatNumbers": [3, 4],
+  "expiresAt": "2026-11-12T10:40:00"
+}
+```
+
+- `GET /api/seat-holds/{holdToken}`: đọc hold còn hiệu lực của chính tài khoản.
+- `DELETE /api/seat-holds/{holdToken}`: nhả ghế, trả HTTP `204`.
+- Trả `409` nếu một ghế đã bán, đang được giữ hoặc hold đã hết hạn.
 
 ## 4. Đặt vé
 
@@ -182,7 +216,8 @@ Nhân viên:
 }
 ```
 
-Khách hàng đăng nhập: chỉ cần `maChuyen`, `choNgois`, `phuongThuc` (hệ thống lấy
+Khách hàng đăng nhập gửi thêm `holdToken` nhận từ API giữ ghế; phương thức trên cổng
+khách hàng hiện là `Chuyển khoản` (hệ thống lấy
 hồ sơ khách hàng từ token). Nếu tài khoản chưa có hồ sơ khách hàng (`maKh = null`),
 lần đặt vé đầu tiên phải gửi thêm `tenKhachHang`, `sdt`, `namSinh` (và tùy chọn
 `gioiTinh`) để hệ thống tạo hồ sơ gắn với tài khoản.
@@ -195,9 +230,11 @@ Trả về:
 
 Ràng buộc: chuyến tồn tại và chưa khởi hành, giá vé > 0, ghế nằm trong `1..soCho`,
 ghế chưa bị đặt (kiểm tra lại trong transaction, vi phạm ràng buộc duy nhất trả `409`),
-số điện thoại 10–11 ký tự, tên khách không rỗng. Nếu số điện thoại đã tồn tại thì
-dùng khách hàng cũ, ngược lại tạo mới. Phương thức hợp lệ: `Tiền mặt`, `Chuyển khoản`,
-`Thẻ ATM` (MoMo đã được gỡ bỏ).
+số điện thoại 10–11 ký tự, tên khách không rỗng. Hold của khách phải đúng tài khoản,
+chuyến, tập ghế và chưa hết hạn. Nếu số điện thoại đã tồn tại thì dùng khách hàng cũ,
+ngược lại tạo mới. Nhân viên tại quầy dùng `Tiền mặt`, `Chuyển khoản`, `Thẻ ATM` và
+không được ghi đè ghế khách đang giữ. Chuyển khoản khách hàng hiện là luồng mô phỏng
+tự xác nhận, chưa có callback đối soát ngân hàng.
 
 ## 5. Hóa đơn, vé
 

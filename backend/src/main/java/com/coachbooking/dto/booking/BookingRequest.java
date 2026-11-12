@@ -3,6 +3,7 @@ package com.coachbooking.dto.booking;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 public class BookingRequest {
   @NotNull(message = "Vui lòng chọn chuyến xe.")
@@ -14,6 +15,7 @@ public class BookingRequest {
   private LocalDate dateOfBirth;
   private Boolean gender;
   private String paymentMethod;
+  private UUID holdToken;
 
   public BookingRequest() {}
 
@@ -60,6 +62,10 @@ public class BookingRequest {
 
   public String paymentMethod() {
     return paymentMethod;
+  }
+
+  public UUID holdToken() {
+    return holdToken;
   }
 
   public Integer getTripId() {
@@ -172,5 +178,13 @@ public class BookingRequest {
     if (this.paymentMethod == null || this.paymentMethod.isBlank()) {
       this.paymentMethod = phuongThuc;
     }
+  }
+
+  public UUID getHoldToken() {
+    return holdToken;
+  }
+
+  public void setHoldToken(UUID holdToken) {
+    this.holdToken = holdToken;
   }
 }

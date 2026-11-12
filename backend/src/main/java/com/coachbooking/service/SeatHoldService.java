@@ -14,6 +14,8 @@ import com.coachbooking.repo.TripRepository;
 import com.coachbooking.repo.VehicleRepository;
 import com.coachbooking.repo.VehicleTypeRepository;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -25,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class SeatHoldService {
 
   public static final int HOLD_MINUTES = 10;
+  private static final ZoneId VIETNAM_ZONE = ZoneId.of("Asia/Ho_Chi_Minh");
 
   private final TripRepository tripRepository;
   private final VehicleRepository vehicleRepository;
@@ -93,7 +96,8 @@ public class SeatHoldService {
     }
     seatHoldRepository.saveAllAndFlush(holds);
     seatStatusService.publishAfterCommit(trip.getTripId());
-    return new SeatHoldResponse(token, trip.getTripId(), seats, expiresAt);
+    return new SeatHoldResponse(
+        token, trip.getTripId(), seats, expiresAt.atZone(VIETNAM_ZONE).toOffsetDateTime());
   }
 
   @Transactional(readOnly = true)
@@ -107,7 +111,7 @@ public class SeatHoldService {
         token,
         first.getTripId(),
         holds.stream().map(SeatHold::getSeatNumber).toList(),
-        first.getExpiresAt());
+        first.getExpiresAt().atZone(VIETNAM_ZONE).toOffsetDateTime());
   }
 
   @Transactional

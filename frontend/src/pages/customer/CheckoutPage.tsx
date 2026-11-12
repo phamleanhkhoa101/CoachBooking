@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
 import type { BookingRequest, BookingResponse, Profile, TripSearchResponse } from '../../api/types';
@@ -36,13 +36,25 @@ function readStoredCheckout(): CheckoutLocationState | undefined {
   }
 }
 
+function getSecondsRemaining(expiresAt?: string): number {
+  if (!expiresAt) return 0;
+  const hasTimezone = expiresAt.endsWith('Z') || /[+-]\d{2}(:\d{2})?$/.test(expiresAt);
+  const normalized = hasTimezone ? expiresAt : `${expiresAt}+07:00`;
+  const expiryTime = new Date(normalized).getTime();
+  if (Number.isNaN(expiryTime)) return 0;
+  return Math.max(0, Math.ceil((expiryTime - Date.now()) / 1000));
+}
+
 export function CheckoutPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { nguoiDung } = useAuth();
   const { showToast } = useToast();
 
-  const state = (location.state as CheckoutLocationState | undefined) ?? readStoredCheckout();
+  const state = useMemo(
+    () => (location.state as CheckoutLocationState | undefined) ?? readStoredCheckout(),
+    [location.state],
+  );
 
   // Form states
   const [fullName, setFullName] = useState('');
@@ -58,11 +70,7 @@ export function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  const [secondsLeft, setSecondsLeft] = useState(() =>
-    state?.expiresAt
-      ? Math.max(0, Math.ceil((new Date(state.expiresAt).getTime() - Date.now()) / 1000))
-      : 0,
-  );
+  const [secondsLeft, setSecondsLeft] = useState(() => getSecondsRemaining(state?.expiresAt));
 
   useEffect(() => {
     if (!state?.tripId || !state?.selectedSeats?.length || !state.holdToken) {
@@ -70,20 +78,28 @@ export function CheckoutPage() {
       return;
     }
 
+    const updateRemaining = () => {
+      const remaining = getSecondsRemaining(state.expiresAt);
+      setSecondsLeft(remaining);
+      if (remaining <= 0) {
+        sessionStorage.removeItem(CHECKOUT_HOLD_STORAGE_KEY);
+        setErrorMsg('Thời gian giữ ghế đã hết. Vui lòng quay lại chọn ghế.');
+      }
+      return remaining;
+    };
+
+    const initial = updateRemaining();
+    if (initial <= 0) return;
+
     const timer = setInterval(() => {
-      setSecondsLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          sessionStorage.removeItem(CHECKOUT_HOLD_STORAGE_KEY);
-          setErrorMsg('Thời gian giữ ghế đã hết. Vui lòng quay lại chọn ghế.');
-          return 0;
-        }
-        return prev - 1;
-      });
+      const remaining = updateRemaining();
+      if (remaining <= 0) {
+        clearInterval(timer);
+      }
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [state, navigate]);
+  }, [state?.expiresAt, state?.tripId, state?.selectedSeats?.length, state?.holdToken, navigate]);
 
   // Autofill if logged in
   useEffect(() => {
@@ -130,12 +146,12 @@ export function CheckoutPage() {
     setSubmitting(true);
     try {
       await api.del<void>(`/seat-holds/${state.holdToken}`);
-      sessionStorage.removeItem(CHECKOUT_HOLD_STORAGE_KEY);
-      navigate(`/dat-ve/chon-ghe/${state.tripId}`, { replace: true, state: { trip: state.trip } });
-    } catch (err: unknown) {
-      setErrorMsg(err instanceof Error ? err.message : 'Không thể nhả ghế lúc này.');
+    } catch {
+      // Bỏ qua lỗi nếu hold đã tự hết hạn trên backend
     } finally {
+      sessionStorage.removeItem(CHECKOUT_HOLD_STORAGE_KEY);
       setSubmitting(false);
+      navigate(`/dat-ve/chon-ghe/${state.tripId}`, { replace: true, state: { trip: state.trip } });
     }
   };
 

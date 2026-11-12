@@ -193,7 +193,7 @@ Trả về HTTP `201`:
   "holdToken": "6ef80623-073d-4be7-a900-f9b9ac28a48a",
   "tripId": 1,
   "seatNumbers": [3, 4],
-  "expiresAt": "2026-11-12T10:40:00"
+  "expiresAt": "2026-11-12T10:40:00+07:00"
 }
 ```
 

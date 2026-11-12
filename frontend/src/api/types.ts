@@ -191,6 +191,7 @@ export interface SeatMapResponse {
   ticketPrice: number;
   price?: number;
   bookedSeats: number[];
+  heldSeats: number[];
   departure?: string;
   destination?: string;
   departureTime?: string;
@@ -216,6 +217,7 @@ export interface BookingRequest {
   dateOfBirth?: string;
   gender?: boolean;
   paymentMethod?: string;
+  holdToken?: string;
 
   // Vietnamese fields / aliases
   maChuyen?: number;
@@ -227,6 +229,20 @@ export interface BookingRequest {
   phuongThuc?: string;
 }
 export type DatVeRequest = BookingRequest;
+
+export interface SeatHoldResponse {
+  holdToken: string;
+  tripId: number;
+  seatNumbers: number[];
+  expiresAt: string;
+}
+
+export interface SeatStatusResponse {
+  tripId: number;
+  bookedSeats: number[];
+  heldSeats: number[];
+  occurredAt: string;
+}
 
 export interface BookingResponse {
   invoiceId: number;

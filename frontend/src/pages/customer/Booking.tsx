@@ -5,6 +5,7 @@ import type {
   BookingResponse,
   Profile,
   Route,
+  SeatHoldResponse,
   SeatMapResponse,
   Trip,
 } from '../../api/types';
@@ -48,13 +49,15 @@ export function Booking({ mode }: BookingProps) {
   const [phone, setPhone] = useState('');
   const [dateOfBirth, setDateOfBirth] = useState('');
   const [gender, setGender] = useState('true');
-  const [paymentMethod, setPaymentMethod] = useState('Tiền mặt');
+  const [paymentMethod, setPaymentMethod] = useState(
+    isStaff ? 'Tiền mặt' : 'Chuyển khoản',
+  );
   const [submitting, setSubmitting] = useState(false);
   const [bookingError, setBookingError] = useState('');
   const [result, setResult] = useState<BookingResponse | null>(null);
 
   const methods = useMemo(
-    () => (isStaff ? STAFF_METHODS : [...STAFF_METHODS, 'Thanh toán sau']),
+    () => (isStaff ? STAFF_METHODS : ['Chuyển khoản']),
     [isStaff],
   );
 
@@ -216,6 +219,13 @@ export function Booking({ mode }: BookingProps) {
     setSubmitting(true);
     setBookingError('');
     try {
+      if (!isStaff) {
+        const hold = await api.post<SeatHoldResponse>('/seat-holds', {
+          tripId,
+          seatNumbers: selectedSeats,
+        });
+        body.holdToken = hold.holdToken;
+      }
       const res = await api.post<BookingResponse>('/bookings', body);
       setResult(res);
       const invoiceId = res.invoiceId ?? res.maHd;
@@ -447,7 +457,7 @@ export function Booking({ mode }: BookingProps) {
               <SeatMap
                 seatCapacity={seatMap.seatCapacity}
                 vehicleTypeName={seatMap.typeName ?? seatMap.vehicleTypeName}
-                bookedSeats={seatMap.bookedSeats ?? []}
+                bookedSeats={[...(seatMap.bookedSeats ?? []), ...(seatMap.heldSeats ?? [])]}
                 selected={selectedSeats}
                 onToggle={toggleSeat}
               />

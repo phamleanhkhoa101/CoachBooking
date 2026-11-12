@@ -36,6 +36,7 @@ public class TripService {
   private final DriverRepository driverRepository;
   private final TicketPriceRepository ticketPriceRepository;
   private final TicketRepository ticketRepository;
+  private final SeatStatusService seatStatusService;
 
   public TripService(
       TripRepository tripRepository,
@@ -44,7 +45,8 @@ public class TripService {
       RouteRepository routeRepository,
       DriverRepository driverRepository,
       TicketPriceRepository ticketPriceRepository,
-      TicketRepository ticketRepository) {
+      TicketRepository ticketRepository,
+      SeatStatusService seatStatusService) {
     this.tripRepository = tripRepository;
     this.vehicleRepository = vehicleRepository;
     this.vehicleTypeRepository = vehicleTypeRepository;
@@ -52,6 +54,7 @@ public class TripService {
     this.driverRepository = driverRepository;
     this.ticketPriceRepository = ticketPriceRepository;
     this.ticketRepository = ticketRepository;
+    this.seatStatusService = seatStatusService;
   }
 
   public List<TripRepository.TripRow> listAll() {
@@ -97,6 +100,7 @@ public class TripService {
         vehicleType.getSeatCapacity(),
         trip.getActualPrice(),
         ticketRepository.findSeatNumbersByTripId(tripId),
+        seatStatusService.snapshot(tripId).heldSeats(),
         route.getDeparture(),
         route.getDestination(),
         trip.getDepartureTime());

@@ -222,6 +222,14 @@
   opacity: 0.7;
 }
 
+.seat-box.held,
+.seat-unit.held {
+  background: #fffaeb;
+  border-color: var(--warning);
+  color: #92400e;
+  cursor: not-allowed;
+}
+
 /* PICKUP & DROPOFF */
 .pickup-dropoff-card {
   background: #ffffff;

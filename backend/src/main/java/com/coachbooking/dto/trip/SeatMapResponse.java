@@ -10,6 +10,7 @@ public record SeatMapResponse(
     Integer seatCapacity,
     BigDecimal price,
     List<Integer> bookedSeats,
+    List<Integer> heldSeats,
     String departure,
     String destination,
     LocalDateTime departureTime) {}

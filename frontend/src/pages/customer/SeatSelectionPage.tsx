@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../../api/client';
-import type { SeatMapResponse, TripSearchResponse } from '../../api/types';
+import type {
+  SeatHoldResponse,
+  SeatMapResponse,
+  SeatStatusResponse,
+  TripSearchResponse,
+} from '../../api/types';
 import { BookingStepper } from '../../components/customer/BookingStepper';
 import { formatCurrency, formatTime } from '../../utils/format';
 import './SeatSelectionPage.css';
@@ -19,6 +24,8 @@ const DEFAULT_DROPOFF_POINTS = [
   'Dọc Quốc lộ / Điểm trả khách thuận tiện theo lộ trình xe',
 ];
 
+export const CHECKOUT_HOLD_STORAGE_KEY = 'coachbooking_checkout_hold';
+
 export function SeatSelectionPage() {
   const { tripId } = useParams<{ tripId: string }>();
   const navigate = useNavigate();
@@ -32,6 +39,7 @@ export function SeatSelectionPage() {
   const [seatData, setSeatData] = useState<SeatMapResponse | null>(null);
 
   const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
+  const [holding, setHolding] = useState(false);
   const [boardingPoint, setBoardingPoint] = useState(DEFAULT_BOARDING_POINTS[0]);
   const [dropoffPoint, setDropoffPoint] = useState(DEFAULT_DROPOFF_POINTS[0]);
 
@@ -52,8 +60,26 @@ export function SeatSelectionPage() {
     })();
   }, [tripId]);
 
+  useEffect(() => {
+    if (!tripId) return;
+    const events = new EventSource(`/api/trips/${tripId}/seats/events`);
+    const updateSeats = (event: Event) => {
+      const status = JSON.parse((event as MessageEvent<string>).data) as SeatStatusResponse;
+      setSeatData((current) =>
+        current
+          ? { ...current, bookedSeats: status.bookedSeats, heldSeats: status.heldSeats }
+          : current,
+      );
+      const unavailable = new Set([...status.bookedSeats, ...status.heldSeats]);
+      setSelectedSeats((current) => current.filter((seat) => !unavailable.has(seat)));
+    };
+    events.addEventListener('seat-status', updateSeats);
+    return () => events.close();
+  }, [tripId]);
+
   const capacity = seatData?.seatCapacity ?? passedTrip?.seatCapacity ?? 40;
   const bookedSet = new Set(seatData?.bookedSeats ?? []);
+  const heldSet = new Set(seatData?.heldSeats ?? []);
   const price = seatData?.price ?? passedTrip?.actualPrice ?? 0;
   const typeName = seatData?.typeName ?? passedTrip?.typeName ?? 'Xe khách';
   const dep = seatData?.departure ?? passedTrip?.departure ?? 'TP HCM';
@@ -70,7 +96,7 @@ export function SeatSelectionPage() {
   const deck2 = isSleeper ? allSeatNumbers.slice(half) : [];
 
   const handleSeatClick = (seatNum: number) => {
-    if (bookedSet.has(seatNum)) return;
+    if (bookedSet.has(seatNum) || heldSet.has(seatNum)) return;
     setSelectedSeats((prev) =>
       prev.includes(seatNum)
         ? prev.filter((s) => s !== seatNum)
@@ -80,14 +106,19 @@ export function SeatSelectionPage() {
 
   const totalPrice = selectedSeats.length * price;
 
-  const handleProceedToCheckout = () => {
+  const handleProceedToCheckout = async () => {
     if (selectedSeats.length === 0) {
-      alert('Vui lòng chọn ít nhất 1 chỗ ngồi trên xe để tiếp tục.');
+      setErrorMsg('Vui lòng chọn ít nhất một ghế để tiếp tục.');
       return;
     }
-
-    navigate('/dat-ve/thanh-toan', {
-      state: {
+    setHolding(true);
+    setErrorMsg('');
+    try {
+      const hold = await api.post<SeatHoldResponse>('/seat-holds', {
+        tripId: Number(tripId),
+        seatNumbers: selectedSeats,
+      });
+      const checkoutState = {
         tripId: Number(tripId),
         trip: passedTrip,
         seatData,
@@ -100,8 +131,16 @@ export function SeatSelectionPage() {
         dest,
         depTime,
         typeName,
-      },
-    });
+        holdToken: hold.holdToken,
+        expiresAt: hold.expiresAt,
+      };
+      sessionStorage.setItem(CHECKOUT_HOLD_STORAGE_KEY, JSON.stringify(checkoutState));
+      navigate('/dat-ve/thanh-toan', { state: checkoutState });
+    } catch (err: unknown) {
+      setErrorMsg(err instanceof Error ? err.message : 'Không thể giữ ghế đã chọn.');
+    } finally {
+      setHolding(false);
+    }
   };
 
   return (
@@ -172,6 +211,10 @@ export function SeatSelectionPage() {
                   <span className="seat-box booked" />
                   <span>Ghế đã bán</span>
                 </div>
+                <div className="legend-item">
+                  <span className="seat-box held" />
+                  <span>Ghế đang được giữ</span>
+                </div>
               </div>
 
               {/* COACH BUS GRAPHIC & SEATS */}
@@ -191,6 +234,7 @@ export function SeatSelectionPage() {
                     <div className="deck-grid">
                       {deck1.map((seatNum) => {
                         const isBooked = bookedSet.has(seatNum);
+                        const isHeld = heldSet.has(seatNum);
                         const isSelected = selectedSeats.includes(seatNum);
                         const seatLabel = isSleeper
                           ? `A${seatNum < 10 ? '0' + seatNum : seatNum}`
@@ -203,11 +247,13 @@ export function SeatSelectionPage() {
                             className={`seat-unit ${
                               isBooked
                                 ? 'booked'
+                                : isHeld
+                                ? 'held'
                                 : isSelected
                                 ? 'selected'
                                 : 'available'
                             }`}
-                            disabled={isBooked}
+                            disabled={isBooked || isHeld}
                             onClick={() => handleSeatClick(seatNum)}
                           >
                             <span className="seat-label">{seatLabel}</span>
@@ -224,6 +270,7 @@ export function SeatSelectionPage() {
                       <div className="deck-grid">
                         {deck2.map((seatNum) => {
                           const isBooked = bookedSet.has(seatNum);
+                          const isHeld = heldSet.has(seatNum);
                           const isSelected = selectedSeats.includes(seatNum);
                           const seatLabel = `B${
                             seatNum - half < 10
@@ -238,11 +285,13 @@ export function SeatSelectionPage() {
                               className={`seat-unit ${
                                 isBooked
                                   ? 'booked'
+                                  : isHeld
+                                  ? 'held'
                                   : isSelected
                                   ? 'selected'
                                   : 'available'
                               }`}
-                              disabled={isBooked}
+                              disabled={isBooked || isHeld}
                               onClick={() => handleSeatClick(seatNum)}
                             >
                               <span className="seat-label">{seatLabel}</span>
@@ -378,14 +427,16 @@ export function SeatSelectionPage() {
                 <button
                   type="button"
                   className="btn-proceed-checkout"
-                  disabled={selectedSeats.length === 0}
-                  onClick={handleProceedToCheckout}
+                  disabled={selectedSeats.length === 0 || holding}
+                  onClick={() => void handleProceedToCheckout()}
                 >
-                  Tiếp tục thanh toán ({formatCurrency(totalPrice)})
+                  {holding
+                    ? 'Đang giữ ghế…'
+                    : `Tiếp tục thanh toán (${formatCurrency(totalPrice)})`}
                 </button>
 
                 <p className="summary-disclaimer">
-                  * Vé được giữ trong vòng 15 phút sau khi sang bước thanh toán.
+                  * Ghế được giữ trong 10 phút sau khi sang bước thanh toán.
                 </p>
               </div>
             </aside>

@@ -42,6 +42,31 @@
   margin: 0;
 }
 
+.btn-release-hold {
+  border: 1px solid var(--warning);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: #92400e;
+  padding: 8px 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+
+.btn-release-hold:hover:not(:disabled) {
+  background: #fffaeb;
+}
+
+.btn-release-hold:focus-visible {
+  outline: 3px solid rgba(217, 119, 6, 0.25);
+  outline-offset: 2px;
+}
+
+.btn-release-hold:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 /* CONTAINER */
 .checkout-container {
   max-width: 1200px;

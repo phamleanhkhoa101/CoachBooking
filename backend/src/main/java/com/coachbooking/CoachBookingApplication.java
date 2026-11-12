@@ -20,4 +20,3 @@ public class CoachBookingApplication {
     SpringApplication.run(CoachBookingApplication.class, args);
   }
 }
-

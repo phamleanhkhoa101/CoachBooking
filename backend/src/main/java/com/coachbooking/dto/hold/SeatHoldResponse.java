@@ -6,4 +6,3 @@ import java.util.UUID;
 
 public record SeatHoldResponse(
     UUID holdToken, Integer tripId, List<Integer> seatNumbers, OffsetDateTime expiresAt) {}
-

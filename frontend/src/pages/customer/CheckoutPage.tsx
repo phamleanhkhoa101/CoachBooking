@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { api } from '../../api/client';
 import type { BookingRequest, BookingResponse, Profile, TripSearchResponse } from '../../api/types';
@@ -6,6 +6,7 @@ import { useAuth } from '../../auth/AuthContext';
 import { BookingStepper } from '../../components/customer/BookingStepper';
 import { useToast } from '../../components/common/Toast';
 import { formatCurrency, formatTime } from '../../utils/format';
+import { CHECKOUT_HOLD_STORAGE_KEY } from './SeatSelectionPage';
 import './CheckoutPage.css';
 
 interface CheckoutLocationState {
@@ -20,6 +21,28 @@ interface CheckoutLocationState {
   dest: string;
   depTime?: string;
   typeName: string;
+  holdToken: string;
+  expiresAt: string;
+}
+
+function readStoredCheckout(): CheckoutLocationState | undefined {
+  const raw = sessionStorage.getItem(CHECKOUT_HOLD_STORAGE_KEY);
+  if (!raw) return undefined;
+  try {
+    return JSON.parse(raw) as CheckoutLocationState;
+  } catch {
+    sessionStorage.removeItem(CHECKOUT_HOLD_STORAGE_KEY);
+    return undefined;
+  }
+}
+
+function getSecondsRemaining(expiresAt?: string): number {
+  if (!expiresAt) return 0;
+  const hasTimezone = expiresAt.endsWith('Z') || /[+-]\d{2}(:\d{2})?$/.test(expiresAt);
+  const normalized = hasTimezone ? expiresAt : `${expiresAt}+07:00`;
+  const expiryTime = new Date(normalized).getTime();
+  if (Number.isNaN(expiryTime)) return 0;
+  return Math.max(0, Math.ceil((expiryTime - Date.now()) / 1000));
 }
 
 export function CheckoutPage() {
@@ -28,7 +51,10 @@ export function CheckoutPage() {
   const { nguoiDung } = useAuth();
   const { showToast } = useToast();
 
-  const state = location.state as CheckoutLocationState | undefined;
+  const state = useMemo(
+    () => (location.state as CheckoutLocationState | undefined) ?? readStoredCheckout(),
+    [location.state],
+  );
 
   // Form states
   const [fullName, setFullName] = useState('');
@@ -37,36 +63,43 @@ export function CheckoutPage() {
   const [dateOfBirth, setDateOfBirth] = useState('1995-01-01');
   const [isMale, setIsMale] = useState(true);
   const [notes, setNotes] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<'Chuyển khoản' | 'Tiền mặt' | 'Thanh toán sau'>('Chuyển khoản');
+  const paymentMethod = 'Chuyển khoản' as const;
   const [agreeTerms, setAgreeTerms] = useState(true);
   const [transferConfirmed, setTransferConfirmed] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
-  // 15-Minute Countdown Timer (900 seconds)
-  const [secondsLeft, setSecondsLeft] = useState(15 * 60);
+  const [secondsLeft, setSecondsLeft] = useState(() => getSecondsRemaining(state?.expiresAt));
 
   useEffect(() => {
-    if (!state?.tripId || !state?.selectedSeats?.length) {
+    if (!state?.tripId || !state?.selectedSeats?.length || !state.holdToken) {
       navigate('/tim-chuyen', { replace: true });
       return;
     }
 
+    const updateRemaining = () => {
+      const remaining = getSecondsRemaining(state.expiresAt);
+      setSecondsLeft(remaining);
+      if (remaining <= 0) {
+        sessionStorage.removeItem(CHECKOUT_HOLD_STORAGE_KEY);
+        setErrorMsg('Thời gian giữ ghế đã hết. Vui lòng quay lại chọn ghế.');
+      }
+      return remaining;
+    };
+
+    const initial = updateRemaining();
+    if (initial <= 0) return;
+
     const timer = setInterval(() => {
-      setSecondsLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          alert('Hết thời gian giữ chỗ (15 phút)! Vui lòng chọn lại chuyến xe.');
-          navigate('/tim-chuyen');
-          return 0;
-        }
-        return prev - 1;
-      });
+      const remaining = updateRemaining();
+      if (remaining <= 0) {
+        clearInterval(timer);
+      }
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [state, navigate]);
+  }, [state?.expiresAt, state?.tripId, state?.selectedSeats?.length, state?.holdToken, navigate]);
 
   // Autofill if logged in
   useEffect(() => {
@@ -108,6 +141,20 @@ export function CheckoutPage() {
     showToast(`Đã sao chép ${label}: ${text}`);
   };
 
+  const releaseHold = async () => {
+    if (!state?.holdToken) return;
+    setSubmitting(true);
+    try {
+      await api.del<void>(`/seat-holds/${state.holdToken}`);
+    } catch {
+      // Bỏ qua lỗi nếu hold đã tự hết hạn trên backend
+    } finally {
+      sessionStorage.removeItem(CHECKOUT_HOLD_STORAGE_KEY);
+      setSubmitting(false);
+      navigate(`/dat-ve/chon-ghe/${state.tripId}`, { replace: true, state: { trip: state.trip } });
+    }
+  };
+
   const handleSubmitBooking = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
@@ -128,6 +175,14 @@ export function CheckoutPage() {
       setErrorMsg('Vui lòng đồng ý với điều khoản đặt vé để tiếp tục.');
       return;
     }
+    if (!transferConfirmed) {
+      setErrorMsg('Vui lòng xác nhận bạn đã thực hiện chuyển khoản.');
+      return;
+    }
+    if (secondsLeft <= 0) {
+      setErrorMsg('Thời gian giữ ghế đã hết. Vui lòng chọn lại ghế.');
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -139,11 +194,13 @@ export function CheckoutPage() {
         phone: phone.trim(),
         dateOfBirth: dateOfBirth,
         gender: isMale,
+        holdToken: state.holdToken,
       };
 
       const res = await api.post<BookingResponse>('/bookings', payload);
       const invoiceId = res.invoiceId ?? res.maHd;
 
+      sessionStorage.removeItem(CHECKOUT_HOLD_STORAGE_KEY);
       showToast('Đặt vé thành công!');
       navigate(`/ve-dien-tu/${invoiceId}`, {
         state: {
@@ -196,6 +253,14 @@ export function CheckoutPage() {
           <p className="timer-desc">
             Vui lòng hoàn tất thanh toán trước khi thời gian đếm ngược kết thúc để hệ thống không tự động hủy chỗ!
           </p>
+          <button
+            type="button"
+            className="btn-release-hold"
+            disabled={submitting}
+            onClick={() => void releaseHold()}
+          >
+            Chọn lại ghế
+          </button>
         </div>
       </section>
 
@@ -307,18 +372,15 @@ export function CheckoutPage() {
               <div className="payment-options-list">
                 {/* OPTION 1: VIETQR */}
                 <div
-                  className={`payment-option-box ${
-                    paymentMethod === 'Chuyển khoản' ? 'selected' : ''
-                  }`}
-                  onClick={() => setPaymentMethod('Chuyển khoản')}
+                  className="payment-option-box selected"
                 >
                   <div className="option-radio-row">
                     <input
                       type="radio"
                       name="paymentMethod"
                       value="Chuyển khoản"
-                      checked={paymentMethod === 'Chuyển khoản'}
-                      onChange={() => setPaymentMethod('Chuyển khoản')}
+                      checked
+                      readOnly
                     />
                     <div className="option-info">
                       <div className="option-title-row">
@@ -326,13 +388,13 @@ export function CheckoutPage() {
                         <span className="recom-badge">Miễn phí giao dịch · Nhanh nhất</span>
                       </div>
                       <p className="option-desc">
-                        Chuyển khoản ngân hàng tức thì qua mã QR tự động Napas247, hệ thống xác nhận thanh toán vé trong 30 giây.
+                        Thanh toán chuyển khoản đang ở chế độ mô phỏng. Hệ thống ghi nhận theo xác nhận của bạn và chưa đối soát ngân hàng tự động.
                       </p>
                     </div>
                   </div>
 
                   {/* VIETQR EMBEDDED BOX */}
-                  {paymentMethod === 'Chuyển khoản' && (
+                  {(
                     <div className="vietqr-details-frame" onClick={(e) => e.stopPropagation()}>
                       <div className="vietqr-layout">
                         <div className="vietqr-image-card">
@@ -406,56 +468,6 @@ export function CheckoutPage() {
                   )}
                 </div>
 
-                {/* OPTION 2: CASH AT COUNTER */}
-                <div
-                  className={`payment-option-box ${
-                    paymentMethod === 'Tiền mặt' ? 'selected' : ''
-                  }`}
-                  onClick={() => setPaymentMethod('Tiền mặt')}
-                >
-                  <div className="option-radio-row">
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="Tiền mặt"
-                      checked={paymentMethod === 'Tiền mặt'}
-                      onChange={() => setPaymentMethod('Tiền mặt')}
-                    />
-                    <div className="option-info">
-                      <strong>Thanh toán tiền mặt tại quầy vé Bến xe Miền Đông</strong>
-                      <p className="option-desc">
-                        Nhận mã đặt vé qua SMS. Quý khách vui lòng đến Quầy vé số 04 - Sảnh trung tâm Bến xe Miền Đông Mới trước giờ xuất bến 60 phút để nộp tiền và nhận vé.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* OPTION 3: PAY LATER */}
-                <div
-                  className={`payment-option-box ${
-                    paymentMethod === 'Thanh toán sau' ? 'selected' : ''
-                  }`}
-                  onClick={() => setPaymentMethod('Thanh toán sau')}
-                >
-                  <div className="option-radio-row">
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value="Thanh toán sau"
-                      checked={paymentMethod === 'Thanh toán sau'}
-                      onChange={() => setPaymentMethod('Thanh toán sau')}
-                    />
-                    <div className="option-info">
-                      <div className="option-title-row">
-                        <strong>Thanh toán sau (Giữ vé 24 giờ)</strong>
-                        <span className="member-badge">Thành viên SAMCO</span>
-                      </div>
-                      <p className="option-desc">
-                        Giữ chỗ trên chuyến xe và thanh toán trực tuyến qua tài khoản hoặc tại quầy trước giờ khởi hành tối thiểu 2 giờ.
-                      </p>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -549,7 +561,7 @@ export function CheckoutPage() {
               <button
                 type="submit"
                 className="btn-submit-order"
-                disabled={submitting}
+                disabled={submitting || secondsLeft <= 0 || !transferConfirmed}
               >
                 {submitting ? (
                   <>

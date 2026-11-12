@@ -33,6 +33,7 @@ Before editing, verify actual packages, components, build scripts, configuration
 
 ## 3. Required Workflow for Agents
 
+0. **Code only on explicit user request:** When the user asks questions, seeks explanations, asks for analysis, options, or guidance, the agent must ONLY answer and guide. ABSOLUTELY DO NOT arbitrarily modify source code, create new files, or run code-modifying commands without an explicit request or clear consent from the user.
 1. Read `README.md` and the relevant parts of `docs/API.md`.
 2. Inspect related backend/frontend files, their callers, and relevant Flyway migrations.
 3. Check `git status` and preserve all existing user changes.
@@ -165,7 +166,8 @@ For every change:
 - For meaningful Java/Spring Boot changes, briefly explain the request flow (controller → service → repository), relevant transaction/security concepts, and the reasoning behind the solution.
 - Prefer clear, maintainable code rather than overly clever abstractions.
 - Highlight one or two important methods/classes the developer should review manually, especially for concurrency or business-rule changes.
-- **Hỏi và chốt phương án trước khi code (Consult before implementing):** Khi một bài toán có nhiều hướng tiếp cận (về kiến trúc, giải thuật, thư viện, hoặc luồng UX/giao diện), agent phải phân tích ngắn gọn ưu/nhược điểm của từng cách và hỏi người dùng để thống nhất hướng xử lý trước khi thay đổi mã nguồn.
+- **Code only on explicit user request:** Never arbitrarily modify source code or create new files when the user is merely asking questions, seeking explanations, analysis, or consultation. Only proceed with code changes when the user explicitly requests them or has approved the proposed approach.
+- **Consult before implementing:** When a problem or feature has multiple implementation approaches (architecture, algorithm, libraries, or UI/UX flow), the agent must clearly present the options with pros/cons and consult the user to agree on the direction before modifying source code.
 - For substantial changes, explain technical trade-offs before implementing them; for small fixes, stay concise.
 
 ## 12. Definition of Done / Final Report
@@ -177,8 +179,8 @@ A task is ready to report when:
 - Related docs/API contracts are updated if necessary.
 - The diff contains no unrelated changes or exposed secrets.
 
-Use this final response format:
-1. **Đã thay đổi:** concise summary and files touched.
-2. **Giải thích:** key implementation and important Java/Spring concepts.
-3. **Kiểm thử:** exact commands, results, and tests not run.
-4. **Lưu ý:** known limitations, risks, or required manual checks.
+Use this final response format (content can be written in Vietnamese as specified in Section 11):
+1. **Changes made:** concise summary and files touched.
+2. **Explanation:** key implementation and important Java/Spring concepts.
+3. **Verification:** exact commands, results, and tests not run.
+4. **Notes:** known limitations, risks, or required manual checks.

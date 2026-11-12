@@ -8,7 +8,15 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "seat_holds")
 public class SeatHold {
@@ -35,56 +43,4 @@ public class SeatHold {
 
   @Column(name = "expires_at", nullable = false)
   private LocalDateTime expiresAt;
-
-  public Long getHoldId() {
-    return holdId;
-  }
-
-  public UUID getHoldToken() {
-    return holdToken;
-  }
-
-  public void setHoldToken(UUID holdToken) {
-    this.holdToken = holdToken;
-  }
-
-  public Integer getAccountId() {
-    return accountId;
-  }
-
-  public void setAccountId(Integer accountId) {
-    this.accountId = accountId;
-  }
-
-  public Integer getTripId() {
-    return tripId;
-  }
-
-  public void setTripId(Integer tripId) {
-    this.tripId = tripId;
-  }
-
-  public Integer getSeatNumber() {
-    return seatNumber;
-  }
-
-  public void setSeatNumber(Integer seatNumber) {
-    this.seatNumber = seatNumber;
-  }
-
-  public LocalDateTime getCreatedAt() {
-    return createdAt;
-  }
-
-  public void setCreatedAt(LocalDateTime createdAt) {
-    this.createdAt = createdAt;
-  }
-
-  public LocalDateTime getExpiresAt() {
-    return expiresAt;
-  }
-
-  public void setExpiresAt(LocalDateTime expiresAt) {
-    this.expiresAt = expiresAt;
-  }
 }

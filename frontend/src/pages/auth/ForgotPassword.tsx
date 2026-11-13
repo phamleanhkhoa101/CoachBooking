@@ -51,8 +51,7 @@ export function ForgotPassword() {
 
         <h1>Quên mật khẩu</h1>
         <p className="auth-subtitle">
-          Nhập tên đăng nhập và email đã đăng ký. Ở môi trường demo, hệ thống trả mật khẩu tạm trực
-          tiếp thay vì gửi email.
+          Nhập tên đăng nhập và email đã đăng ký để nhận mật khẩu tạm thời.
         </p>
 
         {error ? <div className="alert alert-error">{error}</div> : null}
@@ -60,9 +59,26 @@ export function ForgotPassword() {
           <div className="alert alert-success">
             Mật khẩu tạm của bạn là: <strong className="mono">{temporaryPassword}</strong>
             <br />
-            Hãy đăng nhập và đổi mật khẩu ngay sau đó.
+            <span style={{ fontSize: '0.85rem', marginTop: '4px', display: 'inline-block' }}>
+              Hãy đăng nhập và đổi mật khẩu ngay sau đó.
+            </span>
           </div>
         ) : null}
+
+        <div
+          style={{
+            padding: '10px 14px',
+            marginBottom: '16px',
+            borderRadius: '8px',
+            background: '#f0fdf4',
+            border: '1px solid #bbf7d0',
+            color: '#166534',
+            fontSize: '0.82rem',
+            lineHeight: '1.45',
+          }}
+        >
+          ℹ️ Ở môi trường thử nghiệm, hệ thống sẽ hiển thị trực tiếp mật khẩu tạm thời ngay tại đây thay vì gửi qua email.
+        </div>
 
         <form
           className="auth-form"
@@ -92,7 +108,15 @@ export function ForgotPassword() {
         </form>
 
         <div className="auth-links">
-          <Link to="/login">← Về trang đăng nhập</Link>
+          <Link to="/login">← Quay lại đăng nhập</Link>
+        </div>
+
+        <div className="auth-trust-note">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <span>Hệ thống bảo mật xác thực SAMCO • SSL 256-bit</span>
         </div>
       </div>
     </div>

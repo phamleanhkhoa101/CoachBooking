@@ -5,7 +5,8 @@ import { homePathFor, useAuth } from '../../auth/AuthContext';
 import { isAdminPortal } from '../../auth/portal';
 import { FormField } from '../../components/common/FormField';
 
-const PASSWORD_HINT = 'Tối thiểu 8 ký tự, gồm chữ hoa, chữ thường, chữ số và ký tự đặc biệt.';
+const PASSWORD_HINT =
+  'Tối thiểu 8 ký tự, gồm chữ hoa, chữ thường, chữ số và ký tự đặc biệt.';
 
 function isStrongPassword(value: string): boolean {
   return (
@@ -27,14 +28,8 @@ export function Register() {
   const [success, setSuccess] = useState('');
   const [busy, setBusy] = useState(false);
 
-  if (isAdminPortal()) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (user) {
-    const role = user.role;
-    return <Navigate to={homePathFor(role)} replace />;
-  }
+  if (isAdminPortal()) return <Navigate to="/login" replace />;
+  if (user) return <Navigate to={homePathFor(user.role)} replace />;
 
   const handleSubmit = async () => {
     if (username.trim().length < 6) {
@@ -53,7 +48,6 @@ export function Register() {
       setError('Mật khẩu xác nhận không khớp.');
       return;
     }
-
     setBusy(true);
     setError('');
     setSuccess('');
@@ -62,16 +56,11 @@ export function Register() {
         '/auth/register',
         {
           method: 'POST',
-          body: JSON.stringify({
-            username: username.trim(),
-            email: email.trim(),
-            password,
-            confirmPassword,
-          }),
+          body: JSON.stringify({ username: username.trim(), email: email.trim(), password, confirmPassword }),
         },
         { redirectOn401: false },
       );
-      setSuccess(data?.message ?? 'Đăng ký thành công.');
+      setSuccess(data?.message ?? 'Đăng ký thành công! Bạn có thể đăng nhập ngay.');
       setUsername('');
       setEmail('');
       setPassword('');
@@ -84,74 +73,101 @@ export function Register() {
   };
 
   return (
-    <div className="auth-page auth-page-single">
-      <div className="auth-card">
-        <div className="auth-brand">
-          <div className="brand-logo">BX</div>
+    <div className="auth-root">
+      {/* Panel trái */}
+      <aside className="auth-panel">
+        <div className="auth-panel-top">
+          <div className="auth-panel-logo">BX</div>
           <div>
-            <strong>CoachBooking</strong>
-            <span>Tạo tài khoản khách hàng</span>
+            <div className="auth-panel-name">CoachBooking</div>
+            <div className="auth-panel-sub">Bến xe Miền Đông · SAMCO</div>
           </div>
         </div>
+        <div className="auth-panel-body">
+          <h2 className="auth-panel-headline">
+            Tạo tài khoản<br />
+            <span>miễn phí</span>
+          </h2>
+          <p className="auth-panel-desc">
+            Chỉ mất một phút để có tài khoản và bắt đầu đặt vé xe khách trực tuyến ngay hôm nay.
+          </p>
+          <ul className="auth-panel-features">
+            <li>Đặt vé online 24/7, không xếp hàng</li>
+            <li>Chọn chỗ ngồi ưa thích trên sơ đồ xe</li>
+            <li>Nhận xác nhận vé ngay tức thì</li>
+            <li>Quản lý & tra cứu vé mọi lúc, mọi nơi</li>
+          </ul>
+        </div>
+        <div className="auth-panel-footer">
+          © {new Date().getFullYear()} CoachBooking · Bến xe Miền Đông
+        </div>
+      </aside>
 
-        <h1>Đăng ký</h1>
-        <p className="auth-subtitle">Sau khi đăng ký, bạn có thể tự đặt vé và quản lý lịch sử chuyến đi.</p>
+      {/* Panel phải: Form */}
+      <div className="auth-form-panel">
+        <div className="auth-form-box">
+          <span className="auth-eyebrow">Khách hàng mới</span>
+          <h1>Đăng ký</h1>
+          <p className="auth-subtitle">
+            Điền thông tin bên dưới để tạo tài khoản đặt vé.
+          </p>
 
-        {error ? <div className="alert alert-error">{error}</div> : null}
-        {success ? <div className="alert alert-success">{success}</div> : null}
+          {error ? <div className="alert alert-error">{error}</div> : null}
+          {success ? <div className="alert alert-success">{success}</div> : null}
 
-        <form
-          className="auth-form"
-          onSubmit={(event) => {
-            event.preventDefault();
-            void handleSubmit();
-          }}
-        >
-          <FormField
-            label="Tên đăng nhập"
-            value={username}
-            onChange={setUsername}
-            placeholder="Ít nhất 6 ký tự"
-            autoComplete="username"
-            required
-          />
-          <FormField
-            label="Email"
-            type="email"
-            value={email}
-            onChange={setEmail}
-            placeholder="ban@example.com"
-            autoComplete="email"
-            required
-          />
-          <FormField
-            label="Mật khẩu"
-            type="password"
-            value={password}
-            onChange={setPassword}
-            placeholder="Nhập mật khẩu"
-            help={PASSWORD_HINT}
-            autoComplete="new-password"
-            required
-          />
-          <FormField
-            label="Xác nhận mật khẩu"
-            type="password"
-            value={confirmPassword}
-            onChange={setConfirmPassword}
-            placeholder="Nhập lại mật khẩu"
-            autoComplete="new-password"
-            required
-          />
-          <button type="submit" className="btn btn-primary btn-block" disabled={busy}>
-            {busy ? 'Đang xử lý…' : 'Đăng ký'}
-          </button>
-        </form>
+          <form
+            className="auth-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              void handleSubmit();
+            }}
+          >
+            <FormField
+              label="Tên đăng nhập"
+              value={username}
+              onChange={setUsername}
+              placeholder="Ít nhất 6 ký tự"
+              autoComplete="username"
+              required
+            />
+            <FormField
+              label="Email"
+              type="email"
+              value={email}
+              onChange={setEmail}
+              placeholder="ban@example.com"
+              autoComplete="email"
+              required
+            />
+            <FormField
+              label="Mật khẩu"
+              type="password"
+              value={password}
+              onChange={setPassword}
+              placeholder="Nhập mật khẩu"
+              help={PASSWORD_HINT}
+              autoComplete="new-password"
+              required
+            />
+            <FormField
+              label="Xác nhận mật khẩu"
+              type="password"
+              value={confirmPassword}
+              onChange={setConfirmPassword}
+              placeholder="Nhập lại mật khẩu"
+              autoComplete="new-password"
+              required
+            />
+            <button type="submit" className="btn btn-primary btn-block" disabled={busy}>
+              {busy ? 'Đang tạo tài khoản…' : 'Tạo tài khoản'}
+            </button>
+          </form>
 
-        <div className="auth-links">
-          <span>
-            Đã có tài khoản? <Link to="/login">Đăng nhập</Link>
-          </span>
+          <div className="auth-links">
+            <span>
+              Đã có tài khoản? <Link to="/login">Đăng nhập</Link>
+            </span>
+          </div>
         </div>
       </div>
     </div>

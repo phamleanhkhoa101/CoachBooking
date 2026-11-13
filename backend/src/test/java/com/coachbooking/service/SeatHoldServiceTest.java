@@ -24,8 +24,10 @@ import com.coachbooking.repo.VehicleRepository;
 import com.coachbooking.repo.VehicleTypeRepository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
@@ -120,5 +122,187 @@ class SeatHoldServiceTest {
 
     assertEquals(HttpStatus.BAD_REQUEST, error.getStatus());
     verify(seatHoldRepository, never()).saveAllAndFlush(anyList());
+  }
+
+  @Test
+  void createRejectsDepartedTrip() {
+    trip(11).setDepartureTime(LocalDateTime.now().minusMinutes(5));
+
+    ApiException error =
+        assertThrows(
+            ApiException.class, () -> service.create(account, new SeatHoldRequest(11, List.of(1))));
+
+    assertEquals(HttpStatus.CONFLICT, error.getStatus());
+    verify(seatHoldRepository, never()).saveAllAndFlush(anyList());
+  }
+
+  @Test
+  void createRejectsUnknownTrip() {
+    when(tripRepository.findByIdForUpdate(99)).thenReturn(Optional.empty());
+
+    ApiException error =
+        assertThrows(
+            ApiException.class, () -> service.create(account, new SeatHoldRequest(99, List.of(1))));
+
+    assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+  }
+
+  @Test
+  void createRejectsUnknownVehicle() {
+    when(vehicleRepository.findById(5)).thenReturn(Optional.empty());
+
+    ApiException error =
+        assertThrows(
+            ApiException.class, () -> service.create(account, new SeatHoldRequest(11, List.of(1))));
+
+    assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+  }
+
+  @Test
+  void createRejectsUnknownVehicleType() {
+    when(vehicleTypeRepository.findById(3)).thenReturn(Optional.empty());
+
+    ApiException error =
+        assertThrows(
+            ApiException.class, () -> service.create(account, new SeatHoldRequest(11, List.of(1))));
+
+    assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+  }
+
+  @Test
+  void createRejectsSeatBeyondVehicleCapacity() {
+    ApiException error =
+        assertThrows(
+            ApiException.class,
+            () -> service.create(account, new SeatHoldRequest(11, List.of(41))));
+
+    assertEquals(HttpStatus.BAD_REQUEST, error.getStatus());
+    verify(seatHoldRepository, never()).saveAllAndFlush(anyList());
+  }
+
+  @Test
+  void createRejectsAlreadyBookedSeat() {
+    when(ticketRepository.findSeatNumbersByTripId(11)).thenReturn(List.of(3));
+
+    ApiException error =
+        assertThrows(
+            ApiException.class,
+            () -> service.create(account, new SeatHoldRequest(11, List.of(3, 4))));
+
+    assertEquals(HttpStatus.CONFLICT, error.getStatus());
+    verify(seatHoldRepository, never()).saveAllAndFlush(anyList());
+  }
+
+  @Test
+  void createRejectsEmptySeatList() {
+    ApiException error =
+        assertThrows(
+            ApiException.class, () -> service.create(account, new SeatHoldRequest(11, List.of())));
+
+    assertEquals(HttpStatus.BAD_REQUEST, error.getStatus());
+  }
+
+  @Test
+  void createRejectsNullSeatNumber() {
+    ApiException error =
+        assertThrows(
+            ApiException.class,
+            () -> service.create(account, new SeatHoldRequest(11, Arrays.asList(1, null))));
+
+    assertEquals(HttpStatus.BAD_REQUEST, error.getStatus());
+  }
+
+  @Test
+  void createRejectsSeatBelowOne() {
+    ApiException error =
+        assertThrows(
+            ApiException.class, () -> service.create(account, new SeatHoldRequest(11, List.of(0))));
+
+    assertEquals(HttpStatus.BAD_REQUEST, error.getStatus());
+  }
+
+  @Test
+  void getReturnsActiveHold() {
+    UUID token = UUID.randomUUID();
+    when(seatHoldRepository.findByHoldTokenOrderBySeatNumber(token))
+        .thenReturn(List.of(hold(token, 1), hold(token, 2)));
+
+    SeatHoldResponse response = service.get(account, token);
+
+    assertEquals(token, response.holdToken());
+    assertEquals(11, response.tripId());
+    assertEquals(List.of(1, 2), response.seatNumbers());
+  }
+
+  @Test
+  void getRejectsUnknownHold() {
+    UUID token = UUID.randomUUID();
+    when(seatHoldRepository.findByHoldTokenOrderBySeatNumber(token)).thenReturn(List.of());
+
+    ApiException error = assertThrows(ApiException.class, () -> service.get(account, token));
+
+    assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+  }
+
+  @Test
+  void getRejectsExpiredHold() {
+    UUID token = UUID.randomUUID();
+    SeatHold expired = hold(token, 1);
+    expired.setExpiresAt(LocalDateTime.now().minusMinutes(1));
+    when(seatHoldRepository.findByHoldTokenOrderBySeatNumber(token)).thenReturn(List.of(expired));
+
+    ApiException error = assertThrows(ApiException.class, () -> service.get(account, token));
+
+    assertEquals(HttpStatus.CONFLICT, error.getStatus());
+  }
+
+  @Test
+  void getRejectsHoldOfAnotherAccount() {
+    UUID token = UUID.randomUUID();
+    SeatHold other = hold(token, 1);
+    other.setAccountId(99);
+    when(seatHoldRepository.findByHoldTokenOrderBySeatNumber(token)).thenReturn(List.of(other));
+
+    ApiException error = assertThrows(ApiException.class, () -> service.get(account, token));
+
+    assertEquals(HttpStatus.FORBIDDEN, error.getStatus());
+  }
+
+  @Test
+  void releaseDeletesHoldAndNotifiesSeatStatus() {
+    UUID token = UUID.randomUUID();
+    when(seatHoldRepository.findByHoldTokenOrderBySeatNumber(token))
+        .thenReturn(List.of(hold(token, 1)));
+
+    service.release(account, token);
+
+    verify(seatHoldRepository).deleteByHoldToken(token);
+    verify(seatStatusService).publishAfterCommit(11);
+  }
+
+  @Test
+  void releaseRejectsUnknownHold() {
+    UUID token = UUID.randomUUID();
+    when(seatHoldRepository.findByHoldTokenOrderBySeatNumber(token)).thenReturn(List.of());
+
+    ApiException error = assertThrows(ApiException.class, () -> service.release(account, token));
+
+    assertEquals(HttpStatus.NOT_FOUND, error.getStatus());
+    verify(seatHoldRepository, never()).deleteByHoldToken(token);
+  }
+
+  private Trip trip(int tripId) {
+    return tripRepository.findByIdForUpdate(tripId).orElseThrow();
+  }
+
+  private SeatHold hold(UUID token, int seatNumber) {
+    SeatHold hold = new SeatHold();
+    hold.setHoldToken(token);
+    hold.setAccountId(account.getAccountId());
+    hold.setTripId(11);
+    hold.setSeatNumber(seatNumber);
+    hold.setCreatedAt(LocalDateTime.now());
+    hold.setExpiresAt(LocalDateTime.now().plusMinutes(5));
+    return hold;
   }
 }

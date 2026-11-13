@@ -1,15 +1,24 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
+import { RoleBadge } from '../common/Badge';
 import './CustomerNavbar.css';
 
 export function CustomerNavbar() {
   const { user, logout } = useAuth();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const location = useLocation();
   const navigate = useNavigate();
 
-  // Close menu on click outside
+  // Close menus on route change
+  useEffect(() => {
+    setUserMenuOpen(false);
+    setMobileNavOpen(false);
+  }, [location.pathname]);
+
+  // Close user dropdown on click outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (
@@ -27,14 +36,25 @@ export function CustomerNavbar() {
     };
   }, [userMenuOpen]);
 
+  // Lock body scroll when mobile nav is open
+  useEffect(() => {
+    if (mobileNavOpen) {
+      const prevOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = prevOverflow;
+      };
+    }
+  }, [mobileNavOpen]);
+
   const handleLogout = () => {
     setUserMenuOpen(false);
+    setMobileNavOpen(false);
     logout();
     navigate('/');
   };
 
-  const userDisplayName =
-    user?.fullName ?? user?.username ?? 'Khách';
+  const userDisplayName = user?.fullName ?? user?.username ?? 'Khách';
   const role = user?.role ?? 'KhachHang';
 
   return (
@@ -49,44 +69,36 @@ export function CustomerNavbar() {
           </div>
         </Link>
 
-        {/* NAVIGATION LINKS */}
-        <nav className="shared-customer-nav">
+        {/* DESKTOP NAVIGATION LINKS */}
+        <nav className="shared-customer-nav" aria-label="Điều hướng chính">
           <NavLink
             to="/"
             end
-            className={({ isActive }) =>
-              `shared-nav-item ${isActive ? 'active' : ''}`
-            }
+            className={({ isActive }) => `shared-nav-item ${isActive ? 'active' : ''}`}
           >
             Trang chủ
           </NavLink>
           <NavLink
             to="/tim-chuyen"
-            className={({ isActive }) =>
-              `shared-nav-item ${isActive ? 'active' : ''}`
-            }
+            className={({ isActive }) => `shared-nav-item ${isActive ? 'active' : ''}`}
           >
             Tìm chuyến xe
           </NavLink>
           <NavLink
             to="/tra-cuu-ve"
-            className={({ isActive }) =>
-              `shared-nav-item ${isActive ? 'active' : ''}`
-            }
+            className={({ isActive }) => `shared-nav-item ${isActive ? 'active' : ''}`}
           >
             Tra cứu vé
           </NavLink>
           <NavLink
             to="/ve-cua-toi"
-            className={({ isActive }) =>
-              `shared-nav-item ${isActive ? 'active' : ''}`
-            }
+            className={({ isActive }) => `shared-nav-item ${isActive ? 'active' : ''}`}
           >
             Vé của tôi
           </NavLink>
         </nav>
 
-        {/* ACTIONS: AUTH / USER MENU */}
+        {/* ACTIONS: AUTH / USER MENU & MOBILE HAMBURGER */}
         <div className="shared-header-actions">
           {user ? (
             <div className="shared-user-wrap" ref={userMenuRef}>
@@ -95,6 +107,7 @@ export function CustomerNavbar() {
                 className={`shared-btn-profile ${userMenuOpen ? 'active' : ''}`}
                 onClick={() => setUserMenuOpen((prev) => !prev)}
                 aria-expanded={userMenuOpen}
+                aria-haspopup="true"
               >
                 <span className="shared-avatar-badge">
                   {userDisplayName.charAt(0).toUpperCase()}
@@ -108,26 +121,21 @@ export function CustomerNavbar() {
                   fill="none"
                   stroke="currentColor"
                   strokeWidth="2.5"
+                  aria-hidden="true"
                 >
                   <polyline points="6 9 12 15 18 9" />
                 </svg>
               </button>
 
               {userMenuOpen && (
-                <div className="shared-dropdown-menu">
+                <div className="shared-dropdown-menu" role="menu">
                   <div className="shared-menu-header">
                     <div className="shared-menu-avatar">
                       {userDisplayName.charAt(0).toUpperCase()}
                     </div>
                     <div className="shared-menu-info">
                       <span className="shared-menu-name">{userDisplayName}</span>
-                      <span className="shared-menu-role">
-                        {role === 'KhachHang'
-                          ? 'Khách hàng thân thiết'
-                          : role === 'Admin'
-                          ? 'Quản trị viên bến xe'
-                          : 'Nhân viên bán vé'}
-                      </span>
+                      <RoleBadge role={role} />
                     </div>
                   </div>
 
@@ -136,6 +144,7 @@ export function CustomerNavbar() {
                   <Link
                     to={role === 'KhachHang' ? '/ho-so' : '/admin/ho-so'}
                     className="shared-menu-item"
+                    role="menuitem"
                     onClick={() => setUserMenuOpen(false)}
                   >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -148,6 +157,7 @@ export function CustomerNavbar() {
                   <Link
                     to="/ve-cua-toi"
                     className="shared-menu-item"
+                    role="menuitem"
                     onClick={() => setUserMenuOpen(false)}
                   >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -161,6 +171,7 @@ export function CustomerNavbar() {
                     <Link
                       to="/admin"
                       className="shared-menu-item"
+                      role="menuitem"
                       onClick={() => setUserMenuOpen(false)}
                     >
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -178,6 +189,7 @@ export function CustomerNavbar() {
                   <button
                     type="button"
                     className="shared-menu-item logout"
+                    role="menuitem"
                     onClick={handleLogout}
                   >
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -198,8 +210,147 @@ export function CustomerNavbar() {
               </Link>
             </div>
           )}
+
+          {/* MOBILE HAMBURGER BUTTON */}
+          <button
+            type="button"
+            className="mobile-hamburger-btn"
+            onClick={() => setMobileNavOpen((prev) => !prev)}
+            aria-label={mobileNavOpen ? 'Đóng menu' : 'Mở menu điều hướng'}
+            aria-expanded={mobileNavOpen}
+          >
+            {mobileNavOpen ? (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+              </svg>
+            ) : (
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="18" x2="21" y2="18" />
+              </svg>
+            )}
+          </button>
         </div>
       </div>
+
+      {/* MOBILE DRAWER OVERLAY & PANEL */}
+      {mobileNavOpen && (
+        <div className="mobile-drawer-overlay" onClick={() => setMobileNavOpen(false)}>
+          <div
+            className="mobile-drawer-panel"
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-label="Menu điều hướng di động"
+          >
+            <div className="mobile-drawer-header">
+              <div className="mobile-drawer-brand">
+                <div className="shared-brand-badge">BX</div>
+                <span>CoachBooking</span>
+              </div>
+              <button
+                type="button"
+                className="icon-btn mobile-drawer-close"
+                onClick={() => setMobileNavOpen(false)}
+                aria-label="Đóng"
+              >
+                ×
+              </button>
+            </div>
+
+            {user ? (
+              <div className="mobile-user-card">
+                <div className="shared-avatar-badge">
+                  {userDisplayName.charAt(0).toUpperCase()}
+                </div>
+                <div className="mobile-user-info">
+                  <span className="mobile-user-name">{userDisplayName}</span>
+                  <RoleBadge role={role} />
+                </div>
+              </div>
+            ) : null}
+
+            <nav className="mobile-drawer-nav">
+              <NavLink
+                to="/"
+                end
+                className={({ isActive }) => `mobile-nav-link ${isActive ? 'active' : ''}`}
+                onClick={() => setMobileNavOpen(false)}
+              >
+                Trang chủ
+              </NavLink>
+              <NavLink
+                to="/tim-chuyen"
+                className={({ isActive }) => `mobile-nav-link ${isActive ? 'active' : ''}`}
+                onClick={() => setMobileNavOpen(false)}
+              >
+                Tìm chuyến xe
+              </NavLink>
+              <NavLink
+                to="/tra-cuu-ve"
+                className={({ isActive }) => `mobile-nav-link ${isActive ? 'active' : ''}`}
+                onClick={() => setMobileNavOpen(false)}
+              >
+                Tra cứu vé
+              </NavLink>
+              <NavLink
+                to="/ve-cua-toi"
+                className={({ isActive }) => `mobile-nav-link ${isActive ? 'active' : ''}`}
+                onClick={() => setMobileNavOpen(false)}
+              >
+                Vé của tôi
+              </NavLink>
+
+              {user ? (
+                <>
+                  <div className="mobile-nav-divider" />
+                  <NavLink
+                    to={role === 'KhachHang' ? '/ho-so' : '/admin/ho-so'}
+                    className={({ isActive }) => `mobile-nav-link ${isActive ? 'active' : ''}`}
+                    onClick={() => setMobileNavOpen(false)}
+                  >
+                    Thông tin tài khoản
+                  </NavLink>
+                  {(role === 'Admin' || role === 'NhanVien') && (
+                    <NavLink
+                      to="/admin"
+                      className={({ isActive }) => `mobile-nav-link ${isActive ? 'active' : ''}`}
+                      onClick={() => setMobileNavOpen(false)}
+                    >
+                      Bàn làm việc quản trị
+                    </NavLink>
+                  )}
+                  <button
+                    type="button"
+                    className="mobile-nav-link mobile-logout-btn"
+                    onClick={handleLogout}
+                  >
+                    Đăng xuất
+                  </button>
+                </>
+              ) : (
+                <div className="mobile-auth-actions">
+                  <Link
+                    to="/login"
+                    className="btn btn-secondary w-full"
+                    onClick={() => setMobileNavOpen(false)}
+                  >
+                    Đăng nhập
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="btn btn-primary w-full"
+                    onClick={() => setMobileNavOpen(false)}
+                  >
+                    Đăng ký tài khoản
+                  </Link>
+                </div>
+              )}
+            </nav>
+          </div>
+        </div>
+      )}
     </header>
   );
 }

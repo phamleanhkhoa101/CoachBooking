@@ -1,4 +1,6 @@
 import type { ReactNode } from 'react';
+import { EmptyState } from '../common/EmptyState';
+import { LoadingState } from '../common/LoadingState';
 
 export interface DataTableColumn<T> {
   key: string;
@@ -50,13 +52,13 @@ export function DataTable<T>({
           {loading ? (
             <tr>
               <td colSpan={columnCount} className="table-state">
-                <span className="spinner" /> Đang tải dữ liệu…
+                <LoadingState message="Đang tải dữ liệu…" />
               </td>
             </tr>
           ) : rows.length === 0 ? (
             <tr>
               <td colSpan={columnCount} className="table-state">
-                {emptyText}
+                <EmptyState title={emptyText} />
               </td>
             </tr>
           ) : (

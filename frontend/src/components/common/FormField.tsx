@@ -17,7 +17,7 @@ export type FormFieldType =
   | 'textarea'
   | 'checkbox';
 
-interface FormFieldProps {
+export interface FormFieldProps {
   label: string;
   value: string;
   onChange: (value: string) => void;
@@ -33,6 +33,7 @@ interface FormFieldProps {
   min?: number;
   max?: number;
   autoComplete?: string;
+  className?: string;
 }
 
 export function FormField({
@@ -50,12 +51,17 @@ export function FormField({
   min,
   max,
   autoComplete,
+  className = '',
 }: FormFieldProps) {
   const fieldId = `field-${label
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .replace(/[^a-zA-Z0-9]+/g, '-')
     .toLowerCase()}`;
+
+  const helpId = help ? `${fieldId}-help` : undefined;
+  const errorId = error ? `${fieldId}-error` : undefined;
+  const describedBy = [errorId, helpId].filter(Boolean).join(' ') || undefined;
 
   const control = (): ReactNode => {
     if (type === 'select') {
@@ -65,6 +71,9 @@ export function FormField({
           value={value}
           disabled={disabled}
           required={required}
+          aria-invalid={Boolean(error)}
+          aria-describedby={describedBy}
+          className={error ? 'has-error' : undefined}
           onChange={(event) => onChange(event.target.value)}
         >
           <option value="">{placeholder ?? '— Chọn —'}</option>
@@ -85,6 +94,9 @@ export function FormField({
           disabled={disabled}
           required={required}
           placeholder={placeholder}
+          aria-invalid={Boolean(error)}
+          aria-describedby={describedBy}
+          className={error ? 'has-error' : undefined}
           rows={3}
           onChange={(event) => onChange(event.target.value)}
         />
@@ -100,6 +112,7 @@ export function FormField({
             type="checkbox"
             checked={checked}
             disabled={disabled}
+            aria-describedby={describedBy}
             onChange={(event) => onChange(event.target.checked ? 'true' : 'false')}
           />
           <span className="switch-track" aria-hidden="true">
@@ -121,20 +134,31 @@ export function FormField({
         min={min}
         max={max}
         autoComplete={autoComplete}
+        aria-invalid={Boolean(error)}
+        aria-describedby={describedBy}
+        className={error ? 'has-error' : undefined}
         onChange={(event) => onChange(event.target.value)}
       />
     );
   };
 
   return (
-    <div className={`field ${span === 2 ? 'field-span-2' : ''}`}>
+    <div className={`field ${span === 2 ? 'field-span-2' : ''} ${className}`.trim()}>
       <label htmlFor={fieldId}>
         {label}
         {required ? <span className="required-mark"> *</span> : null}
       </label>
       {control()}
-      {help ? <span className="field-help">{help}</span> : null}
-      {error ? <span className="field-error">{error}</span> : null}
+      {help ? (
+        <span id={helpId} className="field-help">
+          {help}
+        </span>
+      ) : null}
+      {error ? (
+        <span id={errorId} className="field-error" role="alert">
+          {error}
+        </span>
+      ) : null}
     </div>
   );
 }

@@ -48,6 +48,14 @@ export interface CrudColumnDef {
   render?: (row: Row, refs: CrudRefs) => ReactNode;
 }
 
+export interface CrudExtraAction {
+  label: string;
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
+  /** Chế độ modal nào hiển thị nút này (mặc định: ['view', 'edit']). */
+  modes?: Array<'view' | 'edit'>;
+  onClick: (row: Row) => void;
+}
+
 export interface CrudConfig {
   title: string;
   subtitle?: string;
@@ -56,6 +64,8 @@ export interface CrudConfig {
   columns: CrudColumnDef[];
   fields: CrudFieldDef[];
   refs?: CrudRefDef[];
+  /** Nút hành động bổ sung trong footer của modal (ngoài Lưu / Đóng). */
+  extraActions?: CrudExtraAction[];
   searchKeys?: string[];
   searchPlaceholder?: string;
   writeRoles?: Role[];
@@ -385,6 +395,18 @@ export function CrudPage({ config }: { config: CrudConfig }) {
               <Button variant="secondary" onClick={() => setModalOpen(false)}>
                 Đóng
               </Button>
+              {/* Nút hành động bổ sung (ví dụ: Đổi mật khẩu) */}
+              {config.extraActions
+                ?.filter((a) => !a.modes || a.modes.includes('view'))
+                .map((a) => (
+                  <Button
+                    key={a.label}
+                    variant={a.variant ?? 'ghost'}
+                    onClick={() => selectedRow && a.onClick(selectedRow)}
+                  >
+                    {a.label}
+                  </Button>
+                ))}
               {canWrite ? (
                 <Button variant="primary" onClick={() => setModalMode('edit')}>
                   Chỉnh sửa
@@ -405,6 +427,19 @@ export function CrudPage({ config }: { config: CrudConfig }) {
               >
                 Quay lại
               </Button>
+              {/* Nút hành động bổ sung trong chế độ sửa */}
+              {config.extraActions
+                ?.filter((a) => !a.modes || a.modes.includes('edit'))
+                .map((a) => (
+                  <Button
+                    key={a.label}
+                    variant={a.variant ?? 'ghost'}
+                    disabled={saving}
+                    onClick={() => selectedRow && a.onClick(selectedRow)}
+                  >
+                    {a.label}
+                  </Button>
+                ))}
               <Button
                 variant="primary"
                 loading={saving}

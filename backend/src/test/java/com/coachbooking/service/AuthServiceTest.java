@@ -5,14 +5,15 @@ import static org.mockito.Mockito.*;
 
 import com.coachbooking.common.ApiException;
 import com.coachbooking.domain.Account;
+import com.coachbooking.domain.Customer;
 import com.coachbooking.domain.Role;
-import com.coachbooking.dto.auth.AuthResponse;
-import com.coachbooking.dto.auth.LoginRequest;
+import com.coachbooking.dto.auth.*;
 import com.coachbooking.repo.AccountRepository;
 import com.coachbooking.repo.CustomerRepository;
 import com.coachbooking.repo.EmployeeRepository;
 import com.coachbooking.repo.RoleRepository;
 import com.coachbooking.security.JwtService;
+import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,6 +53,7 @@ class AuthServiceTest {
     Account acc = new Account();
     acc.setAccountId(accountId);
     acc.setUsername(username);
+    acc.setEmail(username + "@example.com");
     acc.setPassword("encoded_secret");
     acc.setRoleId(roleId);
     acc.setIsActive(isActive);
@@ -141,5 +143,102 @@ class AuthServiceTest {
     ApiException ex =
         assertThrows(ApiException.class, () -> authService.login(new LoginRequest("kh1", "wrong")));
     assertEquals(HttpStatus.BAD_REQUEST, ex.getStatus());
+  }
+
+  @Test
+  void authenticate_forbidden_whenAccountInactive() {
+    Account acc = createAccount(1, "kh1", 3, false);
+    when(accountRepository.findByUsername("kh1")).thenReturn(Optional.of(acc));
+    when(passwordEncoder.matches("pass123", "encoded_secret")).thenReturn(true);
+
+    ApiException ex =
+        assertThrows(
+            ApiException.class, () -> authService.login(new LoginRequest("kh1", "pass123")));
+    assertEquals(HttpStatus.FORBIDDEN, ex.getStatus());
+  }
+
+  @Test
+  void registerSuccessAndValidations() {
+    RegisterRequest req =
+        new RegisterRequest("newuser", "user@test.com", "Password@123", "Password@123");
+    when(passwordEncoder.encode("Password@123")).thenReturn("encoded");
+    when(accountRepository.existsByUsername("newuser")).thenReturn(false);
+    when(accountRepository.existsByEmail("user@test.com")).thenReturn(false);
+
+    Map<String, String> res = authService.register(req);
+    assertEquals("Đăng ký thành công.", res.get("message"));
+    verify(accountRepository).save(any(Account.class));
+
+    // username short
+    RegisterRequest shortUser =
+        new RegisterRequest("user", "user@test.com", "Password@123", "Password@123");
+    ApiException exShort = assertThrows(ApiException.class, () -> authService.register(shortUser));
+    assertEquals(HttpStatus.BAD_REQUEST, exShort.getStatus());
+
+    // password mismatch
+    RegisterRequest mismatch =
+        new RegisterRequest("newuser", "user@test.com", "Password@123", "Wrong@123");
+    ApiException exMis = assertThrows(ApiException.class, () -> authService.register(mismatch));
+    assertEquals(HttpStatus.BAD_REQUEST, exMis.getStatus());
+
+    // duplicate username
+    when(accountRepository.existsByUsername("newuser")).thenReturn(true);
+    ApiException exDup = assertThrows(ApiException.class, () -> authService.register(req));
+    assertEquals(HttpStatus.CONFLICT, exDup.getStatus());
+  }
+
+  @Test
+  void forgotPasswordSuccessAndValidation() {
+    ForgotPasswordRequest req = new ForgotPasswordRequest("validuser", "user@test.com");
+    Account acc = createAccount(1, "validuser", 3, true);
+    when(accountRepository.findByUsernameAndEmail("validuser", "user@test.com"))
+        .thenReturn(Optional.of(acc));
+    when(passwordEncoder.encode(anyString())).thenReturn("new_encoded");
+
+    Map<String, String> res = authService.forgotPassword(req);
+    assertEquals(
+        "Đã đặt lại mật khẩu. Môi trường demo trả mật khẩu tạm trực tiếp.", res.get("message"));
+    assertNotNull(res.get("temporaryPassword"));
+    verify(accountRepository).save(acc);
+
+    // user not found
+    when(accountRepository.findByUsernameAndEmail("validuser", "user@test.com"))
+        .thenReturn(Optional.empty());
+    ApiException notFound = assertThrows(ApiException.class, () -> authService.forgotPassword(req));
+    assertEquals(HttpStatus.NOT_FOUND, notFound.getStatus());
+  }
+
+  @Test
+  void changePasswordSuccessAndValidation() {
+    Account acc = createAccount(1, "validuser", 3, true);
+    ChangePasswordRequest req = new ChangePasswordRequest("old_secret", "NewPass@123");
+    when(passwordEncoder.matches("old_secret", "encoded_secret")).thenReturn(true);
+    when(passwordEncoder.encode("NewPass@123")).thenReturn("new_hash");
+
+    Map<String, String> res = authService.changePassword(acc, req);
+    assertEquals("Đổi mật khẩu thành công.", res.get("message"));
+    verify(accountRepository).save(acc);
+
+    // wrong old password
+    ChangePasswordRequest wrongOld = new ChangePasswordRequest("wrong_old", "NewPass@123");
+    ApiException ex =
+        assertThrows(ApiException.class, () -> authService.changePassword(acc, wrongOld));
+    assertEquals(HttpStatus.BAD_REQUEST, ex.getStatus());
+  }
+
+  @Test
+  void meReturnsExpectedUserResponse() {
+    Account acc = createAccount(1, "validuser", 3, true);
+    Customer cust = new Customer();
+    cust.setCustomerId(5);
+    cust.setFullName("Customer Full Name");
+    when(customerRepository.findByAccountId(1)).thenReturn(Optional.of(cust));
+
+    UserResponse me = authService.me(acc);
+    assertNotNull(me);
+    assertEquals(1, me.accountId());
+    assertEquals("validuser", me.username());
+    assertEquals("Customer Full Name", me.fullName());
+    assertEquals(5, me.customerId());
   }
 }

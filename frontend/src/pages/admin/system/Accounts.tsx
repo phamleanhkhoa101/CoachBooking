@@ -1,6 +1,16 @@
 import { Badge, StatusBadge } from '../../../components/common/Badge';
 import { CrudPage, refName, type CrudConfig } from '../../../components/table/CrudPage';
 
+/** Chuyển tên quyền hệ thống thành nhãn tiếng Việt ngắn gọn. */
+function roleLabel(roleName: string): string {
+  const map: Record<string, string> = {
+    Admin: 'Admin',
+    NhanVien: 'Nhân viên',
+    KhachHang: 'Khách hàng',
+  };
+  return map[roleName] ?? roleName;
+}
+
 const config: CrudConfig = {
   title: 'Tài khoản',
   subtitle: 'Tài khoản đăng nhập hệ thống và quyền tương ứng.',
@@ -38,13 +48,13 @@ const config: CrudConfig = {
       width: '150px',
       render: (row, refs) => {
         const id = row.roleId ?? row.maQuyen;
-        const ten =
+        const rawName =
           refName(refs, 'roles', 'roleId', id, 'roleName') !== '—'
             ? refName(refs, 'roles', 'roleId', id, 'roleName')
             : refName(refs, 'roles', 'maQuyen', id, 'tenQuyen');
         return (
           <Badge tone={id === 1 ? 'info' : id === 2 ? 'success' : 'neutral'}>
-            {ten}
+            {roleLabel(rawName)}
           </Badge>
         );
       },
@@ -81,9 +91,7 @@ const config: CrudConfig = {
       options: (refs) =>
         (refs['roles'] ?? []).map((item) => ({
           value: String(item.roleId ?? item.maQuyen),
-          label: `${item.roleName ?? item.tenQuyen}${
-            item.description ?? item.moTa ? ` · ${item.description ?? item.moTa}` : ''
-          }`,
+          label: roleLabel(item.roleName ?? item.tenQuyen ?? ''),
         })),
     },
     { name: 'isActive', label: 'Đang hoạt động', type: 'checkbox' },

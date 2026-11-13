@@ -52,7 +52,11 @@ function ChangePasswordModal({
     setSaving(true);
     setError('');
     try {
+      // UpdateRequest yêu cầu email + roleId + isActive; password là optional
       await api.put(`/accounts/${account.accountId ?? account.maTk}`, {
+        email: account.email,
+        roleId: account.roleId ?? account.maQuyen,
+        isActive: account.isActive ?? account.trangThai ?? true,
         password: newPwd,
       });
       showToast('Đã đổi mật khẩu thành công.');

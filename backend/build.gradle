@@ -50,6 +50,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+testImplementation 'com.h2database:h2'
 }
 
 tasks.named('test') {
@@ -83,6 +84,7 @@ sonarqube {
         property 'sonar.projectKey', 'phamleanhkhoa101_CoachBooking'
         property 'sonar.organization', 'phamleanhkhoa101'
         property 'sonar.host.url', 'https://sonarcloud.io'
+    property 'sonar.coverage.exclusions', '**/domain/**,**/dto/**,**/config/**,**/CoachBookingApplication.java'
         property 'sonar.coverage.jacoco.xmlReportPaths',
                 layout.buildDirectory.file('reports/jacoco/test/jacocoTestReport.xml').get().asFile.absolutePath
         property 'sonar.java.source', '25'

@@ -39,6 +39,7 @@ services:
       SMTP_PASSWORD: ${SMTP_PASSWORD:-}
       APP_MAIL_FROM: ${APP_MAIL_FROM:-no-reply@coachbooking.local}
       APP_MAIL_FROM_NAME: ${APP_MAIL_FROM_NAME:-CoachBooking}
+      APP_SWAGGER_ENABLED: ${APP_SWAGGER_ENABLED:-true}
     ports:
       - "${BACKEND_PORT:-8080}:8080"
     healthcheck:

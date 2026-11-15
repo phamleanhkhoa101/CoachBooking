@@ -6,6 +6,7 @@ import com.coachbooking.repo.RouteRepository;
 import com.coachbooking.repo.TicketPriceRepository;
 import com.coachbooking.repo.TripRepository;
 import com.fasterxml.jackson.annotation.JsonAlias;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Positive;
@@ -19,11 +20,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping({"/api/routes", "/api/tuyen-duong"})
+@Tag(name = "Tuyến đường", description = "Quản lý và tra cứu tuyến đường")
 public class RouteController {
 
   private final RouteRepository routeRepository;

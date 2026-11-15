@@ -28,6 +28,8 @@ docker compose up --build
 |---|---|
 | Giao diện | http://localhost:3000 |
 | API | http://localhost:8080/api |
+| Swagger UI (OpenAPI 3) | http://localhost:8080/swagger-ui.html |
+| OpenAPI JSON | http://localhost:8080/v3/api-docs |
 | Health check | http://localhost:8080/actuator/health |
 | PostgreSQL | localhost:5432 |
 
@@ -101,6 +103,7 @@ SPRING_DATASOURCE_USERNAME=coachbooking
 SPRING_DATASOURCE_PASSWORD=coachbooking
 APP_JWT_SECRET=<chuỗi tối thiểu 32 ký tự>
 APP_CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
+APP_SWAGGER_ENABLED=true
 ```
 
 ## CI/CD và SonarQube

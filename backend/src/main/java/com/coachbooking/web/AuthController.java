@@ -10,16 +10,19 @@ import com.coachbooking.dto.auth.UserResponse;
 import com.coachbooking.dto.auth.VerifyResetOtpRequest;
 import com.coachbooking.service.AuthService;
 import com.coachbooking.service.CurrentUserService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.Map;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/auth")
+@Tag(name = "Xác thực", description = "Đăng nhập, đăng ký, đăng xuất và quên mật khẩu qua OTP")
 public class AuthController {
 
   private final AuthService authService;

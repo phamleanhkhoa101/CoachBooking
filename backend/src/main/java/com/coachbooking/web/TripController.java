@@ -6,6 +6,7 @@ import com.coachbooking.dto.trip.TripRequest;
 import com.coachbooking.repo.TripRepository;
 import com.coachbooking.service.SeatStatusService;
 import com.coachbooking.service.TripService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
@@ -26,6 +27,12 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @RestController
 @RequestMapping({"/api/trips", "/api/chuyen-xe"})
+@Tag(
+    name = "Chuyến xe",
+    description = "Tìm kiếm, quản lý chuyến xe, sơ đồ ghế và luồng SSE ghế trống")
+@Tag(
+    name = "Chuyến xe",
+    description = "Tìm kiếm, quản lý chuyến xe, sơ đồ ghế và luồng SSE ghế trống")
 public class TripController {
 
   private final TripRepository tripRepository;

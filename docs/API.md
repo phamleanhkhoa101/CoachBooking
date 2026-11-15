@@ -3,6 +3,13 @@
 Base URL: `/api`. Mọi endpoint (trừ nhóm `auth` công khai) yêu cầu header
 `Authorization: Bearer <token>`.
 
+## Tài liệu tương tác (Swagger / OpenAPI 3)
+
+- **Swagger UI:** `http://localhost:8080/swagger-ui.html`
+- **OpenAPI JSON:** `http://localhost:8080/v3/api-docs`
+- Bật/tắt qua biến môi trường `APP_SWAGGER_ENABLED` (mặc định `true`).
+- Để gọi các endpoint yêu cầu xác thực trên Swagger UI: đăng nhập qua nhóm **Xác thực** (`/api/auth/login`, `/api/auth/user/login` hoặc `/api/auth/admin/login`) để lấy `token`, bấm nút **Authorize**, dán `token` vào ô `bearerAuth` (Swagger tự thêm tiền tố `Bearer `).
+
 Lỗi trả về thống nhất:
 
 ```json

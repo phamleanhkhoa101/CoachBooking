@@ -4,17 +4,20 @@ import com.coachbooking.dto.profile.ProfileResponse;
 import com.coachbooking.dto.profile.UpdateProfileRequest;
 import com.coachbooking.service.CurrentUserService;
 import com.coachbooking.service.ProfileService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping({"/api/profile", "/api/ho-so"})
 @PreAuthorize("isAuthenticated()")
+@Tag(name = "Hồ sơ cá nhân", description = "Xem, cập nhật hồ sơ cá nhân và đổi mật khẩu")
 public class ProfileController {
 
   private final ProfileService profileService;

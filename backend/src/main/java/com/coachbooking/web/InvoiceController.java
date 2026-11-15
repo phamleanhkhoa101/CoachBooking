@@ -6,6 +6,7 @@ import com.coachbooking.dto.invoice.LookupRequest;
 import com.coachbooking.dto.invoice.PayRequest;
 import com.coachbooking.service.CurrentUserService;
 import com.coachbooking.service.InvoiceService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
@@ -17,11 +18,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping({"/api/invoices", "/api/hoa-don"})
+@Tag(name = "Hóa đơn", description = "Tra cứu và cập nhật trạng thái thanh toán hóa đơn")
 public class InvoiceController {
 
   private final InvoiceService invoiceService;

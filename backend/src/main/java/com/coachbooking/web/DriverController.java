@@ -5,6 +5,7 @@ import com.coachbooking.domain.Driver;
 import com.coachbooking.repo.DriverRepository;
 import com.coachbooking.repo.TripRepository;
 import com.fasterxml.jackson.annotation.JsonAlias;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -18,12 +19,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping({"/api/drivers", "/api/tai-xe"})
 @PreAuthorize("hasAnyRole('Admin','NhanVien')")
+@Tag(name = "Tài xế", description = "Quản lý danh mục tài xế (Admin/Nhân viên)")
 public class DriverController {
 
   private final DriverRepository driverRepository;

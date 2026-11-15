@@ -6,6 +6,7 @@ import com.coachbooking.repo.TicketPriceRepository;
 import com.coachbooking.repo.VehicleRepository;
 import com.coachbooking.repo.VehicleTypeRepository;
 import com.fasterxml.jackson.annotation.JsonAlias;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -19,12 +20,14 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping({"/api/vehicle-types", "/api/loai-xe"})
 @PreAuthorize("hasAnyRole('Admin','NhanVien')")
+@Tag(name = "Loại xe", description = "Quản lý loại xe và cấu hình số ghế (Admin/Nhân viên)")
 public class VehicleTypeController {
 
   private final VehicleTypeRepository vehicleTypeRepository;

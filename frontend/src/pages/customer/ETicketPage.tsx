@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
 import { api } from '../../api/client';
 import type { InvoiceDetail } from '../../api/types';
 import { BookingStepper } from '../../components/customer/BookingStepper';
+import { BrandLogo } from '../../components/common/BrandLogo';
 import { useToast } from '../../components/common/Toast';
 import { formatCurrency, formatDateTime } from '../../utils/format';
 import './ETicketPage.css';
@@ -200,7 +201,7 @@ export function ETicketPage() {
           <div className="pass-main-body">
             <div className="pass-header">
               <div className="pass-brand">
-                <div className="pass-logo-badge">BX</div>
+                <BrandLogo size={40} className="pass-logo-badge" />
                 <div>
                   <span className="pass-brand-title">BẾN XE MIỀN ĐÔNG</span>
                   <span className="pass-brand-sub">COACHBOOKING · VÉ XE ĐIỆN TỬ</span>

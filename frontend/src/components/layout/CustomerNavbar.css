@@ -43,14 +43,8 @@
   width: 2.5rem;
   height: 2.5rem;
   border-radius: var(--radius-sm);
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-strong) 100%);
-  color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1rem;
-  font-weight: 800;
-  box-shadow: 0 4px 10px rgba(29, 78, 216, 0.25);
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(15, 43, 92, 0.22);
   flex-shrink: 0;
 }
 

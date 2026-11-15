@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
+import { BrandLogo } from '../common/BrandLogo';
 import { RoleBadge } from '../common/Badge';
 import './CustomerNavbar.css';
 
@@ -62,7 +63,7 @@ export function CustomerNavbar() {
       <div className="shared-customer-header-inner">
         {/* BRAND LOGO */}
         <Link to="/" className="shared-brand-link">
-          <div className="shared-brand-badge">BX</div>
+          <BrandLogo size={40} className="shared-brand-badge" />
           <div className="shared-brand-text">
             <span className="shared-brand-title">CoachBooking</span>
             <span className="shared-brand-subtitle">Bến xe Miền Đông Mới · SAMCO</span>
@@ -246,7 +247,7 @@ export function CustomerNavbar() {
           >
             <div className="mobile-drawer-header">
               <div className="mobile-drawer-brand">
-                <div className="shared-brand-badge">BX</div>
+                <BrandLogo size={36} className="shared-brand-badge" />
                 <span>CoachBooking</span>
               </div>
               <button

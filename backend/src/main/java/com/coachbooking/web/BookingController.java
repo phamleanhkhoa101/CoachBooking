@@ -9,12 +9,11 @@ import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping({"/api/bookings", "/api/dat-ve"})
+@RequestMapping("/api/bookings")
 @Tag(name = "Đặt vé", description = "Đặt vé tại quầy, đặt vé khách hàng và lịch sử đặt vé")
 public class BookingController {
 

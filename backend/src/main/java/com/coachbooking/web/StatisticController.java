@@ -8,12 +8,11 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping({"/api/statistics", "/api/thong-ke"})
+@RequestMapping("/api/statistics")
 @PreAuthorize("hasAnyRole('Admin','NhanVien')")
 @Tag(name = "Thống kê", description = "Báo cáo doanh thu và tuyến phổ biến (Admin/Nhân viên)")
 public class StatisticController {

@@ -19,12 +19,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping({"/api/bus-companies", "/api/nha-xe"})
+@RequestMapping("/api/bus-companies")
 @Tag(name = "Nhà xe", description = "Quản lý danh mục nhà xe")
 public class BusCompanyController {
 

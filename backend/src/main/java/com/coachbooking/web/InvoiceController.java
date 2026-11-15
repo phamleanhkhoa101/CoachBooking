@@ -18,12 +18,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping({"/api/invoices", "/api/hoa-don"})
+@RequestMapping("/api/invoices")
 @Tag(name = "Hóa đơn", description = "Tra cứu và cập nhật trạng thái thanh toán hóa đơn")
 public class InvoiceController {
 
@@ -56,7 +55,7 @@ public class InvoiceController {
     return invoiceService.list(actualFrom, actualTo, actualPaid);
   }
 
-  @GetMapping({"/my", "/cua-toi"})
+  @GetMapping("/my")
   @PreAuthorize("isAuthenticated()")
   public List<InvoiceRow> myInvoices() {
     return invoiceService.myInvoices(currentUserService.requireAccount());
@@ -68,19 +67,19 @@ public class InvoiceController {
     return invoiceService.detail(id, currentUserService.requireAccount());
   }
 
-  @PostMapping({"/{id}/pay", "/{id}/thanh-toan"})
+  @PostMapping("/{id}/pay")
   @PreAuthorize("isAuthenticated()")
   public Map<String, String> pay(@PathVariable Integer id, @Valid @RequestBody PayRequest request) {
     return invoiceService.pay(id, request.paymentMethod(), currentUserService.requireAccount());
   }
 
-  @PostMapping({"/{id}/cancel", "/{id}/huy"})
+  @PostMapping("/{id}/cancel")
   @PreAuthorize("isAuthenticated()")
   public Map<String, String> cancel(@PathVariable Integer id) {
     return invoiceService.cancel(id, currentUserService.requireAccount());
   }
 
-  @PostMapping({"/lookup", "/tra-cuu"})
+  @PostMapping("/lookup")
   public InvoiceDetail lookup(@Valid @RequestBody LookupRequest request) {
     return invoiceService.lookup(request.invoiceId(), request.phone());
   }

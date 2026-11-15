@@ -87,7 +87,7 @@ Sinh mã OTP 6 chữ số (hiệu lực 15 phút, lưu hash SHA-256 trong `passw
 giới hạn cooldown 60 giây) và gửi qua SMTP tới email đã đăng ký. Trả về:
 `{ "message": "Mã xác nhận OTP đã được gửi tới email của bạn. Vui lòng kiểm tra hộp thư." }`.
 
-### `POST /api/auth/verify-reset-otp` / `POST /api/auth/xac-nhan-otp` (công khai)
+### `POST /api/auth/verify-reset-otp` (công khai)
 
 ```json
 { "email": "kh1@coachbooking.com", "otp": "123456" }
@@ -97,7 +97,7 @@ Xác thực mã OTP 6 chữ số (tối đa 5 lần nhập sai). Nếu hợp l�
 để chuyển sang bước nhập mật khẩu mới:
 `{ "message": "Xác thực OTP thành công.", "resetToken": "..." }`.
 
-### `POST /api/auth/reset-password` / `POST /api/auth/dat-lai-mat-khau` (công khai)
+### `POST /api/auth/reset-password` (công khai)
 
 ```json
 {
@@ -114,7 +114,7 @@ và trả về `{ "message": "Đặt lại mật khẩu thành công. Bạn có 
 
 Trả về đúng đối tượng `nguoiDung` như trên.
 
-### `POST /api/auth/doi-mat-khau`
+### `POST /api/auth/change-password`
 
 ```json
 { "matKhauCu": "KhachHang@123", "matKhauMoi": "KhachHang@456" }
@@ -126,36 +126,35 @@ Mọi tài nguyên dưới đây có cùng bộ endpoint:
 
 | Method | Path | Quyền |
 |---|---|---|
-| `GET` | `/api/{nguon}` | Admin, NhanVien |
-| `GET` | `/api/{nguon}/{id}` | Admin, NhanVien |
-| `POST` | `/api/{nguon}` | Admin (riêng `khach-hang`: Admin + NhanVien) |
-| `PUT` | `/api/{nguon}/{id}` | Admin (riêng `khach-hang`: Admin + NhanVien) |
-| `DELETE` | `/api/{nguon}/{id}` | Admin |
+| `GET` | `/api/{resource}` | Admin, NhanVien |
+| `GET` | `/api/{resource}/{id}` | Admin, NhanVien |
+| `POST` | `/api/{resource}` | Admin (riêng `customers`: Admin + NhanVien) |
+| `PUT` | `/api/{resource}/{id}` | Admin (riêng `customers`: Admin + NhanVien) |
+| `DELETE` | `/api/{resource}/{id}` | Admin |
 
-Các nguồn: `nha-xe`, `loai-xe`, `xe`, `tuyen-duong`, `tai-xe`, `gia-ve`,
-`chuyen-xe`, `khach-hang`, `nhan-vien`, `tai-khoan`, `quyen`.
+Các nguồn (`{resource}`): `bus-companies`, `vehicle-types`, `vehicles`, `routes`, `drivers`, `ticket-prices`,
+`trips`, `customers`, `employees`, `accounts`, `roles`.
 
-`nhan-vien`, `tai-khoan`, `quyen` chỉ dành cho `Admin` ở mọi thao tác.
+`employees`, `accounts`, `roles` chỉ dành cho `Admin` ở mọi thao tác.
 
-Riêng `GET /api/tuyen-duong` và `GET /api/tuyen-duong/{id}` cũng mở cho `KhachHang`
-(phục vụ ô chọn điểm đi/điểm đến khi tìm chuyến). Các trường tham chiếu trả về dạng
+Riêng `GET /api/routes` và `GET /api/routes/{id}` cũng mở công khai (phục vụ ô chọn điểm đi/điểm đến khi tìm chuyến). Các trường tham chiếu trả về dạng
 mã số; giao diện tự ghép tên từ danh sách tham chiếu đã tải.
 
 Trường dữ liệu (camelCase, khớp cột trong PostgreSQL):
 
 | Nguồn | Trường |
 |---|---|
-| `nha-xe` | `maNx, tenNx, sdt, email, trangThai` |
-| `loai-xe` | `maLx, tenLx, soCho, trangThai` |
-| `xe` | `maXe, maNx, maLx, bienSoXe, trangThai` |
-| `tuyen-duong` | `maTuyen, diemDi, diemDen, quangDuong, thoiGianDuKien, trangThai` (`thoiGianDuKien` dạng `"HH:mm:ss"`) |
-| `tai-xe` | `maTx, tenTx, namSinh, cccd, gioiTinh, sdt, diaChi, bangLai, ngayCap, trangThai` |
-| `gia-ve` | `maGv, maNx, maLx, maTuyen, giaVe` |
-| `chuyen-xe` | xem mục 3 |
-| `khach-hang` | `maKh, tenKh, namSinh, sdt, gioiTinh, maTk` |
-| `nhan-vien` | `maNv, tenNv, namSinh, diaChi, sdt, gioiTinh, trangThai, maTk` |
-| `tai-khoan` | `maTk, tenDangNhap, matKhau` (chỉ ghi), `email, maQuyen, trangThai` |
-| `quyen` | `maQuyen, tenQuyen, moTa` |
+| `bus-companies` | `maNx, tenNx, sdt, email, trangThai` |
+| `vehicle-types` | `maLx, tenLx, soCho, trangThai` |
+| `vehicles` | `maXe, maNx, maLx, bienSoXe, trangThai` |
+| `routes` | `maTuyen, diemDi, diemDen, quangDuong, thoiGianDuKien, trangThai` (`thoiGianDuKien` dạng `"HH:mm:ss"`) |
+| `drivers` | `maTx, tenTx, namSinh, cccd, gioiTinh, sdt, diaChi, bangLai, ngayCap, trangThai` |
+| `ticket-prices` | `maGv, maNx, maLx, maTuyen, giaVe` |
+| `trips` | xem mục 3 |
+| `customers` | `maKh, tenKh, namSinh, sdt, gioiTinh, maTk` |
+| `employees` | `maNv, tenNv, namSinh, diaChi, sdt, gioiTinh, trangThai, maTk` |
+| `accounts` | `maTk, tenDangNhap, matKhau` (chỉ ghi), `email, maQuyen, trangThai` |
+| `roles` | `maQuyen, tenQuyen, moTa` |
 
 Quy tắc xóa: chặn khi còn dữ liệu tham chiếu (nhà xe còn xe, loại xe còn xe,
 tuyến còn chuyến, tài xế còn chuyến, chuyến đã có vé, khách hàng đã có hóa đơn,
@@ -163,7 +162,7 @@ nhân viên đã có hóa đơn, tài khoản đang được gắn với nhân v
 
 ## 3. Chuyến xe
 
-`GET /api/chuyen-xe` trả về danh sách:
+`GET /api/trips` trả về danh sách:
 
 ```json
 [{
@@ -183,12 +182,12 @@ nhân viên đã có hóa đơn, tài khoản đang được gắn với nhân v
 `gia-ve` theo cặp (nhà xe, loại xe, tuyến). Từ chối khi: khởi hành ở quá khứ,
 cùng xe đã có chuyến trong cùng phút, không tìm thấy bảng giá phù hợp.
 
-### `GET /api/chuyen-xe/tim?diemDi=&diemDen=&ngay=YYYY-MM-DD&tuGio=&denGio=`
+### `GET /api/trips/search?diemDi=&diemDen=&ngay=YYYY-MM-DD&tuGio=&denGio=`
 
 Dùng cho cả nhân viên và khách hàng. Chỉ trả chuyến chưa khởi hành, có giá vé > 0,
 kèm `soVeDaBan`, `soCho`, `giaVeThucTe`. `tuGio`/`denGio` là số nguyên 0–23 (tùy chọn).
 
-### `GET /api/chuyen-xe/{id}/ghe`
+### `GET /api/trips/{id}/seats`
 
 ```json
 {
@@ -234,7 +233,7 @@ Trả về HTTP `201`:
 
 ## 4. Đặt vé
 
-### `POST /api/dat-ve`
+### `POST /api/bookings`
 
 Nhân viên:
 
@@ -271,12 +270,12 @@ tự xác nhận, chưa có callback đối soát ngân hàng.
 
 | Method | Path | Mô tả |
 |---|---|---|
-| `GET` | `/api/hoa-don?tu=&den=&trangThai=` | Danh sách (Admin, NhanVien) |
-| `GET` | `/api/hoa-don/{id}` | Chi tiết kèm vé và thanh toán |
-| `POST` | `/api/hoa-don/{id}/thanh-toan` | `{ "phuongThuc": "Tiền mặt" }` |
-| `POST` | `/api/hoa-don/{id}/huy` | Hủy toàn bộ vé của hóa đơn **chưa thanh toán** |
-| `GET` | `/api/hoa-don/cua-toi` | Lịch sử của khách hàng đang đăng nhập |
-| `POST` | `/api/ve/{maVe}/huy` | Khách hàng hủy 1 vé chưa thanh toán |
+| `GET` | `/api/invoices?tu=&den=&trangThai=` | Danh sách (Admin, NhanVien) |
+| `GET` | `/api/invoices/{id}` | Chi tiết kèm vé và thanh toán |
+| `POST` | `/api/invoices/{id}/pay` | `{ "phuongThuc": "Tiền mặt" }` |
+| `POST` | `/api/invoices/{id}/cancel` | Hủy toàn bộ vé của hóa đơn **chưa thanh toán** |
+| `GET` | `/api/invoices/my` | Lịch sử của khách hàng đang đăng nhập |
+| `POST` | `/api/tickets/{maVe}/cancel` | Khách hàng hủy 1 vé chưa thanh toán |
 
 Danh sách hóa đơn:
 
@@ -307,7 +306,7 @@ Chỉ được hủy vé khi hóa đơn chưa thanh toán và chuyến chưa kh�
 
 ## 6. Hồ sơ
 
-`GET /api/ho-so` và `PUT /api/ho-so` cho mọi tài khoản đã đăng nhập:
+`GET /api/profile` và `PUT /api/profile` cho mọi tài khoản đã đăng nhập:
 
 ```json
 {
@@ -322,7 +321,7 @@ thêm `diaChi`). Không cho sửa email/tên đăng nhập/quyền tại đây.
 
 ## 7. Thống kê
 
-`GET /api/thong-ke?tu=YYYY-MM-DD&den=YYYY-MM-DD` (Admin, NhanVien), mặc định 30 ngày gần nhất:
+`GET /api/statistics?tu=YYYY-MM-DD&den=YYYY-MM-DD` (Admin, NhanVien), mặc định 30 ngày gần nhất:
 
 ```json
 {

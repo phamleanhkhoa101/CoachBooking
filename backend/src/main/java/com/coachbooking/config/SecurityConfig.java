@@ -50,30 +50,16 @@ public class SecurityConfig {
                         "/api/auth/admin/login",
                         "/api/auth/register",
                         "/api/auth/forgot-password",
-                        "/api/auth/quen-mat-khau",
                         "/api/auth/verify-reset-otp",
-                        "/api/auth/xac-nhan-otp",
                         "/api/auth/reset-password",
-                        "/api/auth/dat-lai-mat-khau",
                         "/api/routes",
                         "/api/routes/*",
-                        "/api/tuyen-duong",
-                        "/api/tuyen-duong/*",
                         "/api/trips/search",
-                        "/api/chuyen-xe/tim",
                         "/api/trips/*/seats",
                         "/api/trips/*/seats/events",
-                        "/api/trips/*/ghe",
-                        "/api/chuyen-xe/*/seats",
-                        "/api/chuyen-xe/*/ghe",
                         "/api/bus-companies",
                         "/api/bus-companies/*",
-                        "/api/nha-xe",
-                        "/api/nha-xe/*",
-                        "/api/invoices/lookup",
-                        "/api/invoices/tra-cuu",
-                        "/api/hoa-don/lookup",
-                        "/api/hoa-don/tra-cuu")
+                        "/api/invoices/lookup")
                     .permitAll()
                     .requestMatchers("/actuator/health")
                     .permitAll()

@@ -12,9 +12,9 @@ import { useToast } from '../common/Toast';
 export type CrudRefs = Record<string, Row[]>;
 
 export interface CrudRefDef {
-  /** Khóa dùng trong `refs` (ví dụ 'nha-xe'). */
+  /** Khóa dùng trong `refs` (ví dụ 'bus-companies'). */
   key: string;
-  /** Endpoint tương ứng (ví dụ 'nha-xe' -> GET /api/nha-xe). */
+  /** Endpoint tương ứng (ví dụ 'bus-companies' -> GET /api/bus-companies). */
   endpoint: string;
 }
 

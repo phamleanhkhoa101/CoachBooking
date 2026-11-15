@@ -16,7 +16,6 @@ import java.util.Map;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -53,17 +52,17 @@ public class AuthController {
     return authService.register(request);
   }
 
-  @PostMapping({"/forgot-password", "/quen-mat-khau"})
+  @PostMapping("/forgot-password")
   public Map<String, String> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
     return authService.forgotPassword(request);
   }
 
-  @PostMapping({"/verify-reset-otp", "/xac-nhan-otp"})
+  @PostMapping("/verify-reset-otp")
   public Map<String, String> verifyResetOtp(@Valid @RequestBody VerifyResetOtpRequest request) {
     return authService.verifyResetOtp(request);
   }
 
-  @PostMapping({"/reset-password", "/dat-lai-mat-khau"})
+  @PostMapping("/reset-password")
   public Map<String, String> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
     return authService.resetPassword(request);
   }
@@ -73,7 +72,7 @@ public class AuthController {
     return authService.me(currentUserService.requireAccount());
   }
 
-  @PostMapping({"/change-password", "/doi-mat-khau"})
+  @PostMapping("/change-password")
   public Map<String, String> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
     return authService.changePassword(currentUserService.requireAccount(), request);
   }

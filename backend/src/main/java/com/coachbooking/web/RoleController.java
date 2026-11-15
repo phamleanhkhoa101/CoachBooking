@@ -17,12 +17,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping({"/api/roles", "/api/quyen"})
+@RequestMapping("/api/roles")
 @PreAuthorize("hasRole('Admin')")
 @Tag(name = "Phân quyền", description = "Danh sách vai trò hệ thống (Admin)")
 public class RoleController {

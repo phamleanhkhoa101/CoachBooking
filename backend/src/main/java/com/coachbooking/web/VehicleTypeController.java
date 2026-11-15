@@ -20,12 +20,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping({"/api/vehicle-types", "/api/loai-xe"})
+@RequestMapping("/api/vehicle-types")
 @PreAuthorize("hasAnyRole('Admin','NhanVien')")
 @Tag(name = "Loại xe", description = "Quản lý loại xe và cấu hình số ghế (Admin/Nhân viên)")
 public class VehicleTypeController {

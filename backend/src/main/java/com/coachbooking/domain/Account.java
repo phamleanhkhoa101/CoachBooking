@@ -27,7 +27,7 @@ public class Account {
   @Column(name = "username", nullable = false, unique = true, length = 50)
   private String username;
 
-  @Column(name = "password", nullable = false, length = 100)
+  @Column(name = "password", length = 100)
   private String password;
 
   @Column(name = "email", nullable = false, unique = true, length = 100)
@@ -38,4 +38,10 @@ public class Account {
 
   @Column(name = "is_active", nullable = false)
   private Boolean isActive = true;
+
+  @Column(name = "auth_provider", nullable = false, length = 20)
+  private String authProvider = "LOCAL";
+
+  @Column(name = "google_sub", unique = true, length = 100)
+  private String googleSub;
 }

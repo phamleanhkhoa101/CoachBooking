@@ -120,6 +120,14 @@ Trả về đúng đối tượng `nguoiDung` như trên.
 { "matKhauCu": "KhachHang@123", "matKhauMoi": "KhachHang@456" }
 ```
 
+### `GET /api/oauth2/authorization/google` (công khai)
+
+Khởi tạo luồng Google OAuth2 (Authorization Code Flow) cho cổng Khách hàng:
+- Chuyển hướng người dùng tới Google Consent Screen.
+- Google callback về `/api/login/oauth2/code/google`.
+- Thành công: tự động liên kết hoặc tạo tài khoản `KhachHang` (`auth_provider = GOOGLE`), phát hành JWT và chuyển hướng về `${APP_OAUTH2_REDIRECT_URI}#token=<jwt>`.
+- Thất bại (tài khoản bị khóa, tài khoản `Admin`/`NhanVien`, hoặc từ chối): chuyển hướng về `/login?error=<message>`.
+
 ## 2. Danh mục (CRUD)
 
 Mọi tài nguyên dưới đây có cùng bộ endpoint:

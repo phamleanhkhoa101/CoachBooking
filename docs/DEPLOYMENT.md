@@ -104,3 +104,17 @@ Không đưa file `/opt/coachbooking-deploy/.env` lên GitHub hoặc gửi file 
 ## Mô hình cổng mạng
 
 Chỉ Caddy công khai cổng `80` và `443`. PostgreSQL và Spring Boot chỉ giao tiếp trong mạng Docker nội bộ. Caddy tự cấp và gia hạn chứng chỉ HTTPS cho hai domain đã cấu hình.
+
+## Cấu hình Google OAuth2 trên Production
+
+1. **Google Cloud Console:**
+   - Thêm `https://coachbooking.io.vn` vào **Authorized JavaScript origins**.
+   - Thêm `https://coachbooking.io.vn/api/login/oauth2/code/google` vào **Authorized redirect URIs**.
+   - Trong **OAuth consent screen / Audience**, chuyển trạng thái từ *Testing* sang **In production** (*Publish App*) để mọi khách hàng dùng Gmail bất kỳ đều đăng nhập được.
+2. **Biến môi trường trong `/opt/coachbooking-deploy/.env`:**
+   - `GOOGLE_CLIENT_ID=<client-id>`
+   - `GOOGLE_CLIENT_SECRET=<client-secret>`
+   - `APP_OAUTH2_REDIRECT_URI=https://coachbooking.io.vn/oauth2/callback`
+   - `APP_CORS_ALLOWED_ORIGINS=https://coachbooking.io.vn,https://admin.coachbooking.io.vn`
+   - `APP_SWAGGER_ENABLED=false`
+3. **Lưu ý tài khoản trùng email:** Khi khách hàng đã đăng ký tài khoản `KhachHang` trước đó rồi chọn đăng nhập Google bằng cùng email, hệ thống tự động liên kết `google_sub` vào đúng tài khoản cũ (giữ nguyên vé, hóa đơn và vẫn đăng nhập được bằng cả mật khẩu lẫn Google). Tài khoản `Admin` và `NhanVien` bị chặn đăng nhập qua cổng Google này.

@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.coachbooking.config.DataInitializer;
@@ -42,5 +43,10 @@ class OpenApiSmokeTest {
         .andExpect(content().string(not(containsString("\"/api/auth/xac-nhan-otp\""))));
 
     mockMvc.perform(get("/swagger-ui/index.html")).andExpect(status().isOk());
+
+    mockMvc
+        .perform(get("/api/oauth2/authorization/google"))
+        .andExpect(status().is3xxRedirection())
+        .andExpect(header().string("Location", containsString("accounts.google.com")));
   }
 }

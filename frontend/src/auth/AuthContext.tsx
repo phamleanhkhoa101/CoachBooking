@@ -16,6 +16,7 @@ interface AuthContextValue {
   nguoiDung: User | null; // Alias for backward compatibility
   loading: boolean;
   login: (username: string, password: string, portal?: 'user' | 'admin') => Promise<User>;
+  loginWithToken: (token: string) => Promise<User>;
   logout: () => void;
 }
 
@@ -82,14 +83,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const loginWithToken = useCallback(async (token: string) => {
+    setToken(token);
+    try {
+      const data = await api.get<User>('/auth/me', { redirectOn401: false });
+      setUser(data);
+      return data;
+    } catch (err) {
+      setToken(null);
+      setUser(null);
+      throw err;
+    }
+  }, []);
+
   const logout = useCallback(() => {
     setToken(null);
     setUser(null);
   }, []);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ user, nguoiDung: user, loading, login, logout }),
-    [user, loading, login, logout],
+    () => ({ user, nguoiDung: user, loading, login, loginWithToken, logout }),
+    [user, loading, login, loginWithToken, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

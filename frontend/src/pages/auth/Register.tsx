@@ -90,7 +90,8 @@ export function Register() {
   };
 
   const handleGoogleSignUp = () => {
-    setError('Tính năng liên kết Google đang được phát triển. Vui lòng đăng ký qua form bên dưới.');
+    setError('');
+    window.location.href = '/api/oauth2/authorization/google';
   };
 
   return (

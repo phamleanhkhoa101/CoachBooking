@@ -349,6 +349,91 @@ class AuthServiceTest {
   }
 
   @Test
+  void loginWithGoogleCreatesNewCustomerAndLinksExistingCustomer() {
+    // 1. New Google user auto-registers as KhachHang
+    when(accountRepository.findByGoogleSub("sub-123")).thenReturn(Optional.empty());
+    when(accountRepository.findByEmailIgnoreCase("newgoogle@gmail.com"))
+        .thenReturn(Optional.empty());
+    when(accountRepository.existsByUsername("newgoogle")).thenReturn(false);
+    when(accountRepository.save(any(Account.class)))
+        .thenAnswer(
+            inv -> {
+              Account saved = inv.getArgument(0);
+              saved.setAccountId(99);
+              return saved;
+            });
+    Role role = new Role();
+    role.setRoleName("KhachHang");
+    when(roleRepository.findById(3)).thenReturn(Optional.of(role));
+    when(jwtService.generate(any(Account.class), eq("KhachHang"))).thenReturn("google-jwt");
+
+    AuthResponse res = authService.loginWithGoogle("sub-123", "newgoogle@gmail.com", true);
+    assertEquals("google-jwt", res.token());
+    assertEquals("GOOGLE", Account.class.cast(verifyAndCaptureSavedAccount()).getAuthProvider());
+
+    // 2. Existing local KhachHang with same email gets linked without losing local credentials
+    Account existingLocal = createAccount(50, "local_kh", 3, true);
+    existingLocal.setEmail("local@gmail.com");
+    existingLocal.setAuthProvider("LOCAL");
+    existingLocal.setGoogleSub(null);
+    when(accountRepository.findByGoogleSub("sub-existing")).thenReturn(Optional.empty());
+    when(accountRepository.findByEmailIgnoreCase("local@gmail.com"))
+        .thenReturn(Optional.of(existingLocal));
+    when(accountRepository.save(existingLocal)).thenReturn(existingLocal);
+
+    AuthResponse linkedRes = authService.loginWithGoogle("sub-existing", "local@gmail.com", true);
+    assertEquals("google-jwt", linkedRes.token());
+    assertEquals("sub-existing", existingLocal.getGoogleSub());
+    assertEquals("LOCAL", existingLocal.getAuthProvider());
+    assertEquals("encoded_secret", existingLocal.getPassword());
+  }
+
+  private Account verifyAndCaptureSavedAccount() {
+    org.mockito.ArgumentCaptor<Account> captor = org.mockito.ArgumentCaptor.forClass(Account.class);
+    verify(accountRepository, atLeastOnce()).save(captor.capture());
+    return captor.getValue();
+  }
+
+  @Test
+  void loginWithGoogleRejectsUnverifiedLockedAndAdminAccounts() {
+    ApiException unverified =
+        assertThrows(
+            ApiException.class, () -> authService.loginWithGoogle("sub-1", "a@gmail.com", false));
+    assertEquals(HttpStatus.BAD_REQUEST, unverified.getStatus());
+
+    Account locked = createAccount(10, "locked", 3, false);
+    when(accountRepository.findByGoogleSub("sub-locked")).thenReturn(Optional.of(locked));
+    ApiException lockedEx =
+        assertThrows(
+            ApiException.class,
+            () -> authService.loginWithGoogle("sub-locked", "locked@gmail.com", true));
+    assertEquals(HttpStatus.FORBIDDEN, lockedEx.getStatus());
+
+    Account adminAcc = createAccount(11, "admin", 1, true);
+    Role adminRole = new Role();
+    adminRole.setRoleName("Admin");
+    when(accountRepository.findByGoogleSub("sub-admin")).thenReturn(Optional.of(adminAcc));
+    when(roleRepository.findById(1)).thenReturn(Optional.of(adminRole));
+    ApiException adminEx =
+        assertThrows(
+            ApiException.class,
+            () -> authService.loginWithGoogle("sub-admin", "admin@gmail.com", true));
+    assertEquals(HttpStatus.FORBIDDEN, adminEx.getStatus());
+  }
+
+  @Test
+  void passwordLoginRejectsGoogleAccountWithoutLocalPassword() {
+    Account googleOnly = createAccount(12, "guser", 3, true);
+    googleOnly.setPassword(null);
+    when(accountRepository.findByUsername("guser")).thenReturn(Optional.of(googleOnly));
+
+    ApiException ex =
+        assertThrows(
+            ApiException.class, () -> authService.login(new LoginRequest("guser", "SomePass@1")));
+    assertEquals(HttpStatus.BAD_REQUEST, ex.getStatus());
+  }
+
+  @Test
   void meReturnsExpectedUserResponse() {
     Account acc = createAccount(1, "validuser", 3, true);
     Customer cust = new Customer();

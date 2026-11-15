@@ -3,7 +3,6 @@ import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import { homePathFor, useAuth } from '../../auth/AuthContext';
 import { isAdminPortal } from '../../auth/portal';
-import { FormField } from '../../components/common/FormField';
 
 export function Login() {
   const { user, login } = useAuth();
@@ -12,6 +11,7 @@ export function Login() {
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -40,31 +40,35 @@ export function Login() {
   };
 
   const handleGoogleLogin = () => {
-    // Thông báo môi trường demo
     setError('Tính năng đăng nhập Google đang được tích hợp. Vui lòng đăng nhập bằng tài khoản hệ thống.');
   };
 
   return (
     <div className="auth-page auth-page-single">
       <div className="auth-card">
-        <div className="auth-brand">
-          <div className="brand-logo">{admin ? 'AD' : 'BX'}</div>
-          <div>
-            <strong>{admin ? 'CoachBooking Quản trị' : 'CoachBooking'}</strong>
-            <span>
-              {admin
-                ? 'Hệ thống quản lý bán vé xe miền Đông'
-                : 'Bến xe Miền Đông Mới • SAMCO'}
-            </span>
+        {/* Logo Bus centered & Brand Title */}
+        <div className="auth-brand-center">
+          <div className="auth-logo-badge">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M8 6v6"></path>
+              <path d="M15 6v6"></path>
+              <path d="M2 12h19.6"></path>
+              <path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4C2.9 6 1.9 6.8 1.6 7.8l-1.4 5c-.1.4-.2.8-.2 1.2 0 .4.1.8.2 1.2.3 1.1.8 2.8.8 2.8h3"></path>
+              <circle cx="7" cy="18" r="2"></circle>
+              <path d="M9 18h5"></path>
+              <circle cx="16" cy="18" r="2"></circle>
+            </svg>
           </div>
+          <h2 className="auth-brand-title">
+            {admin ? 'CoachBooking Quản trị' : 'CoachBooking'}
+          </h2>
         </div>
 
-        <h1>{admin ? 'Đăng nhập Quản trị' : 'Đăng nhập'}</h1>
-        <p className="auth-subtitle">
-          {admin
-            ? 'Sử dụng tài khoản quản trị hoặc nhân viên để tiếp tục.'
-            : 'Đăng nhập tài khoản để tiếp tục đặt vé và quản lý chuyến đi.'}
-        </p>
+        <div className="auth-card-divider" />
+
+        <div className="auth-heading-center">
+          <h1>{admin ? 'Đăng nhập Quản trị' : 'Đăng nhập'}</h1>
+        </div>
 
         {error ? <div className="alert alert-error">{error}</div> : null}
 
@@ -75,24 +79,75 @@ export function Login() {
             void handleSubmit();
           }}
         >
-          <FormField
-            label="Tên đăng nhập"
-            value={username}
-            onChange={setUsername}
-            placeholder="Nhập tên đăng nhập hoặc email"
-            autoComplete="username"
-            required
-          />
-          <FormField
-            label="Mật khẩu"
-            value={password}
-            onChange={setPassword}
-            type="password"
-            placeholder="Nhập mật khẩu"
-            autoComplete="current-password"
-            required
-          />
+          {/* Tên đăng nhập */}
+          <div className="auth-input-group">
+            <label className="auth-input-label" htmlFor="username">
+              Tên đăng nhập <span className="required-star">*</span>
+            </label>
+            <div className="auth-input-wrapper">
+              <span className="auth-input-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </span>
+              <input
+                id="username"
+                type="text"
+                className="auth-input"
+                placeholder="Nhập tên đăng nhập hoặc email"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                autoComplete="username"
+                required
+              />
+            </div>
+          </div>
 
+          {/* Mật khẩu */}
+          <div className="auth-input-group">
+            <label className="auth-input-label" htmlFor="password">
+              Mật khẩu <span className="required-star">*</span>
+            </label>
+            <div className="auth-input-wrapper">
+              <span className="auth-input-icon">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+              </span>
+              <input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                className="auth-input"
+                placeholder="Nhập mật khẩu"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+                required
+              />
+              <button
+                type="button"
+                className="auth-input-toggle"
+                onClick={() => setShowPassword(!showPassword)}
+                title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+              >
+                {showPassword ? (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                  </svg>
+                ) : (
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Ghi nhớ & Quên mật khẩu */}
           <div className="auth-options-row">
             <label className="auth-checkbox-label">
               <input
@@ -107,8 +162,15 @@ export function Login() {
             </Link>
           </div>
 
-          <button type="submit" className="btn btn-primary btn-block" disabled={busy}>
-            {busy ? 'Đang đăng nhập…' : 'Đăng nhập'}
+          {/* Nút Đăng nhập */}
+          <button type="submit" className="btn-auth-submit" disabled={busy}>
+            <span>{busy ? 'Đang đăng nhập…' : 'Đăng nhập'}</span>
+            {!busy && (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            )}
           </button>
         </form>
 
@@ -138,27 +200,14 @@ export function Login() {
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
                 />
               </svg>
-              <span>Đăng nhập bằng Google</span>
+              <span>Google</span>
             </button>
           </>
         )}
 
-        <div className="auth-links">
-          {!admin ? (
-            <span>
-              Chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
-            </span>
-          ) : (
-            <Link to="/forgot-password">Quên mật khẩu?</Link>
-          )}
-        </div>
-
-        <div className="auth-trust-note">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-          </svg>
-          <span>Hệ thống bảo mật xác thực SAMCO • SSL 256-bit</span>
+        <div className="auth-card-footer">
+          Chưa có tài khoản?{' '}
+          <Link to="/register">Đăng ký ngay</Link>
         </div>
       </div>
     </div>

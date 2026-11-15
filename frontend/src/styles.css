@@ -1233,9 +1233,6 @@ textarea {
   min-height: 100vh;
   padding: 40px 16px;
   background-color: #f8fafc;
-  background-image: 
-    radial-gradient(at 0% 0%, rgba(226, 232, 240, 0.5) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(241, 245, 249, 0.8) 0px, transparent 50%);
 }
 
 .auth-page-single {
@@ -1249,58 +1246,68 @@ textarea {
   max-width: 440px;
   padding: 36px 32px;
   border: 1px solid #e2e8f0;
-  border-radius: 16px;
+  border-radius: 20px;
   background: #ffffff;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
 }
 
 .auth-card-wide {
   max-width: 480px;
 }
 
-.auth-brand {
+/* Header thương hiệu chính giữa trong thẻ */
+.auth-brand-center {
   display: flex;
-  gap: 12px;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
+  text-align: center;
   margin-bottom: 24px;
 }
 
-.auth-brand .brand-logo {
-  display: flex;
+.auth-logo-badge {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
   background: #1e3a8a;
   color: #ffffff;
-  font-weight: 700;
-  font-size: 0.9rem;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
 }
 
-.auth-brand strong {
-  display: block;
-  font-size: 1.05rem;
-  color: #0f172a;
-  font-weight: 700;
-  line-height: 1.3;
+.auth-brand-title {
+  font-size: 1.45rem;
+  font-weight: 800;
+  color: #00288e;
+  letter-spacing: -0.02em;
+  margin: 0;
 }
 
-.auth-brand span {
-  color: #64748b;
-  font-size: 0.8rem;
+.auth-card-divider {
+  width: 100%;
+  height: 1px;
+  background: #f1f5f9;
+  margin: 16px 0 20px;
 }
 
-.auth-card h1 {
+.auth-heading-center {
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.auth-heading-center h1 {
   margin: 0 0 6px;
-  font-size: 1.6rem;
+  font-size: 1.75rem;
   font-weight: 800;
   color: #0f172a;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.025em;
 }
 
-.auth-subtitle {
-  margin: 0 0 24px;
+.auth-heading-center p {
+  margin: 0;
   color: #64748b;
   font-size: 0.88rem;
   line-height: 1.5;
@@ -1312,12 +1319,83 @@ textarea {
   gap: 16px;
 }
 
+/* Custom styled Input fields with Icons */
+.auth-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.auth-input-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.auth-input-label .required-star {
+  color: #dc2626;
+  font-weight: 700;
+}
+
+.auth-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.auth-input-icon {
+  position: absolute;
+  left: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  pointer-events: none;
+}
+
+.auth-input {
+  width: 100%;
+  height: 46px;
+  padding: 0 14px 0 42px;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #0f172a;
+  font-size: 0.92rem;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.auth-input:focus {
+  border-color: #1e3a8a;
+  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.12);
+}
+
+.auth-input-toggle {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: color 0.15s;
+}
+
+.auth-input-toggle:hover {
+  color: #334155;
+}
+
 .auth-options-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: -4px;
-  margin-bottom: 4px;
+  padding-top: 2px;
   font-size: 0.86rem;
 }
 
@@ -1328,6 +1406,7 @@ textarea {
   color: #475569;
   cursor: pointer;
   user-select: none;
+  font-size: 0.86rem;
 }
 
 .auth-checkbox-label input[type="checkbox"] {
@@ -1335,24 +1414,61 @@ textarea {
   height: 16px;
   border-radius: 4px;
   border: 1px solid #cbd5e1;
+  accent-color: #1e3a8a;
   cursor: pointer;
 }
 
 .auth-forgot-link {
   color: #1e40af;
-  font-weight: 500;
+  font-weight: 600;
   text-decoration: none;
+  font-size: 0.86rem;
 }
 
 .auth-forgot-link:hover {
   text-decoration: underline;
 }
 
+/* Nút Submit chính có icon mũi tên */
+.btn-auth-submit {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 48px;
+  margin-top: 6px;
+  border: none;
+  border-radius: 10px;
+  background: #1e3a8a;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(30, 58, 138, 0.25);
+}
+
+.btn-auth-submit:hover:not(:disabled) {
+  background: #172554;
+  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.35);
+  transform: translateY(-1px);
+}
+
+.btn-auth-submit:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-auth-submit:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
 .auth-divider {
   display: flex;
   align-items: center;
   gap: 14px;
-  margin: 20px 0 16px;
+  margin: 22px 0 16px;
   color: #94a3b8;
   font-size: 0.8rem;
 }
@@ -1372,12 +1488,12 @@ textarea {
   justify-content: center;
   gap: 12px;
   width: 100%;
-  padding: 11px 16px;
+  height: 46px;
   border: 1px solid #cbd5e1;
-  border-radius: 8px;
+  border-radius: 10px;
   background: #ffffff;
   color: #1e293b;
-  font-size: 0.9rem;
+  font-size: 0.92rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -1386,7 +1502,7 @@ textarea {
 .btn-google-full:hover {
   background: #f8fafc;
   border-color: #94a3b8;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
 .btn-google-full:active {
@@ -1399,41 +1515,24 @@ textarea {
   flex-shrink: 0;
 }
 
-.auth-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: center;
-  margin-top: 22px;
+.auth-card-footer {
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid #f1f5f9;
+  text-align: center;
   color: #64748b;
   font-size: 0.88rem;
 }
 
-.auth-links a {
+.auth-card-footer a {
   color: #1e40af;
-  font-weight: 600;
+  font-weight: 700;
   text-decoration: none;
+  margin-left: 4px;
 }
 
-.auth-links a:hover {
+.auth-card-footer a:hover {
   text-decoration: underline;
-}
-
-.auth-trust-note {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px dashed #e2e8f0;
-  color: #94a3b8;
-  font-size: 0.75rem;
-  text-align: center;
-}
-
-.auth-trust-note svg {
-  flex-shrink: 0;
 }
 
 .auth-tabs {

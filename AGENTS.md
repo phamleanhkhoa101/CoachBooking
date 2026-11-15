@@ -34,6 +34,7 @@ Before editing, verify actual packages, components, build scripts, configuration
 ## 3. Required Workflow for Agents
 
 0. **Code only on explicit user request:** When the user asks questions, seeks explanations, asks for analysis, options, or guidance, the agent must ONLY answer and guide. ABSOLUTELY DO NOT arbitrarily modify source code, create new files, or run code-modifying commands without an explicit request or clear consent from the user.
+0.1. **Strictly DO NOT commit git automatically:** Under NO circumstances should the agent run `git commit`, `git push`, or create commits on its own after finishing code changes. Only provide the code diff / status and suggest commit messages, and ONLY perform a commit when the user explicitly issues a command to commit (e.g. "commit đi", "hãy commit thay đổi này").
 1. Read `README.md` and the relevant parts of `docs/API.md`.
 2. Inspect related backend/frontend files, their callers, and relevant Flyway migrations.
 3. Check `git status` and preserve all existing user changes.
@@ -153,6 +154,7 @@ For every change:
 
 ## 10. Git and Change Safety
 
+- **ABSOLUTELY NO AUTO-COMMIT:** Do not run `git commit`, `git push`, `git merge`, or `git rebase` unless the user explicitly requests you to commit. After modifying code, leave changes in the working directory/staged area and report the results to the user.
 - Do not commit, push, force-push, merge, rebase, or switch branches unless specifically requested.
 - Never run `git reset --hard`, `git clean -fd`, or other destructive cleanup without explicit approval.
 - Do not overwrite uncommitted work or mass-format unrelated files.

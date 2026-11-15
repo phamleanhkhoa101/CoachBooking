@@ -38,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthService {
 
   private static final int ROLE_CUSTOMER_ID = 3;
+  private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
   private final AccountRepository accountRepository;
   private final RoleRepository roleRepository;
@@ -391,13 +392,12 @@ public class AuthService {
   }
 
   private String generateOtp() {
-    SecureRandom random = new SecureRandom();
-    return String.format("%06d", random.nextInt(1_000_000));
+    return String.format("%06d", SECURE_RANDOM.nextInt(1_000_000));
   }
 
   private String generateResetToken() {
     byte[] bytes = new byte[32];
-    new SecureRandom().nextBytes(bytes);
+    SECURE_RANDOM.nextBytes(bytes);
     return HexFormat.of().formatHex(bytes);
   }
 

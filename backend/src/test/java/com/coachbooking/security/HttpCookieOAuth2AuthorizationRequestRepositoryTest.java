@@ -60,4 +60,24 @@ class HttpCookieOAuth2AuthorizationRequestRepositoryTest {
     assertNotNull(expiredHeader);
     assertTrue(expiredHeader.contains("Max-Age=0"));
   }
+
+  @Test
+  void handlesNullAndMalformedAuthorizationRequestCookies() {
+    MockHttpServletRequest emptyReq = new MockHttpServletRequest();
+    assertNull(repository.loadAuthorizationRequest(emptyReq));
+
+    MockHttpServletRequest badCookieReq = new MockHttpServletRequest();
+    badCookieReq.setCookies(
+        new Cookie("other_cookie", "123"),
+        new Cookie(
+            HttpCookieOAuth2AuthorizationRequestRepository.OAUTH2_AUTH_REQUEST_COOKIE_NAME,
+            "bm90LWEtc2VyaWFsaXplZC1vYmplY3Q="));
+    assertNull(repository.loadAuthorizationRequest(badCookieReq));
+
+    MockHttpServletResponse removeRes = new MockHttpServletResponse();
+    repository.saveAuthorizationRequest(null, badCookieReq, removeRes);
+    String expiredHeader = removeRes.getHeader(HttpHeaders.SET_COOKIE);
+    assertNotNull(expiredHeader);
+    assertTrue(expiredHeader.contains("Max-Age=0"));
+  }
 }

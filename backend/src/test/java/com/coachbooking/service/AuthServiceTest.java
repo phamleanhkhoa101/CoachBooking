@@ -346,6 +346,14 @@ class AuthServiceTest {
     ApiException ex =
         assertThrows(ApiException.class, () -> authService.changePassword(acc, wrongOld));
     assertEquals(HttpStatus.BAD_REQUEST, ex.getStatus());
+
+    // Google account with null password sets local password
+    Account googleAcc = createAccount(2, "googleuser", 3, true);
+    googleAcc.setPassword(null);
+    Map<String, String> googleRes =
+        authService.changePassword(googleAcc, new ChangePasswordRequest("", "NewPass@123"));
+    assertEquals("Đổi mật khẩu thành công.", googleRes.get("message"));
+    assertEquals("new_hash", googleAcc.getPassword());
   }
 
   @Test
@@ -386,6 +394,23 @@ class AuthServiceTest {
     assertEquals("sub-existing", existingLocal.getGoogleSub());
     assertEquals("LOCAL", existingLocal.getAuthProvider());
     assertEquals("encoded_secret", existingLocal.getPassword());
+
+    // 3. Short/long prefix and duplicate username collision when generating username
+    when(accountRepository.findByGoogleSub("sub-short")).thenReturn(Optional.empty());
+    when(accountRepository.findByEmailIgnoreCase("a!@gmail.com")).thenReturn(Optional.empty());
+    when(accountRepository.existsByUsername("google_a")).thenReturn(true);
+    when(accountRepository.existsByUsername("google_a_1")).thenReturn(false);
+
+    AuthResponse shortRes = authService.loginWithGoogle("sub-short", "a!@gmail.com", true);
+    assertEquals("google-jwt", shortRes.token());
+
+    String longPrefix = "a".repeat(45) + "@gmail.com";
+    when(accountRepository.findByGoogleSub("sub-long")).thenReturn(Optional.empty());
+    when(accountRepository.findByEmailIgnoreCase(longPrefix)).thenReturn(Optional.empty());
+    when(accountRepository.existsByUsername("a".repeat(40))).thenReturn(false);
+
+    AuthResponse longRes = authService.loginWithGoogle("sub-long", longPrefix, true);
+    assertEquals("google-jwt", longRes.token());
   }
 
   private Account verifyAndCaptureSavedAccount() {

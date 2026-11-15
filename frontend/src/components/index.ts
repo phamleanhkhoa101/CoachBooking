@@ -1,5 +1,6 @@
 // Re-export common UI components
 export { Badge, StatusBadge, PaidBadge, RoleBadge, type BadgeProps, type BadgeTone } from './common/Badge';
+export { BrandLogo, type BrandLogoProps } from './common/BrandLogo';
 export { Button, type ButtonProps, type ButtonVariant, type ButtonSize } from './common/Button';
 export { FormField, type FormFieldProps, type FormFieldType, type SelectOption } from './common/FormField';
 export { Modal } from './common/Modal';

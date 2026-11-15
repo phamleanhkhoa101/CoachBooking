@@ -173,18 +173,12 @@ textarea {
 }
 
 .brand-logo {
-  display: flex;
   flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
   width: 42px;
   height: 42px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #1d4ed8, #0c2340);
-  color: #fff;
-  font-size: 0.95rem;
-  font-weight: 800;
-  box-shadow: 0 2px 8px rgba(29, 78, 216, 0.3);
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(15, 43, 92, 0.35);
 }
 
 .brand-text {
@@ -1266,16 +1260,13 @@ textarea {
 }
 
 .auth-logo-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  display: block;
   width: 56px;
   height: 56px;
   border-radius: 14px;
-  background: #1e3a8a;
-  color: #ffffff;
+  overflow: hidden;
   margin-bottom: 12px;
-  box-shadow: 0 4px 12px rgba(30, 58, 138, 0.2);
+  box-shadow: 0 4px 12px rgba(15, 43, 92, 0.22);
 }
 
 .auth-brand-title {

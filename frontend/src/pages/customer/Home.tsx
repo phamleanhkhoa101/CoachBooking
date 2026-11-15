@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { api, getErrorMessage } from '../../api/client';
 import type { BusCompany, Route, Trip } from '../../api/types';
 import { formatVnd, todayISO } from '../../utils/format';
+import { BrandLogo } from '../../components/common/BrandLogo';
 import { CustomerNavbar } from '../../components/layout/CustomerNavbar';
 import './Home.css';
 
@@ -833,7 +834,7 @@ export function Home() {
           <div className="footer-top-grid">
             <div className="footer-col-brand">
               <div className="footer-brand-header">
-                <div className="footer-brand-logo">BX</div>
+                <BrandLogo size={42} className="footer-brand-logo" />
                 <div>
                   <h3 className="footer-brand-title">Bến Xe Miền Đông Mới</h3>
                   <span className="footer-brand-sub">Tổng Công ty Cơ khí Giao thông Vận tải Sài Gòn (SAMCO)</span>

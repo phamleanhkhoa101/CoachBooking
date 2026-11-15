@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
+import { BrandLogo } from '../common/BrandLogo';
 import { RoleBadge } from '../common/Badge';
 import type { Role } from '../../api/types';
 
@@ -142,7 +143,7 @@ export function AppLayout() {
 
       <aside className={`sidebar ${open ? 'sidebar-open' : ''}`}>
         <div className="brand">
-          <div className="brand-logo">BX</div>
+          <BrandLogo size={42} className="brand-logo" />
           <div className="brand-text">
             <strong>CoachBooking</strong>
             <span>Quản lý bán vé xe</span>

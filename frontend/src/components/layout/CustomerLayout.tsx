@@ -1,4 +1,5 @@
 import { Link, Outlet } from 'react-router-dom';
+import { BrandLogo } from '../common/BrandLogo';
 import { CustomerNavbar } from './CustomerNavbar';
 import './CustomerLayout.css';
 
@@ -19,7 +20,7 @@ export function CustomerLayout() {
           <div className="footer-cols">
             <div className="footer-col-main">
               <div className="footer-brand">
-                <div className="brand-badge-box">BX</div>
+                <BrandLogo size={40} className="brand-badge-box" />
                 <div className="brand-text-col">
                   <span className="brand-title">CoachBooking</span>
                   <span className="brand-sub">Bến xe Miền Đông Mới</span>

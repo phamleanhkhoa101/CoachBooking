@@ -8,7 +8,10 @@ import type {
   TripSearchResponse,
 } from '../../api/types';
 import { BookingStepper } from '../../components/customer/BookingStepper';
-import { formatCurrency, formatTime } from '../../utils/format';
+import { Button } from '../../components/common/Button';
+import { LoadingState } from '../../components/common/LoadingState';
+import { ErrorBanner } from '../../components/common/ErrorBanner';
+import { formatTime, formatVnd } from '../../utils/format';
 import './SeatSelectionPage.css';
 
 const DEFAULT_BOARDING_POINTS = [
@@ -160,7 +163,7 @@ export function SeatSelectionPage() {
             </h1>
             <p>
               Giá niêm yết:{' '}
-              <strong className="text-orange">{formatCurrency(price)}/vé</strong>{' '}
+              <strong className="text-orange">{formatVnd(price)}/vé</strong>{' '}
               · Bến xe Miền Đông Mới (SAMCO)
             </p>
           </div>
@@ -179,19 +182,14 @@ export function SeatSelectionPage() {
       <div className="seat-layout-container">
         {loading ? (
           <div className="seat-loading-card">
-            <span className="spinner-large" />
-            <p>Đang tải sơ đồ ghế thời gian thực...</p>
+            <LoadingState message="Đang tải sơ đồ ghế thời gian thực..." />
           </div>
         ) : errorMsg ? (
           <div className="seat-error-card">
-            <p className="error-text">{errorMsg}</p>
-            <button
-              type="button"
-              className="btn-retry"
-              onClick={() => window.location.reload()}
-            >
-              Tải lại
-            </button>
+            <ErrorBanner
+              message={errorMsg}
+              onRetry={() => window.location.reload()}
+            />
           </div>
         ) : (
           <div className="seat-main-grid">
@@ -255,8 +253,22 @@ export function SeatSelectionPage() {
                             }`}
                             disabled={isBooked || isHeld}
                             onClick={() => handleSeatClick(seatNum)}
+                            title={
+                              isBooked
+                                ? `Ghế ${seatLabel} - Đã bán`
+                                : isHeld
+                                ? `Ghế ${seatLabel} - Đang giữ chỗ`
+                                : isSelected
+                                ? `Ghế ${seatLabel} - Đang chọn`
+                                : `Ghế ${seatLabel} - Còn trống`
+                            }
                           >
                             <span className="seat-label">{seatLabel}</span>
+                            {isBooked ? (
+                              <span className="seat-status-sub">Đã bán</span>
+                            ) : isHeld ? (
+                              <span className="seat-status-sub">Giữ chỗ</span>
+                            ) : null}
                           </button>
                         );
                       })}
@@ -293,8 +305,22 @@ export function SeatSelectionPage() {
                               }`}
                               disabled={isBooked || isHeld}
                               onClick={() => handleSeatClick(seatNum)}
+                              title={
+                                isBooked
+                                  ? `Ghế ${seatLabel} - Đã bán`
+                                  : isHeld
+                                  ? `Ghế ${seatLabel} - Đang giữ chỗ`
+                                  : isSelected
+                                  ? `Ghế ${seatLabel} - Đang chọn`
+                                  : `Ghế ${seatLabel} - Còn trống`
+                              }
                             >
                               <span className="seat-label">{seatLabel}</span>
+                              {isBooked ? (
+                                <span className="seat-status-sub">Đã bán</span>
+                              ) : isHeld ? (
+                                <span className="seat-status-sub">Giữ chỗ</span>
+                              ) : null}
                             </button>
                           );
                         })}
@@ -408,7 +434,7 @@ export function SeatSelectionPage() {
                   </div>
                   <div className="summary-row">
                     <span className="label">Đơn giá:</span>
-                    <span className="val">{formatCurrency(price)}</span>
+                    <span className="val">{formatVnd(price)}</span>
                   </div>
                   <div className="summary-row">
                     <span className="label">Bảo hiểm hành khách:</span>
@@ -418,22 +444,21 @@ export function SeatSelectionPage() {
                   <div className="summary-total-row">
                     <span>Tổng tiền tạm tính:</span>
                     <strong className="total-price-val">
-                      {formatCurrency(totalPrice)}
+                      {formatVnd(totalPrice)}
                     </strong>
                   </div>
                 </div>
 
                 {/* SUBMIT BUTTON */}
-                <button
-                  type="button"
+                <Button
+                  variant="accent"
                   className="btn-proceed-checkout"
-                  disabled={selectedSeats.length === 0 || holding}
+                  disabled={selectedSeats.length === 0}
+                  loading={holding}
                   onClick={() => void handleProceedToCheckout()}
                 >
-                  {holding
-                    ? 'Đang giữ ghế…'
-                    : `Tiếp tục thanh toán (${formatCurrency(totalPrice)})`}
-                </button>
+                  Tiếp tục thanh toán ({formatVnd(totalPrice)})
+                </Button>
 
                 <p className="summary-disclaimer">
                   * Ghế được giữ trong 10 phút sau khi sang bước thanh toán.

@@ -1,15 +1,15 @@
 /* ==========================================================================
-   Home.css — CoachBooking Trang chủ & Hero Section (Plus Jakarta Sans)
-   Tone màu chủ đạo: Indigo/Navy Blue (#00288e / #1e40af) & Energetic Orange (#ea580c / #fd761a)
+   Home.css — CoachBooking Trang chủ & Hero Section (Pure CSS Tokens)
+   Bảng màu chủ đạo: Royal Sapphire (#0c2340 / #1d4ed8) & Highway Amber (#d97706)
    ========================================================================== */
 
 .home-container {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: #faf8ff;
-  color: #131b2e;
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: inherit;
   overflow-x: hidden;
 }
 
@@ -356,7 +356,7 @@
 /* 2. Hero Section */
 .hero-section {
   position: relative;
-  background: linear-gradient(135deg, #071228 0%, #0d2352 40%, #1e40af 100%);
+  background: linear-gradient(135deg, #09172e 0%, #0c2340 45%, var(--primary) 100%);
   color: #ffffff;
   padding: 4rem 1.5rem 6.5rem;
   overflow: visible;
@@ -861,24 +861,25 @@
 .btn-search-hero {
   width: 100%;
   height: 3.5rem;
-  border-radius: 0.75rem;
+  border-radius: var(--radius-sm);
   border: none;
-  background: linear-gradient(135deg, #fd761a 0%, #ea580c 100%);
+  background: var(--accent);
   color: #ffffff;
   font-size: 1rem;
-  font-weight: 800;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.625rem;
-  box-shadow: 0 4px 14px rgba(234, 88, 12, 0.35);
+  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.3);
   cursor: pointer;
-  transition: transform 0.1s ease, box-shadow 0.15s ease;
+  transition: transform 0.1s ease, box-shadow 0.15s ease, background 0.15s ease;
 }
 
 .btn-search-hero:hover:not(:disabled) {
+  background: var(--accent-strong);
   transform: translateY(-1px);
-  box-shadow: 0 6px 18px rgba(234, 88, 12, 0.45);
+  box-shadow: 0 6px 18px rgba(217, 119, 6, 0.4);
 }
 
 .btn-search-hero:active {

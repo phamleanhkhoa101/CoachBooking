@@ -10,6 +10,7 @@ import type {
   Trip,
 } from '../../api/types';
 import { useAuth } from '../../auth/AuthContext';
+import { Button } from '../../components/common/Button';
 import { DataTable, type DataTableColumn } from '../../components/table/DataTable';
 import { FormField } from '../../components/common/FormField';
 import { SeatMap } from './components/SeatMap';
@@ -396,14 +397,15 @@ export function Booking({ mode }: BookingProps) {
             }))}
           />
           <div className="field field-action">
-            <button
-              type="button"
-              className="btn btn-primary btn-block"
+            <Button
+              variant="primary"
               onClick={() => void handleSearch()}
+              loading={loadingTrips}
               disabled={loadingTrips}
+              className="w-full"
             >
-              {loadingTrips ? 'Đang tìm…' : 'Tìm chuyến'}
-            </button>
+              Tìm chuyến
+            </Button>
           </div>
         </div>
       </section>
@@ -563,14 +565,15 @@ export function Booking({ mode }: BookingProps) {
               </div>
             </div>
 
-            <button
-              type="button"
-              className="btn btn-primary btn-block"
+            <Button
+              variant="primary"
               onClick={() => void handleBooking()}
+              loading={submitting}
               disabled={submitting || selectedSeats.length === 0}
+              className="w-full"
             >
-              {submitting ? 'Đang đặt vé…' : 'Xác nhận đặt vé'}
-            </button>
+              Xác nhận đặt vé
+            </Button>
 
             {result ? (
               <div className="alert alert-success result-box">

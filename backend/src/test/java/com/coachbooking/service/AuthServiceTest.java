@@ -6,17 +6,24 @@ import static org.mockito.Mockito.*;
 import com.coachbooking.common.ApiException;
 import com.coachbooking.domain.Account;
 import com.coachbooking.domain.Customer;
+import com.coachbooking.domain.PasswordResetToken;
 import com.coachbooking.domain.Role;
 import com.coachbooking.dto.auth.*;
 import com.coachbooking.repo.AccountRepository;
 import com.coachbooking.repo.CustomerRepository;
 import com.coachbooking.repo.EmployeeRepository;
+import com.coachbooking.repo.PasswordResetTokenRepository;
 import com.coachbooking.repo.RoleRepository;
 import com.coachbooking.security.JwtService;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.time.LocalDateTime;
+import java.util.HexFormat;
 import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -26,6 +33,8 @@ class AuthServiceTest {
   private RoleRepository roleRepository;
   private EmployeeRepository employeeRepository;
   private CustomerRepository customerRepository;
+  private PasswordResetTokenRepository passwordResetTokenRepository;
+  private EmailService emailService;
   private PasswordEncoder passwordEncoder;
   private JwtService jwtService;
   private AuthService authService;
@@ -36,6 +45,8 @@ class AuthServiceTest {
     roleRepository = mock(RoleRepository.class);
     employeeRepository = mock(EmployeeRepository.class);
     customerRepository = mock(CustomerRepository.class);
+    passwordResetTokenRepository = mock(PasswordResetTokenRepository.class);
+    emailService = mock(EmailService.class);
     passwordEncoder = mock(PasswordEncoder.class);
     jwtService = mock(JwtService.class);
 
@@ -45,6 +56,8 @@ class AuthServiceTest {
             roleRepository,
             employeeRepository,
             customerRepository,
+            passwordResetTokenRepository,
+            emailService,
             passwordEncoder,
             jwtService);
   }
@@ -189,23 +202,132 @@ class AuthServiceTest {
 
   @Test
   void forgotPasswordSuccessAndValidation() {
-    ForgotPasswordRequest req = new ForgotPasswordRequest("validuser", "user@test.com");
+    ForgotPasswordRequest req = new ForgotPasswordRequest("user@test.com");
     Account acc = createAccount(1, "validuser", 3, true);
-    when(accountRepository.findByUsernameAndEmail("validuser", "user@test.com"))
-        .thenReturn(Optional.of(acc));
-    when(passwordEncoder.encode(anyString())).thenReturn("new_encoded");
+    acc.setEmail("user@test.com");
+    when(accountRepository.findByEmailIgnoreCase("user@test.com")).thenReturn(Optional.of(acc));
+    when(passwordResetTokenRepository.findTopByAccountIdOrderByCreatedAtDesc(1))
+        .thenReturn(Optional.empty());
 
     Map<String, String> res = authService.forgotPassword(req);
     assertEquals(
-        "Đã đặt lại mật khẩu. Môi trường demo trả mật khẩu tạm trực tiếp.", res.get("message"));
-    assertNotNull(res.get("temporaryPassword"));
-    verify(accountRepository).save(acc);
+        "Mã xác nhận OTP đã được gửi tới email của bạn. Vui lòng kiểm tra hộp thư.",
+        res.get("message"));
+    assertNull(res.get("temporaryPassword"));
+    assertNull(res.get("matKhauTam"));
 
-    // user not found
-    when(accountRepository.findByUsernameAndEmail("validuser", "user@test.com"))
-        .thenReturn(Optional.empty());
+    ArgumentCaptor<String> otpCaptor = ArgumentCaptor.forClass(String.class);
+    verify(passwordResetTokenRepository).invalidateActiveTokens(eq(1), any(LocalDateTime.class));
+    verify(passwordResetTokenRepository).save(any(PasswordResetToken.class));
+    verify(emailService)
+        .sendPasswordResetOtp(eq("user@test.com"), eq("validuser"), otpCaptor.capture(), eq(15));
+    assertTrue(otpCaptor.getValue().matches("\\d{6}"));
+
+    // cooldown check
+    PasswordResetToken recent = new PasswordResetToken();
+    recent.setCreatedAt(LocalDateTime.now().minusSeconds(10));
+    when(passwordResetTokenRepository.findTopByAccountIdOrderByCreatedAtDesc(1))
+        .thenReturn(Optional.of(recent));
+    ApiException cooldown = assertThrows(ApiException.class, () -> authService.forgotPassword(req));
+    assertEquals(HttpStatus.BAD_REQUEST, cooldown.getStatus());
+
+    // inactive account
+    acc.setIsActive(false);
+    ApiException locked = assertThrows(ApiException.class, () -> authService.forgotPassword(req));
+    assertEquals(HttpStatus.FORBIDDEN, locked.getStatus());
+
+    // email not found
+    when(accountRepository.findByEmailIgnoreCase("user@test.com")).thenReturn(Optional.empty());
     ApiException notFound = assertThrows(ApiException.class, () -> authService.forgotPassword(req));
     assertEquals(HttpStatus.NOT_FOUND, notFound.getStatus());
+  }
+
+  @Test
+  void verifyOtpAndResetPasswordFlow() throws Exception {
+    Account acc = createAccount(1, "validuser", 3, true);
+    acc.setEmail("user@test.com");
+    when(accountRepository.findByEmailIgnoreCase("user@test.com")).thenReturn(Optional.of(acc));
+
+    String otp = "123456";
+    String otpHash =
+        HexFormat.of()
+            .formatHex(
+                MessageDigest.getInstance("SHA-256").digest(otp.getBytes(StandardCharsets.UTF_8)));
+
+    PasswordResetToken token = new PasswordResetToken();
+    token.setTokenId(10L);
+    token.setAccountId(1);
+    token.setTokenHash(otpHash);
+    token.setCreatedAt(LocalDateTime.now().minusMinutes(1));
+    token.setExpiresAt(LocalDateTime.now().plusMinutes(14));
+    token.setAttempts(0);
+
+    when(passwordResetTokenRepository.findTopByAccountIdAndUsedAtIsNullOrderByCreatedAtDesc(1))
+        .thenReturn(Optional.of(token));
+
+    // Step 2: verify OTP succeeds and issues resetToken
+    Map<String, String> verifyRes =
+        authService.verifyResetOtp(new VerifyResetOtpRequest("user@test.com", otp));
+    assertEquals("Xác thực OTP thành công.", verifyRes.get("message"));
+    String resetToken = verifyRes.get("resetToken");
+    assertNotNull(resetToken);
+    assertNotNull(token.getVerifiedAt());
+    assertNotNull(token.getResetTokenHash());
+    assertNull(token.getUsedAt());
+
+    // Step 3: reset password with invalid resetToken fails
+    ResetPasswordRequest badTokenReq =
+        new ResetPasswordRequest("user@test.com", "wrong-token", "NewPass@123");
+    ApiException badTokenEx =
+        assertThrows(ApiException.class, () -> authService.resetPassword(badTokenReq));
+    assertEquals(HttpStatus.BAD_REQUEST, badTokenEx.getStatus());
+
+    // Step 3: reset password with valid resetToken succeeds
+    when(passwordEncoder.encode("NewPass@123")).thenReturn("new_hash");
+    ResetPasswordRequest validResetReq =
+        new ResetPasswordRequest("user@test.com", resetToken, "NewPass@123");
+    Map<String, String> resetRes = authService.resetPassword(validResetReq);
+    assertEquals(
+        "Đặt lại mật khẩu thành công. Bạn có thể đăng nhập bằng mật khẩu mới.",
+        resetRes.get("message"));
+    assertEquals("new_hash", acc.getPassword());
+    assertNotNull(token.getUsedAt());
+    verify(accountRepository).save(acc);
+
+    // wrong OTP increments attempts and locks after maxAttempts (5)
+    PasswordResetToken tokenWrong = new PasswordResetToken();
+    tokenWrong.setTokenId(11L);
+    tokenWrong.setAccountId(1);
+    tokenWrong.setTokenHash(otpHash);
+    tokenWrong.setCreatedAt(LocalDateTime.now());
+    tokenWrong.setExpiresAt(LocalDateTime.now().plusMinutes(10));
+    tokenWrong.setAttempts(4);
+    when(passwordResetTokenRepository.findTopByAccountIdAndUsedAtIsNullOrderByCreatedAtDesc(1))
+        .thenReturn(Optional.of(tokenWrong));
+
+    VerifyResetOtpRequest wrongOtpReq = new VerifyResetOtpRequest("user@test.com", "654321");
+    ApiException tooMany =
+        assertThrows(ApiException.class, () -> authService.verifyResetOtp(wrongOtpReq));
+    assertEquals(HttpStatus.BAD_REQUEST, tooMany.getStatus());
+    assertEquals(5, tokenWrong.getAttempts());
+    assertNotNull(tokenWrong.getUsedAt());
+
+    // expired token
+    PasswordResetToken expired = new PasswordResetToken();
+    expired.setTokenId(12L);
+    expired.setAccountId(1);
+    expired.setTokenHash(otpHash);
+    expired.setCreatedAt(LocalDateTime.now().minusMinutes(20));
+    expired.setExpiresAt(LocalDateTime.now().minusMinutes(5));
+    expired.setAttempts(0);
+    when(passwordResetTokenRepository.findTopByAccountIdAndUsedAtIsNullOrderByCreatedAtDesc(1))
+        .thenReturn(Optional.of(expired));
+    ApiException expiredEx =
+        assertThrows(
+            ApiException.class,
+            () -> authService.verifyResetOtp(new VerifyResetOtpRequest("user@test.com", otp)));
+    assertEquals(HttpStatus.BAD_REQUEST, expiredEx.getStatus());
+    assertNotNull(expired.getUsedAt());
   }
 
   @Test

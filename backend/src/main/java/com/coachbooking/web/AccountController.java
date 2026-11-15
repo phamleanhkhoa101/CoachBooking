@@ -8,6 +8,7 @@ import com.coachbooking.repo.CustomerRepository;
 import com.coachbooking.repo.EmployeeRepository;
 import com.coachbooking.repo.RoleRepository;
 import com.fasterxml.jackson.annotation.JsonAlias;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -26,8 +27,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping({"/api/accounts", "/api/tai-khoan"})
+@RequestMapping("/api/accounts")
 @PreAuthorize("hasRole('Admin')")
+@Tag(name = "Tài khoản", description = "Quản lý tài khoản người dùng (Admin)")
 public class AccountController {
 
   private final AccountRepository accountRepository;

@@ -7,6 +7,7 @@ import com.coachbooking.repo.RouteRepository;
 import com.coachbooking.repo.TicketPriceRepository;
 import com.coachbooking.repo.VehicleTypeRepository;
 import com.fasterxml.jackson.annotation.JsonAlias;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
@@ -24,8 +25,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping({"/api/ticket-prices", "/api/gia-ve"})
+@RequestMapping("/api/ticket-prices")
 @PreAuthorize("hasAnyRole('Admin','NhanVien')")
+@Tag(
+    name = "Bảng giá vé",
+    description = "Quản lý bảng giá vé theo tuyến và loại xe (Admin/Nhân viên)")
+@Tag(
+    name = "Bảng giá vé",
+    description = "Quản lý bảng giá vé theo tuyến và loại xe (Admin/Nhân viên)")
 public class TicketPriceController {
 
   private final TicketPriceRepository ticketPriceRepository;

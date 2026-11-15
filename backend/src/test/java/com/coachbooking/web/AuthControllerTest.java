@@ -43,12 +43,17 @@ class AuthControllerTest {
   @Test
   void otherEndpointsDelegateToService() {
     RegisterRequest reg = new RegisterRequest("user12", "u@test.com", "Pass@123", "Pass@123");
-    ForgotPasswordRequest forgot = new ForgotPasswordRequest("user12", "u@test.com");
+    ForgotPasswordRequest forgot = new ForgotPasswordRequest("u@test.com");
+    VerifyResetOtpRequest verifyOtp = new VerifyResetOtpRequest("u@test.com", "123456");
+    ResetPasswordRequest reset = new ResetPasswordRequest("u@test.com", "tok123", "NewPass@123");
     ChangePasswordRequest change = new ChangePasswordRequest("old", "NewPass@123");
     Account acc = new Account();
 
     when(authService.register(reg)).thenReturn(Map.of("message", "registered"));
-    when(authService.forgotPassword(forgot)).thenReturn(Map.of("message", "reset"));
+    when(authService.forgotPassword(forgot)).thenReturn(Map.of("message", "otp_sent"));
+    when(authService.verifyResetOtp(verifyOtp))
+        .thenReturn(Map.of("message", "otp_ok", "resetToken", "tok123"));
+    when(authService.resetPassword(reset)).thenReturn(Map.of("message", "reset_ok"));
     when(currentUserService.requireAccount()).thenReturn(acc);
     when(authService.changePassword(acc, change)).thenReturn(Map.of("message", "changed"));
     when(authService.me(acc))
@@ -56,7 +61,9 @@ class AuthControllerTest {
             new UserResponse(1, "user", "u@test.com", "Admin", 1, null, null, "User", true));
 
     assertEquals("registered", controller.register(reg).get("message"));
-    assertEquals("reset", controller.forgotPassword(forgot).get("message"));
+    assertEquals("otp_sent", controller.forgotPassword(forgot).get("message"));
+    assertEquals("tok123", controller.verifyResetOtp(verifyOtp).get("resetToken"));
+    assertEquals("reset_ok", controller.resetPassword(reset).get("message"));
     assertEquals("changed", controller.changePassword(change).get("message"));
     assertEquals(1, controller.me().accountId());
   }

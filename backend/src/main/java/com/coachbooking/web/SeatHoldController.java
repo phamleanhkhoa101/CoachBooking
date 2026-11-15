@@ -4,6 +4,7 @@ import com.coachbooking.dto.hold.SeatHoldRequest;
 import com.coachbooking.dto.hold.SeatHoldResponse;
 import com.coachbooking.service.CurrentUserService;
 import com.coachbooking.service.SeatHoldService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/seat-holds")
 @PreAuthorize("hasRole('KhachHang')")
+@Tag(name = "Giữ ghế tạm", description = "Giữ và hủy giữ ghế tạm thời cho khách hàng")
 public class SeatHoldController {
 
   private final SeatHoldService seatHoldService;

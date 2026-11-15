@@ -6,6 +6,8 @@ import com.coachbooking.dto.auth.ChangePasswordRequest;
 import com.coachbooking.dto.auth.ForgotPasswordRequest;
 import com.coachbooking.dto.auth.LoginRequest;
 import com.coachbooking.dto.auth.RegisterRequest;
+import com.coachbooking.dto.auth.ResetPasswordRequest;
+import com.coachbooking.dto.auth.VerifyResetOtpRequest;
 import com.coachbooking.dto.booking.BookingRequest;
 import com.coachbooking.dto.invoice.LookupRequest;
 import com.coachbooking.dto.profile.UpdateProfileRequest;
@@ -32,9 +34,18 @@ class DtoTest {
     assertEquals("old", cp.oldPassword());
     assertEquals("new", cp.newPassword());
 
-    ForgotPasswordRequest fp = new ForgotPasswordRequest("user", "user@test.com");
-    assertEquals("user", fp.username());
+    ForgotPasswordRequest fp = new ForgotPasswordRequest("user@test.com");
     assertEquals("user@test.com", fp.email());
+
+    VerifyResetOtpRequest vp = new VerifyResetOtpRequest("user@test.com", "123456");
+    assertEquals("user@test.com", vp.email());
+    assertEquals("123456", vp.otp());
+
+    ResetPasswordRequest rp =
+        new ResetPasswordRequest("user@test.com", "reset-token", "NewPass@123");
+    assertEquals("user@test.com", rp.email());
+    assertEquals("reset-token", rp.resetToken());
+    assertEquals("NewPass@123", rp.newPassword());
   }
 
   @Test

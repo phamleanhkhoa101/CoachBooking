@@ -3,8 +3,12 @@ import { Link } from 'react-router-dom';
 import { api, getErrorMessage } from '../../api/client';
 import type { HoaDonKhachHang } from '../../api/types';
 import { useAuth } from '../../auth/AuthContext';
+import { Button } from '../../components/common/Button';
+import { EmptyState } from '../../components/common/EmptyState';
+import { LoadingState } from '../../components/common/LoadingState';
+import { Modal } from '../../components/common/Modal';
 import { useToast } from '../../components/common/Toast';
-import { formatCurrency, formatDateTime } from '../../utils/format';
+import { formatDateTime, formatVnd } from '../../utils/format';
 import './CustomerTicketsPage.css';
 
 export function CustomerTicketsPage() {
@@ -153,22 +157,18 @@ export function CustomerTicketsPage() {
         {/* LIST */}
         {loading ? (
           <div className="tickets-loading-card">
-            <span className="spinner-large" />
-            <p>Đang tải danh sách vé của bạn...</p>
+            <LoadingState message="Đang tải danh sách vé của bạn..." />
           </div>
         ) : filteredInvoices.length === 0 ? (
-          <div className="tickets-empty-card">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" strokeWidth="1.5">
-              <rect x="2" y="3" width="20" height="14" rx="2" />
-              <line x1="8" y1="21" x2="16" y2="21" />
-              <line x1="12" y1="17" x2="12" y2="21" />
-            </svg>
-            <h3>Chưa có vé xe nào trong mục này</h3>
-            <p>Quý khách chưa có đơn vé nào hoặc chưa đặt chuyến xe phù hợp với bộ lọc.</p>
-            <Link to="/tim-chuyen" className="btn-book-now">
-              Tìm chuyến xe ngay
-            </Link>
-          </div>
+          <EmptyState
+            title="Chưa có vé xe nào trong mục này"
+            description="Quý khách chưa có đơn vé nào hoặc chưa đặt chuyến xe phù hợp với bộ lọc đã chọn."
+            action={
+              <Link to="/tim-chuyen">
+                <Button variant="primary">Tìm chuyến xe ngay</Button>
+              </Link>
+            }
+          />
         ) : (
           <div className="tickets-cards-grid">
             {filteredInvoices.map((inv) => {
@@ -211,7 +211,7 @@ export function CustomerTicketsPage() {
 
                     <div className="card-price-info">
                       <span className="info-label">Tổng thanh toán:</span>
-                      <strong className="total-amount">{formatCurrency(amount)}</strong>
+                      <strong className="total-amount">{formatVnd(amount)}</strong>
                     </div>
                   </div>
 
@@ -229,23 +229,23 @@ export function CustomerTicketsPage() {
                     </Link>
 
                     {!isPaid && (
-                      <button
-                        type="button"
-                        className="btn-action-pay"
+                      <Button
+                        variant="accent"
+                        size="sm"
                         onClick={() => setPayModalInvoice(inv)}
                       >
                         Thanh toán ngay
-                      </button>
+                      </Button>
                     )}
 
                     {!isPaid && (
-                      <button
-                        type="button"
-                        className="btn-action-cancel"
+                      <Button
+                        variant="danger"
+                        size="sm"
                         onClick={() => setCancelModalInvoice(inv)}
                       >
                         Hủy đơn vé
-                      </button>
+                      </Button>
                     )}
                   </div>
                 </div>
@@ -256,89 +256,86 @@ export function CustomerTicketsPage() {
       </div>
 
       {/* CANCEL MODAL */}
-      {cancelModalInvoice && (
-        <div className="custom-modal-backdrop" onClick={() => setCancelModalInvoice(null)}>
-          <div className="custom-modal-dialog" onClick={(e) => e.stopPropagation()}>
-            <h3>Xác nhận hủy đơn vé #{cancelModalInvoice.invoiceId ?? cancelModalInvoice.maHd}</h3>
-            <p>
-              Quý khách có chắc chắn muốn hủy đơn vé này không? Chỗ ngồi đã giữ sẽ được giải phóng lại cho hành khách khác trên hệ thống.
-            </p>
-            <div className="modal-actions-bar">
-              <button
-                type="button"
-                className="btn-modal-back"
-                onClick={() => setCancelModalInvoice(null)}
-                disabled={cancelBusy}
-              >
-                Giữ lại vé
-              </button>
-              <button
-                type="button"
-                className="btn-modal-confirm-cancel"
-                onClick={handleCancelInvoice}
-                disabled={cancelBusy}
-              >
-                {cancelBusy ? 'Đang hủy...' : 'Đồng ý hủy vé'}
-              </button>
-            </div>
+      <Modal
+        open={Boolean(cancelModalInvoice)}
+        title={`Xác nhận hủy đơn vé #${cancelModalInvoice?.invoiceId ?? cancelModalInvoice?.maHd}`}
+        onClose={() => setCancelModalInvoice(null)}
+        footer={
+          <div className="modal-actions-bar">
+            <Button
+              variant="secondary"
+              onClick={() => setCancelModalInvoice(null)}
+              disabled={cancelBusy}
+            >
+              Giữ lại vé
+            </Button>
+            <Button
+              variant="danger"
+              onClick={handleCancelInvoice}
+              loading={cancelBusy}
+            >
+              Đồng ý hủy vé
+            </Button>
           </div>
-        </div>
-      )}
+        }
+      >
+        <p>
+          Quý khách có chắc chắn muốn hủy đơn vé này không? Chỗ ngồi đã giữ sẽ được giải phóng lại cho hành khách khác trên hệ thống.
+        </p>
+      </Modal>
 
       {/* PAY MODAL */}
-      {payModalInvoice && (
-        <div className="custom-modal-backdrop" onClick={() => setPayModalInvoice(null)}>
-          <div className="custom-modal-dialog" onClick={(e) => e.stopPropagation()}>
-            <h3>Thanh toán đơn vé #{payModalInvoice.invoiceId ?? payModalInvoice.maHd}</h3>
-            <p>
-              Số tiền thanh toán:{' '}
-              <strong className="text-orange">
-                {formatCurrency(payModalInvoice.totalAmount ?? payModalInvoice.tongTien ?? 0)}
-              </strong>
-            </p>
-
-            <div className="pay-method-choice">
-              <label className="radio-label">
-                <input
-                  type="radio"
-                  name="modalPayMethod"
-                  checked={payMethod === 'Chuyển khoản'}
-                  onChange={() => setPayMethod('Chuyển khoản')}
-                />
-                <span>Chuyển khoản ngân hàng (VietQR / Internet Banking)</span>
-              </label>
-              <label className="radio-label">
-                <input
-                  type="radio"
-                  name="modalPayMethod"
-                  checked={payMethod === 'Tiền mặt'}
-                  onChange={() => setPayMethod('Tiền mặt')}
-                />
-                <span>Thanh toán tiền mặt tại quầy vé bến xe</span>
-              </label>
-            </div>
-
-            <div className="modal-actions-bar">
-              <button
-                type="button"
-                className="btn-modal-back"
-                onClick={() => setPayModalInvoice(null)}
-                disabled={payBusy}
-              >
-                Đóng
-              </button>
-              <button
-                type="button"
-                className="btn-modal-confirm-pay"
-                onClick={handlePayInvoice}
-                disabled={payBusy}
-              >
-                {payBusy ? 'Đang xử lý...' : 'Xác nhận thanh toán'}
-              </button>
-            </div>
+      <Modal
+        open={Boolean(payModalInvoice)}
+        title={`Thanh toán đơn vé #${payModalInvoice?.invoiceId ?? payModalInvoice?.maHd}`}
+        onClose={() => setPayModalInvoice(null)}
+        footer={
+          <div className="modal-actions-bar">
+            <Button
+              variant="secondary"
+              onClick={() => setPayModalInvoice(null)}
+              disabled={payBusy}
+            >
+              Đóng
+            </Button>
+            <Button
+              variant="accent"
+              onClick={handlePayInvoice}
+              loading={payBusy}
+            >
+              Xác nhận thanh toán
+            </Button>
           </div>
+        }
+      >
+        <p>
+          Số tiền thanh toán:{' '}
+          <strong className="text-orange">
+            {formatVnd(payModalInvoice?.totalAmount ?? payModalInvoice?.tongTien ?? 0)}
+          </strong>
+        </p>
+
+        <div className="pay-method-choice">
+          <label className="radio-label">
+            <input
+              type="radio"
+              name="modalPayMethod"
+              checked={payMethod === 'Chuyển khoản'}
+              onChange={() => setPayMethod('Chuyển khoản')}
+            />
+            <span>Chuyển khoản ngân hàng (VietQR / Internet Banking)</span>
+          </label>
+          <label className="radio-label">
+            <input
+              type="radio"
+              name="modalPayMethod"
+              checked={payMethod === 'Tiền mặt'}
+              onChange={() => setPayMethod('Tiền mặt')}
+            />
+            <span>Thanh toán tiền mặt tại quầy vé bến xe</span>
+          </label>
         </div>
-      )}
+      </Modal>
     </div>
   );
 }

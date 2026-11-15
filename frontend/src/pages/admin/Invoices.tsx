@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { api, buildQuery, getErrorMessage } from '../../api/client';
 import type { InvoiceDetail, InvoiceItem, TicketItem } from '../../api/types';
 import { PaidBadge } from '../../components/common/Badge';
+import { Button } from '../../components/common/Button';
 import { DataTable, type DataTableColumn } from '../../components/table/DataTable';
 import { FormField } from '../../components/common/FormField';
 import { Modal } from '../../components/common/Modal';
@@ -124,7 +125,7 @@ export function Invoices() {
     setBusy(true);
     try {
       await api.post(`/invoices/${id}/pay`, { paymentMethod: payMethod });
-      showToast(`Đã thanh toán hóa đơn #${id}.`);
+      showToast(`Đã thanh toán hóa đơn #${id} thành công.`);
       setPayTarget(null);
       await load();
       if (detailOpen && detailId === id) await loadDetail(id);
@@ -141,7 +142,7 @@ export function Invoices() {
     setBusy(true);
     try {
       await api.post(`/invoices/${id}/cancel`);
-      showToast(`Đã hủy hóa đơn #${id}.`);
+      showToast(`Đã hủy hóa đơn #${id} thành công.`);
       setCancelTarget(null);
       if (detailOpen && detailId === id) {
         setDetailOpen(false);
@@ -209,28 +210,26 @@ export function Invoices() {
   const currentIsPaid = Boolean(detail?.isPaid ?? detail?.trangThai);
   const detailFooter = detail ? (
     <>
-      <button type="button" className="btn btn-secondary" onClick={() => setDetailOpen(false)}>
+      <Button variant="secondary" onClick={() => setDetailOpen(false)}>
         Đóng
-      </button>
+      </Button>
       {!currentIsPaid ? (
         <>
-          <button
-            type="button"
-            className="btn btn-danger-ghost"
+          <Button
+            variant="danger-ghost"
             onClick={() => setCancelTarget(detailToItem(detail))}
           >
             Hủy hóa đơn
-          </button>
-          <button
-            type="button"
-            className="btn btn-primary"
+          </Button>
+          <Button
+            variant="accent"
             onClick={() => {
               setPayMethod('Tiền mặt');
               setPayTarget(detailToItem(detail));
             }}
           >
             Thanh toán
-          </button>
+          </Button>
         </>
       ) : null}
     </>
@@ -240,7 +239,7 @@ export function Invoices() {
     <div className="page">
       <div className="page-header">
         <div>
-          <h1>Hóa đơn</h1>
+          <h1>Hóa đơn & Đơn vé</h1>
           <p className="page-subtitle">
             Tra cứu hóa đơn, xem chi tiết vé, thanh toán hoặc hủy hóa đơn chưa thanh toán.
           </p>
@@ -271,35 +270,36 @@ export function Invoices() {
               value={paidStatus}
               onChange={(event) => setPaidStatus(event.target.value)}
             >
-              <option value="">Tất cả</option>
+              <option value="">Tất cả trạng thái</option>
               <option value="true">Đã thanh toán</option>
-              <option value="false">Chưa thanh toán</option>
+              <option value="false">Chờ thanh toán</option>
             </select>
           </div>
-          <button
-            type="button"
-            className="btn btn-primary"
+          <Button
+            variant="primary"
             onClick={() => void load()}
             disabled={loading}
           >
-            Lọc
-          </button>
+            Lọc hóa đơn
+          </Button>
         </div>
       </div>
 
       <div className="card">
         <div className="card-toolbar">
-          <span className="text-muted">{rows.length} hóa đơn</span>
-          <button type="button" className="btn btn-ghost btn-sm" onClick={() => void load()}>
+          <span className="text-muted">{rows.length} hóa đơn trong danh sách</span>
+          <Button variant="ghost" size="sm" onClick={() => void load()}>
             Làm mới
-          </button>
+          </Button>
         </div>
+
         <DataTable<InvoiceItem>
           columns={columns}
           rows={rows}
           rowKey={(row) => String(row.invoiceId ?? row.maHd)}
           loading={loading}
-          emptyText="Không có hóa đơn nào trong khoảng thời gian đã chọn."
+          emptyText="Không tìm thấy hóa đơn nào trong khoảng thời gian đã chọn."
+          onRowClick={(row) => openDetail(row.invoiceId ?? row.maHd)}
           actions={(row) => {
             const id = row.invoiceId ?? row.maHd;
             const paid = Boolean(row.isPaid ?? row.trangThai);
@@ -309,6 +309,7 @@ export function Invoices() {
                   type="button"
                   className="btn btn-ghost btn-sm"
                   onClick={() => openDetail(id)}
+                  title="Xem chi tiết hóa đơn"
                 >
                   Chi tiết
                 </button>
@@ -321,6 +322,7 @@ export function Invoices() {
                         setPayMethod('Tiền mặt');
                         setPayTarget(row);
                       }}
+                      title="Thanh toán ngay"
                     >
                       Thanh toán
                     </button>
@@ -328,6 +330,7 @@ export function Invoices() {
                       type="button"
                       className="btn btn-danger-ghost btn-sm"
                       onClick={() => setCancelTarget(row)}
+                      title="Hủy hóa đơn"
                     >
                       Hủy
                     </button>
@@ -339,6 +342,7 @@ export function Invoices() {
         />
       </div>
 
+      {/* INVOICE DETAIL VIEW MODAL */}
       <Modal
         open={detailOpen}
         onClose={() => setDetailOpen(false)}
@@ -352,41 +356,45 @@ export function Invoices() {
         wide
       >
         {detailLoading || !detail ? (
-          <div className="empty-state">
-            <span className="spinner" /> Đang tải chi tiết…
+          <div className="table-state">
+            <span className="spinner" /> Đang tải chi tiết hóa đơn…
           </div>
         ) : (
           <>
             <div className="detail-grid">
-              <div>
-                <span className="text-muted">Khách hàng</span>
-                <strong>{detail.customerName ?? detail.tenKhachHang}</strong>
+              <div className="detail-item">
+                <span className="detail-label">Khách hàng</span>
+                <strong className="detail-value">{detail.customerName ?? detail.tenKhachHang}</strong>
                 <span className="text-muted">{detail.customerPhone ?? detail.sdtKhachHang ?? '—'}</span>
               </div>
-              <div>
-                <span className="text-muted">Nhân viên lập</span>
-                <strong>{detail.employeeName ?? detail.tenNhanVien ?? 'Khách tự đặt'}</strong>
+              <div className="detail-item">
+                <span className="detail-label">Nhân viên phụ trách</span>
+                <strong className="detail-value">{detail.employeeName ?? detail.tenNhanVien ?? 'Khách tự đặt trực tuyến'}</strong>
               </div>
-              <div>
-                <span className="text-muted">Tổng tiền</span>
-                <strong className="text-primary">
+              <div className="detail-item">
+                <span className="detail-label">Tổng tiền thanh toán</span>
+                <strong className="detail-value text-primary">
                   {formatVnd(detail.totalAmount ?? detail.tongTien)}
                 </strong>
               </div>
-              <div>
-                <span className="text-muted">Trạng thái</span>
-                <PaidBadge paid={Boolean(detail.isPaid ?? detail.trangThai)} />
+              <div className="detail-item">
+                <span className="detail-label">Trạng thái</span>
+                <div>
+                  <PaidBadge paid={Boolean(detail.isPaid ?? detail.trangThai)} />
+                </div>
               </div>
             </div>
 
-            <h3 className="section-title">
+            <h3 className="section-title" style={{ marginTop: '1.25rem', marginBottom: '0.75rem' }}>
               Danh sách vé ({(detail.tickets ?? detail.veXes)?.length ?? 0})
             </h3>
             <DataTable<TicketItem>
               columns={ticketColumns}
               rows={detail.tickets ?? detail.veXes ?? []}
               rowKey={(row) => String(row.ticketId ?? row.maVe)}
-              emptyText="Hóa đơn chưa có vé."
+              emptyText="Hóa đơn chưa có vé nào."
+              pagination={false}
+              sortable={false}
             />
 
             {detail.payment || detail.thanhToan ? (
@@ -396,8 +404,8 @@ export function Invoices() {
                 const pDate = detail.payment?.paymentDate ?? detail.thanhToan?.ngayTt;
                 const pMethod = detail.payment?.paymentMethod ?? detail.thanhToan?.phuongThuc;
                 return (
-                  <div className="info-box">
-                    <span className="info-box-title">Thông tin thanh toán</span>
+                  <div className="info-box" style={{ marginTop: '1.25rem' }}>
+                    <span className="info-box-title">Thông tin giao dịch thanh toán</span>
                     <div className="info-grid">
                       <div>
                         <span className="text-muted">Mã thanh toán</span>
@@ -408,7 +416,7 @@ export function Invoices() {
                         <strong>{formatVnd(pAmount)}</strong>
                       </div>
                       <div>
-                        <span className="text-muted">Thời điểm</span>
+                        <span className="text-muted">Thời điểm thanh toán</span>
                         <strong>{formatDateTime(pDate)}</strong>
                       </div>
                       <div>
@@ -420,36 +428,43 @@ export function Invoices() {
                 );
               })()
             ) : (
-              <div className="alert alert-warning">Hóa đơn chưa được thanh toán.</div>
+              <div className="alert alert-warning" style={{ marginTop: '1.25rem' }}>
+                Hóa đơn này hiện chưa được ghi nhận thanh toán.
+              </div>
             )}
           </>
         )}
       </Modal>
 
+      {/* PAY ACTION MODAL */}
       <Modal
         open={Boolean(payTarget)}
         onClose={() => setPayTarget(null)}
         title="Thanh toán hóa đơn"
         subtitle={
           payTarget
-            ? `Hóa đơn #${payTarget.invoiceId ?? payTarget.maHd} · ${formatVnd(
+            ? `Hóa đơn #${payTarget.invoiceId ?? payTarget.maHd} · Tổng tiền: ${formatVnd(
                 payTarget.totalAmount ?? payTarget.tongTien,
               )}`
             : undefined
         }
         footer={
           <>
-            <button type="button" className="btn btn-secondary" onClick={() => setPayTarget(null)}>
-              Hủy
-            </button>
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={() => void handlePay()}
+            <Button
+              variant="secondary"
+              onClick={() => setPayTarget(null)}
               disabled={busy}
             >
-              {busy ? 'Đang xử lý…' : 'Xác nhận thanh toán'}
-            </button>
+              Hủy
+            </Button>
+            <Button
+              variant="accent"
+              loading={busy}
+              disabled={busy}
+              onClick={() => void handlePay()}
+            >
+              Xác nhận thanh toán
+            </Button>
           </>
         }
       >
@@ -462,33 +477,35 @@ export function Invoices() {
         />
       </Modal>
 
+      {/* CANCEL ACTION MODAL */}
       <Modal
         open={Boolean(cancelTarget)}
         onClose={() => setCancelTarget(null)}
-        title="Hủy hóa đơn"
+        title="Xác nhận hủy hóa đơn"
         footer={
           <>
-            <button
-              type="button"
-              className="btn btn-secondary"
+            <Button
+              variant="secondary"
               onClick={() => setCancelTarget(null)}
-            >
-              Giữ lại
-            </button>
-            <button
-              type="button"
-              className="btn btn-danger"
-              onClick={() => void handleCancel()}
               disabled={busy}
             >
-              {busy ? 'Đang hủy…' : 'Hủy hóa đơn'}
-            </button>
+              Giữ lại
+            </Button>
+            <Button
+              variant="danger"
+              loading={busy}
+              disabled={busy}
+              onClick={() => void handleCancel()}
+            >
+              Hủy hóa đơn
+            </Button>
           </>
         }
       >
         <p>
-          Hủy toàn bộ vé của hóa đơn <strong>#{cancelTarget?.invoiceId ?? cancelTarget?.maHd}</strong>?
-          Chỉ hủy được khi hóa đơn chưa thanh toán và chuyến chưa khởi hành.
+          Bạn có chắc chắn muốn hủy toàn bộ vé thuộc hóa đơn{' '}
+          <strong>#{cancelTarget?.invoiceId ?? cancelTarget?.maHd}</strong>?
+          Hành động này sẽ giải phóng chỗ ngồi lại cho hệ thống và không thể hoàn tác.
         </p>
       </Modal>
     </div>

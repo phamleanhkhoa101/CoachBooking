@@ -3,8 +3,64 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { api, buildQuery } from '../../api/client';
 import type { Route, TripSearchResponse } from '../../api/types';
 import { BookingStepper } from '../../components/customer/BookingStepper';
-import { formatCurrency, formatTime } from '../../utils/format';
+import { Button } from '../../components/common/Button';
+import { LoadingState } from '../../components/common/LoadingState';
+import { EmptyState } from '../../components/common/EmptyState';
+import { ErrorBanner } from '../../components/common/ErrorBanner';
+import { formatTime, formatVnd } from '../../utils/format';
 import './TripSearchPage.css';
+
+interface QuickDateItem {
+  iso: string;
+  dayLabel: string;
+  dateLabel: string;
+  isToday: boolean;
+}
+
+function generateQuickDates(baseDateIso: string): QuickDateItem[] {
+  const dates: QuickDateItem[] = [];
+  const base = new Date(baseDateIso);
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+
+  // Generate 7 days starting from max(today, baseDate - 1 day)
+  const start = new Date(base);
+  start.setDate(start.getDate() - 1);
+  if (start < now) {
+    start.setTime(now.getTime());
+  }
+
+  const weekdays = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(start);
+    d.setDate(start.getDate() + i);
+    const iso = d.toISOString().slice(0, 10);
+    const isToday = d.getTime() === now.getTime();
+    const dayLabel = isToday ? 'Hôm nay' : weekdays[d.getDay()];
+    const dateLabel = `${d.getDate()}/${d.getMonth() + 1}`;
+    dates.push({ iso, dayLabel, dateLabel, isToday });
+  }
+
+  return dates;
+}
+
+function calculateDuration(depTime?: string, arrTime?: string): string {
+  if (!depTime || !arrTime) return '';
+  try {
+    const dep = new Date(depTime).getTime();
+    const arr = new Date(arrTime).getTime();
+    const diffMs = arr - dep;
+    if (diffMs <= 0) return '';
+    const totalMinutes = Math.floor(diffMs / (1000 * 60));
+    const hours = Math.floor(totalMinutes / 60);
+    const mins = totalMinutes % 60;
+    if (hours === 0) return `${mins}p`;
+    return mins === 0 ? `${hours}h` : `${hours}h${mins}p`;
+  } catch {
+    return '';
+  }
+}
 
 export function TripSearchPage() {
   const location = useLocation();
@@ -76,6 +132,11 @@ export function TripSearchPage() {
     void fetchTrips(departure, destination, travelDate);
   };
 
+  const handleDateSelect = (newDateIso: string) => {
+    setTravelDate(newDateIso);
+    void fetchTrips(departure, destination, newDateIso);
+  };
+
   // Departure and Destination options
   const departureOptions = useMemo(() => {
     const list = Array.from(
@@ -107,6 +168,9 @@ export function TripSearchPage() {
       .filter(Boolean) as string[];
     return Array.from(new Set(types));
   }, [trips]);
+
+  // Quick dates list
+  const quickDates = useMemo(() => generateQuickDates(travelDate), [travelDate]);
 
   // Filter & Sort trips
   const filteredTrips = useMemo(() => {
@@ -167,6 +231,12 @@ export function TripSearchPage() {
     );
   };
 
+  const resetFilters = () => {
+    setSelectedCompanies([]);
+    setSelectedVehicleTypes([]);
+    setTimeFilter('all');
+  };
+
   return (
     <div className="trip-search-page">
       {/* 1. STEPPER */}
@@ -214,25 +284,35 @@ export function TripSearchPage() {
               />
             </div>
 
-            <button type="submit" className="btn-search-submit">
-              <svg
-                width="18"
-                height="18"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.5"
-              >
-                <circle cx="11" cy="11" r="8" />
-                <line x1="21" y1="21" x2="16.65" y2="16.65" />
-              </svg>
-              <span>Tìm chuyến</span>
-            </button>
+            <Button type="submit" variant="accent" loading={loading}>
+              Tìm chuyến xe
+            </Button>
           </form>
+
+          {/* QUICK DATE TIMELINE PICKER */}
+          <div className="date-timeline-strip">
+            <span className="timeline-caption">Chọn nhanh ngày đi:</span>
+            <div className="timeline-scroll">
+              {quickDates.map((item) => {
+                const isSelected = item.iso === travelDate;
+                return (
+                  <button
+                    key={item.iso}
+                    type="button"
+                    className={`timeline-day-chip ${isSelected ? 'active' : ''}`}
+                    onClick={() => handleDateSelect(item.iso)}
+                  >
+                    <span className="chip-day">{item.dayLabel}</span>
+                    <span className="chip-date">{item.dateLabel}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* 3. MAIN RESULTS CONTAINER */}
+      {/* 4. MAIN RESULTS CONTAINER */}
       <div className="search-results-wrapper">
         <div className="search-results-layout">
           {/* SIDEBAR FILTER */}
@@ -246,11 +326,7 @@ export function TripSearchPage() {
                   <button
                     type="button"
                     className="btn-reset-filters"
-                    onClick={() => {
-                      setSelectedCompanies([]);
-                      setSelectedVehicleTypes([]);
-                      setTimeFilter('all');
-                    }}
+                    onClick={resetFilters}
                   >
                     Xóa lọc
                   </button>
@@ -348,33 +424,27 @@ export function TripSearchPage() {
               </div>
             </div>
 
-            {errorMsg && <div className="search-alert error">{errorMsg}</div>}
+            {errorMsg ? (
+              <ErrorBanner
+                message={errorMsg}
+                onRetry={() => fetchTrips(departure, destination, travelDate)}
+              />
+            ) : null}
 
             {loading ? (
               <div className="search-loading-state">
-                <span className="spinner-large" />
-                <p>Đang tải dữ liệu chuyến xe từ Bến xe Miền Đông...</p>
+                <LoadingState message="Đang tải dữ liệu chuyến xe từ Bến xe Miền Đông..." />
               </div>
             ) : filteredTrips.length === 0 ? (
-              <div className="no-trips-state">
-                <svg
-                  width="48"
-                  height="48"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#94a3b8"
-                  strokeWidth="1.5"
-                >
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="8" y1="12" x2="16" y2="12" />
-                </svg>
-                <h3>Không tìm thấy chuyến xe nào</h3>
-                <p>
-                  Hiện không có chuyến xe nào chạy tuyến {departure} đi{' '}
-                  {destination} vào ngày {travelDate}. Quý khách vui lòng chọn
-                  ngày khác hoặc điều chỉnh bộ lọc.
-                </p>
-              </div>
+              <EmptyState
+                title="Không tìm thấy chuyến xe nào"
+                description={`Hiện chưa có chuyến xe nào chạy tuyến ${departure} đi ${destination} vào ngày ${travelDate}. Quý khách vui lòng chọn ngày khác hoặc thử điều chỉnh bộ lọc.`}
+                action={
+                  <Button variant="secondary" onClick={resetFilters}>
+                    Xóa bộ lọc
+                  </Button>
+                }
+              />
             ) : (
               <div className="trip-results-list">
                 {filteredTrips.map((trip) => {
@@ -389,6 +459,7 @@ export function TripSearchPage() {
                   const arrTime = trip.estimatedArrivalTime ?? trip.ngayGioDenDuKien;
                   const licensePlate = trip.licensePlate ?? trip.bienSoXe ?? '';
                   const driverName = trip.driverName ?? trip.tenTx ?? '';
+                  const duration = calculateDuration(depTime, arrTime);
 
                   return (
                     <div key={tripId} className="trip-card-item">
@@ -399,7 +470,9 @@ export function TripSearchPage() {
                         <div className="operator-meta">
                           <strong className="operator-name">{companyName}</strong>
                           <span className="operator-type">
-                            {typeName} ({seatCap} chỗ) {licensePlate ? `· BKS: ${licensePlate}` : ''} {driverName ? `· Tài xế: ${driverName}` : ''}
+                            {typeName} ({seatCap} chỗ)
+                            {licensePlate ? ` · BKS: ${licensePlate}` : ''}
+                            {driverName ? ` · Tài xế: ${driverName}` : ''}
                           </span>
                         </div>
                       </div>
@@ -415,6 +488,7 @@ export function TripSearchPage() {
                           </div>
 
                           <div className="timeline-connector">
+                            {duration ? <span className="duration-tag">{duration}</span> : null}
                             <span className="dot-line" />
                             <span className="bus-symbol">🚌</span>
                           </div>
@@ -430,7 +504,7 @@ export function TripSearchPage() {
                         {/* Amenities */}
                         <div className="trip-features">
                           <span className="feature-pill">Bảo hiểm hành khách</span>
-                          <span className="feature-pill">Nước suối & Khăn</span>
+                          <span className="feature-pill">Nước suối & Khăn lạnh</span>
                           <span className="feature-pill">Wifi bến xe</span>
                           <span className="feature-pill">Đúng giờ xuất bến</span>
                         </div>
@@ -439,7 +513,7 @@ export function TripSearchPage() {
                         <div className="trip-pricing-box">
                           <div className="price-col">
                             <span className="price-label">Giá niêm yết</span>
-                            <span className="price-value">{formatCurrency(price)}</span>
+                            <span className="price-value">{formatVnd(price)}</span>
                             <span
                               className={`seats-left-pill ${
                                 seatsLeft <= 5 ? 'urgent' : ''
@@ -449,9 +523,8 @@ export function TripSearchPage() {
                             </span>
                           </div>
 
-                          <button
-                            type="button"
-                            className="btn-select-trip"
+                          <Button
+                            variant="accent"
                             disabled={seatsLeft === 0}
                             onClick={() =>
                               navigate(`/dat-ve/chon-ghe/${tripId}`, {
@@ -465,7 +538,7 @@ export function TripSearchPage() {
                             }
                           >
                             {seatsLeft === 0 ? 'Hết chỗ' : 'Chọn chuyến'}
-                          </button>
+                          </Button>
                         </div>
                       </div>
                     </div>

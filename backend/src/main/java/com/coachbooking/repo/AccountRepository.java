@@ -9,7 +9,11 @@ public interface AccountRepository extends JpaRepository<Account, Integer> {
 
   Optional<Account> findByEmail(String email);
 
+  Optional<Account> findByEmailIgnoreCase(String email);
+
   Optional<Account> findByUsernameAndEmail(String username, String email);
+
+  Optional<Account> findByGoogleSub(String googleSub);
 
   boolean existsByUsername(String username);
 

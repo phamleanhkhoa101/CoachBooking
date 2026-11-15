@@ -6,6 +6,7 @@ import com.coachbooking.dto.trip.TripRequest;
 import com.coachbooking.repo.TripRepository;
 import com.coachbooking.service.SeatStatusService;
 import com.coachbooking.service.TripService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
@@ -25,7 +26,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @RestController
-@RequestMapping({"/api/trips", "/api/chuyen-xe"})
+@RequestMapping("/api/trips")
+@Tag(
+    name = "Chuyến xe",
+    description = "Tìm kiếm, quản lý chuyến xe, sơ đồ ghế và luồng SSE ghế trống")
+@Tag(
+    name = "Chuyến xe",
+    description = "Tìm kiếm, quản lý chuyến xe, sơ đồ ghế và luồng SSE ghế trống")
 public class TripController {
 
   private final TripRepository tripRepository;
@@ -45,7 +52,7 @@ public class TripController {
     return tripService.listAll();
   }
 
-  @GetMapping({"/search", "/tim"})
+  @GetMapping("/search")
   public List<TripRepository.TripRow> search(
       @RequestParam(value = "departure", required = false) String departure,
       @RequestParam(value = "diemDi", required = false) String diemDi,
@@ -67,7 +74,7 @@ public class TripController {
     return tripService.search(actualDep, actualDest, actualDate, actualFromH, actualToH);
   }
 
-  @GetMapping({"/{id}/seats", "/{id}/ghe"})
+  @GetMapping("/{id}/seats")
   public SeatMapResponse seatMap(@PathVariable Integer id) {
     return tripService.seatMap(id);
   }

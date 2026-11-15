@@ -28,6 +28,8 @@ docker compose up --build
 |---|---|
 | Giao diện | http://localhost:3000 |
 | API | http://localhost:8080/api |
+| Swagger UI (OpenAPI 3) | http://localhost:8080/swagger-ui.html |
+| OpenAPI JSON | http://localhost:8080/v3/api-docs |
 | Health check | http://localhost:8080/actuator/health |
 | PostgreSQL | localhost:5432 |
 
@@ -101,6 +103,10 @@ SPRING_DATASOURCE_USERNAME=coachbooking
 SPRING_DATASOURCE_PASSWORD=coachbooking
 APP_JWT_SECRET=<chuỗi tối thiểu 32 ký tự>
 APP_CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
+APP_SWAGGER_ENABLED=true
+GOOGLE_CLIENT_ID=<Google OAuth2 Client ID>
+GOOGLE_CLIENT_SECRET=<Google OAuth2 Client Secret>
+APP_OAUTH2_REDIRECT_URI=http://localhost:5173/oauth2/callback
 ```
 
 ## CI/CD và SonarQube
@@ -163,8 +169,10 @@ sơ đồ ghế, đặt vé, hóa đơn, hủy vé, hồ sơ và thống kê.
 - **Mật khẩu**: SHA256 + Base64 (không salt) → BCrypt.
 - **Thanh toán MoMo**: đã gỡ khỏi phạm vi chuyển đổi. Phương thức còn lại: Tiền mặt,
   Chuyển khoản, Thẻ ATM; khách hàng có thêm "Thanh toán sau".
-- **Email**: môi trường demo không cấu hình SMTP, endpoint quên mật khẩu trả trực tiếp
-  mật khẩu tạm trong response thay vì gửi mail.
+- **Email (SMTP)**: tính năng quên mật khẩu sử dụng OTP 6 chữ số gửi qua SMTP
+  (`spring-boot-starter-mail`, cấu hình qua `APP_MAIL_ENABLED`, `SMTP_HOST`, `SMTP_PORT`,
+  `SMTP_USERNAME`, `SMTP_PASSWORD` trong `.env`). Mặc định `APP_MAIL_ENABLED=false` cho
+  tới khi cấu hình thông tin SMTP.
 - **Tầng dữ liệu**: EF6 EDMX → entity JPA phẳng (khóa ngoại là mã số, không dùng
   `@ManyToOne`) để tránh N+1 và lỗi tuần tự hóa vòng; các màn hình cần ghép tên dùng
   truy vấn chiếu riêng.
@@ -181,5 +189,4 @@ doanh thu và tuyến phổ biến.
 ## Chưa có trong bản chuyển đổi
 
 - Thanh toán MoMo và callback (theo yêu cầu tạm bỏ).
-- Gửi email thật qua SMTP.
-- Bộ kiểm thử tự động cho nghiệp vụ.
+- Bộ kiểm thử tự động đầy đủ cho toàn bộ nghiệp vụ.

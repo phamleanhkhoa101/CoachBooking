@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
+import { RoleBadge } from '../common/Badge';
 import type { Role } from '../../api/types';
 
 const ICON_PATHS: Record<string, string> = {
@@ -100,12 +101,6 @@ const CUSTOMER_NAV: NavGroup[] = [
   },
 ];
 
-const ROLE_LABEL: Record<Role, string> = {
-  Admin: 'Quản trị viên',
-  NhanVien: 'Nhân viên',
-  KhachHang: 'Khách hàng',
-};
-
 export function AppLayout() {
   const { user, nguoiDung, logout } = useAuth();
   const currentUser = user ?? nguoiDung;
@@ -137,6 +132,14 @@ export function AppLayout() {
 
   return (
     <div className="app-shell">
+      {open ? (
+        <div
+          className="sidebar-overlay"
+          onClick={() => setOpen(false)}
+          aria-hidden="true"
+        />
+      ) : null}
+
       <aside className={`sidebar ${open ? 'sidebar-open' : ''}`}>
         <div className="brand">
           <div className="brand-logo">BX</div>
@@ -167,7 +170,7 @@ export function AppLayout() {
         </nav>
 
         <div className="sidebar-foot">
-          <span className="sidebar-foot-brand">CoachBooking · Spring Boot + React</span>
+          <span className="sidebar-foot-brand">CoachBooking · Bến xe Miền Đông</span>
           <span className="sidebar-foot-sub">Phiên bản 1.0</span>
         </div>
       </aside>
@@ -180,6 +183,7 @@ export function AppLayout() {
               className="btn btn-ghost topbar-menu-btn"
               onClick={() => setOpen((prev) => !prev)}
               aria-label="Mở trình đơn"
+              aria-expanded={open}
             >
               <Icon name="menu" />
             </button>
@@ -192,7 +196,7 @@ export function AppLayout() {
             </div>
             <div className="user-meta">
               <span className="user-name">{displayName}</span>
-              <span className="user-role">{ROLE_LABEL[currentRole] ?? currentRole}</span>
+              <RoleBadge role={currentRole} />
             </div>
             <button
               type="button"

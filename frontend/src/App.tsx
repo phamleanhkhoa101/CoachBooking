@@ -17,6 +17,7 @@ import { ForgotPassword } from './pages/auth/ForgotPassword';
 import { Home } from './pages/customer/Home';
 import { Invoices } from './pages/admin/Invoices';
 import { Login } from './pages/auth/Login';
+import { OAuth2Callback } from './pages/auth/OAuth2Callback';
 import { Prices } from './pages/admin/operations/Prices';
 import { Profile } from './pages/admin/Profile';
 import { Register } from './pages/auth/Register';
@@ -58,6 +59,7 @@ export function App() {
           <Routes>
             <Route path="/" element={<HomeRoute />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/oauth2/callback" element={<OAuth2Callback />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
 

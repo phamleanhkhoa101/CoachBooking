@@ -2,7 +2,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { api, getErrorMessage } from '../../api/client';
 import type { Profile as ProfileType } from '../../api/types';
 import { Badge } from '../../components/common/Badge';
+import { Button } from '../../components/common/Button';
 import { FormField } from '../../components/common/FormField';
+import { LoadingState } from '../../components/common/LoadingState';
 import { useToast } from '../../components/common/Toast';
 import { formatDate, toDateInput } from '../../utils/format';
 
@@ -155,8 +157,8 @@ export function Profile() {
 
   if (loading) {
     return (
-      <div className="page-loading">
-        <span className="spinner" /> Đang tải hồ sơ…
+      <div className="page-loading" style={{ padding: '4rem 1.5rem', textAlign: 'center' }}>
+        <LoadingState message="Đang tải dữ liệu hồ sơ cá nhân…" />
       </div>
     );
   }
@@ -166,7 +168,7 @@ export function Profile() {
       <div className="page-header">
         <div>
           <h1>Hồ sơ cá nhân</h1>
-          <p className="page-subtitle">Thông tin tài khoản đăng nhập và hồ sơ liên kết.</p>
+          <p className="page-subtitle">Thông tin tài khoản đăng nhập và hồ sơ nghiệp vụ liên kết.</p>
         </div>
       </div>
 
@@ -182,9 +184,9 @@ export function Profile() {
 
             <div className="profile-card-header-actions">
               {!isEditing ? (
-                <button
-                  type="button"
-                  className="btn btn-primary btn-sm"
+                <Button
+                  variant="primary"
+                  size="sm"
                   onClick={() => setIsEditing(true)}
                   disabled={isUnlinked}
                 >
@@ -200,16 +202,16 @@ export function Profile() {
                     <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                   </svg>
                   <span>Thay đổi thông tin</span>
-                </button>
+                </Button>
               ) : (
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-sm"
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={handleCancelEdit}
                   disabled={saving}
                 >
                   Hủy bỏ
-                </button>
+                </Button>
               )}
             </div>
           </div>
@@ -340,21 +342,21 @@ export function Profile() {
                 </div>
               )}
               <div className="form-actions form-full" style={{ display: 'flex', gap: '10px' }}>
-                <button
-                  type="button"
-                  className="btn btn-secondary"
+                <Button
+                  variant="secondary"
                   onClick={handleCancelEdit}
                   disabled={saving}
                 >
                   Hủy bỏ
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
-                  className="btn btn-primary"
+                  variant="primary"
+                  loading={saving}
                   disabled={saving || isUnlinked}
                 >
-                  {saving ? 'Đang lưu…' : 'Lưu thay đổi'}
-                </button>
+                  Lưu thay đổi
+                </Button>
               </div>
             </form>
           )}
@@ -369,9 +371,9 @@ export function Profile() {
 
             <div className="profile-card-header-actions">
               {!isChangingPassword ? (
-                <button
-                  type="button"
-                  className="btn btn-primary btn-sm"
+                <Button
+                  variant="primary"
+                  size="sm"
                   onClick={() => {
                     setPwError('');
                     setIsChangingPassword(true);
@@ -389,16 +391,16 @@ export function Profile() {
                     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                   </svg>
                   <span>Thay đổi mật khẩu</span>
-                </button>
+                </Button>
               ) : (
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-sm"
+                <Button
+                  variant="ghost"
+                  size="sm"
                   onClick={handleCancelPassword}
                   disabled={pwBusy}
                 >
                   Hủy bỏ
-                </button>
+                </Button>
               )}
             </div>
           </div>
@@ -475,17 +477,21 @@ export function Profile() {
                   onChange={setConfirmPassword}
                 />
                 <div className="form-actions" style={{ display: 'flex', gap: '10px' }}>
-                  <button
-                    type="button"
-                    className="btn btn-secondary"
+                  <Button
+                    variant="secondary"
                     onClick={handleCancelPassword}
                     disabled={pwBusy}
                   >
                     Hủy bỏ
-                  </button>
-                  <button type="submit" className="btn btn-primary" disabled={pwBusy}>
-                    {pwBusy ? 'Đang cập nhật…' : 'Cập nhật mật khẩu'}
-                  </button>
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    loading={pwBusy}
+                    disabled={pwBusy}
+                  >
+                    Cập nhật mật khẩu
+                  </Button>
                 </div>
               </form>
             </>

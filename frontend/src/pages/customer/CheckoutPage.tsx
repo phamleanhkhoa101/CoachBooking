@@ -4,8 +4,10 @@ import { api } from '../../api/client';
 import type { BookingRequest, BookingResponse, Profile, TripSearchResponse } from '../../api/types';
 import { useAuth } from '../../auth/AuthContext';
 import { BookingStepper } from '../../components/customer/BookingStepper';
+import { Button } from '../../components/common/Button';
+import { ErrorBanner } from '../../components/common/ErrorBanner';
 import { useToast } from '../../components/common/Toast';
-import { formatCurrency, formatTime } from '../../utils/format';
+import { formatTime, formatVnd } from '../../utils/format';
 import { CHECKOUT_HOLD_STORAGE_KEY } from './SeatSelectionPage';
 import './CheckoutPage.css';
 
@@ -433,7 +435,7 @@ export function CheckoutPage() {
                           <div className="meta-row highlight">
                             <span className="m-label">Số tiền:</span>
                             <strong className="m-val text-orange">
-                              {formatCurrency(state.totalPrice)}
+                              {formatVnd(state.totalPrice)}
                             </strong>
                           </div>
                           <div className="meta-row highlight">
@@ -523,8 +525,8 @@ export function CheckoutPage() {
 
               <div className="order-price-breakdown">
                 <div className="price-row">
-                  <span>Giá vé ({state.selectedSeats.length} x {formatCurrency(state.price)}):</span>
-                  <strong>{formatCurrency(state.totalPrice)}</strong>
+                  <span>Giá vé ({state.selectedSeats.length} x {formatVnd(state.price)}):</span>
+                  <strong>{formatVnd(state.totalPrice)}</strong>
                 </div>
                 <div className="price-row">
                   <span>Bảo hiểm hành khách:</span>
@@ -537,12 +539,16 @@ export function CheckoutPage() {
                 <div className="order-total-highlight">
                   <span>TỔNG TIỀN THANH TOÁN:</span>
                   <span className="total-highlight-val">
-                    {formatCurrency(state.totalPrice)}
+                    {formatVnd(state.totalPrice)}
                   </span>
                 </div>
               </div>
 
-              {errorMsg && <div className="checkout-error-alert">{errorMsg}</div>}
+              {errorMsg && (
+                <div className="checkout-error-wrapper">
+                  <ErrorBanner message={errorMsg} />
+                </div>
+              )}
 
               <div className="terms-checkbox-wrap">
                 <label className="checkbox-row">
@@ -558,19 +564,15 @@ export function CheckoutPage() {
                 </label>
               </div>
 
-              <button
+              <Button
                 type="submit"
-                className="btn-submit-order"
-                disabled={submitting || secondsLeft <= 0 || !transferConfirmed}
+                variant="accent"
+                className="btn-submit-order w-full"
+                loading={submitting}
+                disabled={secondsLeft <= 0 || !transferConfirmed}
               >
-                {submitting ? (
-                  <>
-                    <span className="spinner-small" /> Đang xử lý đặt vé...
-                  </>
-                ) : (
-                  `Xác nhận đặt vé (${formatCurrency(state.totalPrice)})`
-                )}
-              </button>
+                Xác nhận đặt vé ({formatVnd(state.totalPrice)})
+              </Button>
 
               <div className="security-commitments">
                 <div className="commit-item">

@@ -1,3 +1,4 @@
+import { TripSchedules } from './pages/admin/operations/TripSchedules';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider, RequireRole, useAuth } from './auth/AuthContext';
 import { AppLayout } from './components/layout/AppLayout';
@@ -108,6 +109,7 @@ export function App() {
               <Route path="hoa-don" element={<Invoices />} />
               <Route path="khach-hang" element={<Customers />} />
               <Route path="chuyen-xe" element={<Trips />} />
+              <Route path="lich-chay" element={<RequireRole roles={['Admin']}><TripSchedules /></RequireRole>} />
               <Route path="nha-xe" element={<BusCompanies />} />
               <Route path="loai-xe" element={<VehicleTypes />} />
               <Route path="xe" element={<Vehicles />} />

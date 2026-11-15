@@ -37,6 +37,8 @@ public class TripService {
   private final TicketPriceRepository ticketPriceRepository;
   private final TicketRepository ticketRepository;
   private final SeatStatusService seatStatusService;
+  private final com.coachbooking.repo.ScheduleOccurrenceRepository occurrences;
+  private final com.coachbooking.repo.BusCompanyRepository companies;
 
   public TripService(
       TripRepository tripRepository,
@@ -46,7 +48,9 @@ public class TripService {
       DriverRepository driverRepository,
       TicketPriceRepository ticketPriceRepository,
       TicketRepository ticketRepository,
-      SeatStatusService seatStatusService) {
+      SeatStatusService seatStatusService,
+      com.coachbooking.repo.ScheduleOccurrenceRepository occurrences,
+      com.coachbooking.repo.BusCompanyRepository companies) {
     this.tripRepository = tripRepository;
     this.vehicleRepository = vehicleRepository;
     this.vehicleTypeRepository = vehicleTypeRepository;
@@ -55,6 +59,8 @@ public class TripService {
     this.ticketPriceRepository = ticketPriceRepository;
     this.ticketRepository = ticketRepository;
     this.seatStatusService = seatStatusService;
+    this.occurrences = occurrences;
+    this.companies = companies;
   }
 
   public List<TripRepository.TripRow> listAll() {
@@ -63,13 +69,13 @@ public class TripService {
 
   public List<TripRepository.TripRow> search(
       String departure, String destination, LocalDate date, Integer fromHour, Integer toHour) {
-    LocalDate searchDate = date == null ? LocalDate.now() : date;
+    LocalDate searchDate = date == null ? LocalDate.now(TripPlanningTime.ZONE) : date;
     if (fromHour != null && toHour != null && fromHour > toHour) {
       throw ApiException.badRequest("Khung giờ không hợp lệ.");
     }
     LocalDateTime start = searchDate.atStartOfDay();
     LocalDateTime end = searchDate.plusDays(1).atStartOfDay();
-    LocalDateTime now = LocalDateTime.now();
+    LocalDateTime now = LocalDateTime.now(TripPlanningTime.ZONE);
     return tripRepository
         .search(blankToNull(departure), blankToNull(destination), start, end)
         .stream()
@@ -110,7 +116,7 @@ public class TripService {
   public Trip create(TripRequest request) {
     Vehicle vehicle =
         vehicleRepository
-            .findById(request.vehicleId())
+            .lockById(request.vehicleId())
             .orElseThrow(() -> ApiException.notFound("Xe không tồn tại."));
     Route route =
         routeRepository
@@ -118,10 +124,16 @@ public class TripService {
             .orElseThrow(() -> ApiException.notFound("Tuyến đường không tồn tại."));
     Driver driver =
         driverRepository
-            .findById(request.driverId())
+            .lockById(request.driverId())
             .orElseThrow(() -> ApiException.notFound("Tài xế không tồn tại."));
     LocalDateTime departure = requireDeparture(request.departureTime());
-    checkConflict(vehicle.getVehicleId(), departure, null);
+    validateResources(vehicle, driver, route);
+    checkConflict(
+        vehicle.getVehicleId(),
+        driver.getDriverId(),
+        departure,
+        departure.plus(durationOf(route)),
+        null);
 
     TicketPrice ticketPrice =
         ticketPriceRepository
@@ -132,17 +144,24 @@ public class TripService {
                     ApiException.conflict(
                         "Chưa có bảng giá cho nhà xe, loại xe và tuyến đường này."));
 
+    if (ticketPrice.getPrice() == null || ticketPrice.getPrice().signum() <= 0) {
+      throw ApiException.conflict("Chưa có giá vé hợp lệ.");
+    }
     Trip trip = new Trip();
     apply(trip, vehicle, route, driver, departure, ticketPrice.getPrice());
-    return tripRepository.save(trip);
+    Trip saved = tripRepository.saveAndFlush(trip);
+    return saved;
   }
 
   @Transactional
   public Trip update(Integer tripId, TripRequest request) {
-    Trip trip = findTrip(tripId);
+    Trip trip =
+        tripRepository
+            .findByIdForUpdate(tripId)
+            .orElseThrow(() -> ApiException.notFound("Chuyến xe không tồn tại."));
     Vehicle vehicle =
         vehicleRepository
-            .findById(request.vehicleId())
+            .lockById(request.vehicleId())
             .orElseThrow(() -> ApiException.notFound("Xe không tồn tại."));
     Route route =
         routeRepository
@@ -150,10 +169,11 @@ public class TripService {
             .orElseThrow(() -> ApiException.notFound("Tuyến đường không tồn tại."));
     Driver driver =
         driverRepository
-            .findById(request.driverId())
+            .lockById(request.driverId())
             .orElseThrow(() -> ApiException.notFound("Tài xế không tồn tại."));
     LocalDateTime departure = requireDeparture(request.departureTime());
-    if (ticketRepository.existsByTripId(tripId)) {
+    boolean sold = ticketRepository.existsByTripId(tripId);
+    if (sold) {
       boolean changedCoreInfo =
           !trip.getVehicleId().equals(vehicle.getVehicleId())
               || !trip.getRouteId().equals(route.getRouteId())
@@ -163,7 +183,19 @@ public class TripService {
             "Chuyến đã bán vé, chỉ có thể đổi tài xế. Không thể đổi xe, tuyến hoặc giờ khởi hành.");
       }
     }
-    checkConflict(vehicle.getVehicleId(), departure, tripId);
+    validateResources(vehicle, driver, route);
+    checkConflict(
+        vehicle.getVehicleId(),
+        driver.getDriverId(),
+        departure,
+        sold && trip.getEstimatedArrivalTime() != null
+            ? trip.getEstimatedArrivalTime()
+            : departure.plus(durationOf(route)),
+        tripId);
+    if (sold) {
+      trip.setDriverId(driver.getDriverId());
+      return tripRepository.save(trip);
+    }
 
     TicketPrice ticketPrice =
         ticketPriceRepository
@@ -174,15 +206,27 @@ public class TripService {
                     ApiException.conflict(
                         "Chưa có bảng giá cho nhà xe, loại xe và tuyến đường này."));
 
+    if (ticketPrice.getPrice() == null || ticketPrice.getPrice().signum() <= 0) {
+      throw ApiException.conflict("Chưa có giá vé hợp lệ.");
+    }
     apply(trip, vehicle, route, driver, departure, ticketPrice.getPrice());
-    return tripRepository.save(trip);
+    Trip saved = tripRepository.save(trip);
+    return saved;
   }
 
   @Transactional
   public Map<String, String> delete(Integer tripId) {
-    Trip trip = findTrip(tripId);
+    Trip trip =
+        tripRepository
+            .findByIdForUpdate(tripId)
+            .orElseThrow(() -> ApiException.notFound("Chuyến xe không tồn tại."));
     if (ticketRepository.existsByTripId(tripId)) {
       throw ApiException.conflict("Không thể xóa chuyến xe đã có vé.");
+    }
+    for (var occurrence : occurrences.findByTripId(tripId)) {
+      occurrence.setTripId(null);
+      occurrence.setStatus("DELETED");
+      occurrences.save(occurrence);
     }
     tripRepository.delete(trip);
     return Map.of("message", "Xóa chuyến xe thành công.");
@@ -213,27 +257,49 @@ public class TripService {
     if (departure == null) {
       throw ApiException.badRequest("Vui lòng chọn ngày giờ khởi hành.");
     }
-    if (!departure.isAfter(LocalDateTime.now())) {
+    if (!departure.isAfter(LocalDateTime.now(TripPlanningTime.ZONE))) {
       throw ApiException.badRequest("Ngày giờ khởi hành phải sau thời điểm hiện tại.");
     }
     return departure;
   }
 
-  private void checkConflict(Integer vehicleId, LocalDateTime departure, Integer excludeId) {
-    LocalDateTime start = departure.withSecond(0).withNano(0);
-    LocalDateTime end = start.plusMinutes(1);
-    boolean conflict =
-        excludeId == null
-            ? tripRepository.existsByVehicleIdAndDepartureTimeBetween(vehicleId, start, end)
-            : tripRepository.existsByVehicleIdAndDepartureTimeBetweenAndTripIdNot(
-                vehicleId, start, end, excludeId);
-    if (conflict) {
-      throw ApiException.conflict(
-          "Xe này đã được lên chuyến vào cùng thời điểm. Vui lòng chọn xe hoặc giờ khác.");
+  public void checkConflict(
+      Integer vehicleId,
+      Integer driverId,
+      LocalDateTime departure,
+      LocalDateTime arrival,
+      Integer excludeId) {
+    if (!tripRepository
+        .findOverlapping(vehicleId, driverId, departure, arrival, excludeId)
+        .isEmpty()) {
+      throw ApiException.conflict("Xe hoặc tài xế đã có chuyến trong khoảng thời gian này.");
+    }
+  }
+
+  private void validateResources(Vehicle vehicle, Driver driver, Route route) {
+    if (!companies
+        .findById(vehicle.getCompanyId())
+        .map(c -> Boolean.TRUE.equals(c.getIsActive()))
+        .orElse(false)) {
+      throw ApiException.badRequest("Nhà xe phải đang hoạt động.");
+    }
+    boolean typeActive =
+        vehicleTypeRepository
+            .findById(vehicle.getTypeId())
+            .map(t -> Boolean.TRUE.equals(t.getIsActive()))
+            .orElse(false);
+    if (!Boolean.TRUE.equals(vehicle.getIsActive())
+        || !Boolean.TRUE.equals(driver.getIsActive())
+        || !Boolean.TRUE.equals(route.getIsActive())
+        || !typeActive) {
+      throw ApiException.badRequest("Xe, loại xe, tài xế và tuyến phải đang hoạt động.");
     }
   }
 
   private Duration durationOf(Route route) {
+    if (route.getEstimatedDuration() != null && route.getEstimatedDuration().toSecondOfDay() == 0) {
+      throw ApiException.badRequest("Thời gian chạy phải lớn hơn 0.");
+    }
     return route.getEstimatedDuration() == null
         ? Duration.ofHours(6)
         : Duration.ofSeconds(route.getEstimatedDuration().toSecondOfDay());

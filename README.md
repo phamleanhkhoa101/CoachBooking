@@ -154,6 +154,13 @@ Bước triển khai thực tế chưa được tự động hóa; thêm job dep
 
 ## API
 
+Lịch chạy định kỳ và kiểm tra chồng lịch xe/tài xế đã được bổ sung. Xem
+[hướng dẫn triển khai, demo và kiểm thử](docs/TRIP_OPERATIONS.md).
+Đặt vé chỉ cần chọn chuyến và ghế; không có bước chọn điểm đón/trả.
+Lịch chạy không yêu cầu bộ điểm mẫu. Dữ liệu mẫu dùng tên tự nhiên, vẫn là dữ liệu mô phỏng cho đồ án.
+Muốn làm mới dữ liệu nghiệp vụ local và giữ tài khoản/hồ sơ, dùng script
+`scripts/reset-demo.ps1` theo hướng dẫn trên. Backend không tự tạo hóa đơn/vé mẫu khi khởi động.
+
 Hợp đồng đầy đủ ở [`docs/API.md`](docs/API.md): xác thực JWT, danh mục, tìm chuyến,
 sơ đồ ghế, đặt vé, hóa đơn, hủy vé, hồ sơ và thống kê.
 

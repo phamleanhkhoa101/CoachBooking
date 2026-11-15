@@ -28,6 +28,7 @@ export function Trips() {
   const { showToast } = useToast();
   const isAdmin = user?.role === 'Admin';
 
+  const [conflicts, setConflicts] = useState<{ firstTripId: number; secondTripId: number | null; reason: string }[]>([]);
   const [rows, setRows] = useState<Trip[]>([]);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [routes, setRoutes] = useState<Route[]>([]);
@@ -46,12 +47,14 @@ export function Trips() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [tripData, vehicleData, routeData, driverData] = await Promise.all([
+      const [tripData, vehicleData, routeData, driverData, conflictData] = await Promise.all([
         api.get<Trip[]>('/trips'),
         api.get<Vehicle[]>('/vehicles'),
         api.get<Route[]>('/routes'),
         api.get<Driver[]>('/drivers'),
+        api.get<{ firstTripId: number; secondTripId: number | null; reason: string }[]>('/trip-conflicts'),
       ]);
+      setConflicts(conflictData);
       setRows(Array.isArray(tripData) ? tripData : []);
       setVehicles(Array.isArray(vehicleData) ? vehicleData : []);
       setRoutes(Array.isArray(routeData) ? routeData : []);
@@ -365,6 +368,10 @@ export function Trips() {
         )}
       </div>
 
+      {conflicts.length > 0 && <details className="alert alert-warning">
+        <summary>{conflicts.length} vấn đề lịch hiện có — cần rà soát trước khi sinh thêm chuyến</summary>
+        <ul>{conflicts.map((c, i) => <li key={i}>Chuyến #{c.firstTripId}{c.secondTripId ? ` / #${c.secondTripId}` : ''}: {c.reason}</li>)}</ul>
+      </details>}
       <div className="page-toolbar">
         <input
           type="search"
@@ -442,6 +449,7 @@ export function Trips() {
             onChange={(val) => setField('departureTime', val)}
             help="Giờ đến dự kiến và giá vé được tự động tính dựa trên bảng giá và thời gian tuyến."
           />
+
         </form>
       </Modal>
 

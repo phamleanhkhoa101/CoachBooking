@@ -395,7 +395,7 @@ export function Home() {
                                 <span className="opt-name">{opt}</span>
                                 {meta?.region && <span className="opt-region-pill">{meta.region}</span>}
                               </div>
-                              <span className="opt-desc">{meta?.desc || 'Điểm đón bến xe liên tỉnh'}</span>
+                              <span className="opt-desc">{meta?.desc || 'Khu vực xuất phát'}</span>
                             </div>
                             {isSelected && (
                               <div className="opt-check-icon">
@@ -444,7 +444,7 @@ export function Home() {
                   </svg>
                 </button>
                 <span className="field-subtext">
-                  {LOCATION_METAS[destination]?.desc || 'Bến xe đến / Điểm trả'}
+                  {LOCATION_METAS[destination]?.desc || 'Khu vực đến'}
                 </span>
 
                 {openDestination && (
@@ -478,7 +478,7 @@ export function Home() {
                                 <span className="opt-name">{opt}</span>
                                 {meta?.region && <span className="opt-region-pill">{meta.region}</span>}
                               </div>
-                              <span className="opt-desc">{meta?.desc || 'Điểm trả khách tại bến'}</span>
+                              <span className="opt-desc">{meta?.desc || 'Khu vực đến'}</span>
                             </div>
                             {isSelected && (
                               <div className="opt-check-icon to-check">

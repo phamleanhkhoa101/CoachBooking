@@ -1,6 +1,9 @@
 package com.coachbooking.config;
 
+import com.coachbooking.security.HttpCookieOAuth2AuthorizationRequestRepository;
 import com.coachbooking.security.JwtAuthenticationFilter;
+import com.coachbooking.security.OAuth2AuthenticationFailureHandler;
+import com.coachbooking.security.OAuth2AuthenticationSuccessHandler;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
 import java.util.List;
@@ -35,6 +38,9 @@ public class SecurityConfig {
   public SecurityFilterChain securityFilterChain(
       HttpSecurity http,
       JwtAuthenticationFilter jwtAuthenticationFilter,
+      HttpCookieOAuth2AuthorizationRequestRepository authorizationRequestRepository,
+      OAuth2AuthenticationSuccessHandler oAuth2SuccessHandler,
+      OAuth2AuthenticationFailureHandler oAuth2FailureHandler,
       ObjectMapper objectMapper,
       CorsConfigurationSource corsConfigurationSource)
       throws Exception {
@@ -59,7 +65,9 @@ public class SecurityConfig {
                         "/api/trips/*/seats/events",
                         "/api/bus-companies",
                         "/api/bus-companies/*",
-                        "/api/invoices/lookup")
+                        "/api/invoices/lookup",
+                        "/api/oauth2/**",
+                        "/api/login/oauth2/**")
                     .permitAll()
                     .requestMatchers("/actuator/health")
                     .permitAll()
@@ -91,6 +99,18 @@ public class SecurityConfig {
                               response.getWriter(),
                               Map.of("message", "Bạn không có quyền thực hiện thao tác này."));
                         }))
+        .oauth2Login(
+            oauth2 ->
+                oauth2
+                    .authorizationEndpoint(
+                        authorization ->
+                            authorization
+                                .baseUri("/api/oauth2/authorization")
+                                .authorizationRequestRepository(authorizationRequestRepository))
+                    .redirectionEndpoint(
+                        redirection -> redirection.baseUri("/api/login/oauth2/code/*"))
+                    .successHandler(oAuth2SuccessHandler)
+                    .failureHandler(oAuth2FailureHandler))
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();

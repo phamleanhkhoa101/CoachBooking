@@ -38,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthService {
 
   private static final int ROLE_CUSTOMER_ID = 3;
+  private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
   private final AccountRepository accountRepository;
   private final RoleRepository roleRepository;
@@ -105,7 +106,8 @@ public class AuthService {
         accountRepository
             .findByUsername(request.username().trim())
             .orElseThrow(() -> ApiException.badRequest("Tên đăng nhập hoặc mật khẩu không đúng."));
-    if (!passwordEncoder.matches(request.password(), account.getPassword())) {
+    if (account.getPassword() == null
+        || !passwordEncoder.matches(request.password(), account.getPassword())) {
       throw ApiException.badRequest("Tên đăng nhập hoặc mật khẩu không đúng.");
     }
     if (!Boolean.TRUE.equals(account.getIsActive())) {
@@ -127,6 +129,47 @@ public class AuthService {
     if (!"KhachHang".equalsIgnoreCase(roleName) && !"Customer".equalsIgnoreCase(roleName)) {
       throw ApiException.forbidden(
           "Tài khoản quản trị/nhân viên vui lòng đăng nhập tại cổng Quản trị viên.");
+    }
+    return new AuthResponse(
+        jwtService.generate(account, roleName), toUserResponse(account, roleName));
+  }
+
+  @Transactional
+  public AuthResponse loginWithGoogle(String googleSub, String email, boolean emailVerified) {
+    if (Validators.isBlank(googleSub) || Validators.isBlank(email) || !emailVerified) {
+      throw ApiException.badRequest("Tài khoản Google chưa xác thực email hoặc thiếu thông tin.");
+    }
+    String normalizedEmail = email.trim();
+    String normalizedSub = googleSub.trim();
+
+    Account account =
+        accountRepository
+            .findByGoogleSub(normalizedSub)
+            .orElseGet(() -> accountRepository.findByEmailIgnoreCase(normalizedEmail).orElse(null));
+
+    if (account == null) {
+      account = new Account();
+      account.setUsername(generateUniqueUsernameFromEmail(normalizedEmail));
+      account.setEmail(normalizedEmail);
+      account.setPassword(null);
+      account.setRoleId(ROLE_CUSTOMER_ID);
+      account.setIsActive(true);
+      account.setAuthProvider("GOOGLE");
+      account.setGoogleSub(normalizedSub);
+      account = accountRepository.save(account);
+    }
+
+    if (!Boolean.TRUE.equals(account.getIsActive())) {
+      throw ApiException.forbidden("Tài khoản đã bị khóa. Vui lòng liên hệ quản trị viên.");
+    }
+    String roleName = roleName(account);
+    if (!"KhachHang".equalsIgnoreCase(roleName) && !"Customer".equalsIgnoreCase(roleName)) {
+      throw ApiException.forbidden(
+          "Tài khoản quản trị/nhân viên vui lòng đăng nhập tại cổng Quản trị viên.");
+    }
+    if (Validators.isBlank(account.getGoogleSub())) {
+      account.setGoogleSub(normalizedSub);
+      account = accountRepository.save(account);
     }
     return new AuthResponse(
         jwtService.generate(account, roleName), toUserResponse(account, roleName));
@@ -301,7 +344,8 @@ public class AuthService {
 
   @Transactional
   public Map<String, String> changePassword(Account account, ChangePasswordRequest request) {
-    if (!passwordEncoder.matches(request.oldPassword(), account.getPassword())) {
+    if (account.getPassword() != null
+        && !passwordEncoder.matches(request.oldPassword(), account.getPassword())) {
       throw ApiException.badRequest("Mật khẩu hiện tại không đúng.");
     }
     Validators.requirePassword(request.newPassword());
@@ -333,14 +377,27 @@ public class AuthService {
     return roleRepository.findById(account.getRoleId()).map(Role::getRoleName).orElse("KhachHang");
   }
 
+  private String generateUniqueUsernameFromEmail(String email) {
+    String prefix = email.split("@", 2)[0].replaceAll("[^a-zA-Z0-9._-]", "");
+    if (prefix.length() < 3) {
+      prefix = "google_" + prefix;
+    }
+    String base = prefix.length() > 40 ? prefix.substring(0, 40) : prefix;
+    String candidate = base;
+    int suffix = 1;
+    while (accountRepository.existsByUsername(candidate)) {
+      candidate = base + "_" + suffix++;
+    }
+    return candidate;
+  }
+
   private String generateOtp() {
-    SecureRandom random = new SecureRandom();
-    return String.format("%06d", random.nextInt(1_000_000));
+    return String.format("%06d", SECURE_RANDOM.nextInt(1_000_000));
   }
 
   private String generateResetToken() {
     byte[] bytes = new byte[32];
-    new SecureRandom().nextBytes(bytes);
+    SECURE_RANDOM.nextBytes(bytes);
     return HexFormat.of().formatHex(bytes);
   }
 

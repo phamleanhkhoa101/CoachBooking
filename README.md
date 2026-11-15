@@ -104,6 +104,9 @@ SPRING_DATASOURCE_PASSWORD=coachbooking
 APP_JWT_SECRET=<chuỗi tối thiểu 32 ký tự>
 APP_CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
 APP_SWAGGER_ENABLED=true
+GOOGLE_CLIENT_ID=<Google OAuth2 Client ID>
+GOOGLE_CLIENT_SECRET=<Google OAuth2 Client Secret>
+APP_OAUTH2_REDIRECT_URI=http://localhost:5173/oauth2/callback
 ```
 
 ## CI/CD và SonarQube

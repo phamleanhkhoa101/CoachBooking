@@ -31,7 +31,7 @@ public class AppUserDetailsService implements UserDetailsService {
     String roleName =
         roleRepository.findById(account.getRoleId()).map(Role::getRoleName).orElse("KhachHang");
     return User.withUsername(account.getUsername())
-        .password(account.getPassword())
+        .password(account.getPassword() == null ? "" : account.getPassword())
         .authorities("ROLE_" + roleName)
         .disabled(!Boolean.TRUE.equals(account.getIsActive()))
         .build();

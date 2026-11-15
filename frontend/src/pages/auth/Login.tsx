@@ -10,13 +10,14 @@ export function Login() {
   const location = useLocation();
   const admin = isAdminPortal();
   const initialNotice = (location.state as { notice?: string } | null)?.notice ?? '';
+  const initialError = new URLSearchParams(location.search).get('error') ?? '';
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [notice, setNotice] = useState(initialNotice);
-  const [error, setError] = useState('');
+  const [error, setError] = useState(initialError);
   const [busy, setBusy] = useState(false);
 
   if (user) {
@@ -44,7 +45,9 @@ export function Login() {
   };
 
   const handleGoogleLogin = () => {
-    setError('Tính năng đăng nhập Google đang được tích hợp. Vui lòng đăng nhập bằng tài khoản hệ thống.');
+    setError('');
+    setNotice('');
+    window.location.href = '/api/oauth2/authorization/google';
   };
 
   return (

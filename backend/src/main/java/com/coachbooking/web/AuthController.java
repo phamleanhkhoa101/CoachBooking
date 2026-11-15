@@ -5,7 +5,9 @@ import com.coachbooking.dto.auth.ChangePasswordRequest;
 import com.coachbooking.dto.auth.ForgotPasswordRequest;
 import com.coachbooking.dto.auth.LoginRequest;
 import com.coachbooking.dto.auth.RegisterRequest;
+import com.coachbooking.dto.auth.ResetPasswordRequest;
 import com.coachbooking.dto.auth.UserResponse;
+import com.coachbooking.dto.auth.VerifyResetOtpRequest;
 import com.coachbooking.service.AuthService;
 import com.coachbooking.service.CurrentUserService;
 import jakarta.validation.Valid;
@@ -51,6 +53,16 @@ public class AuthController {
   @PostMapping({"/forgot-password", "/quen-mat-khau"})
   public Map<String, String> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
     return authService.forgotPassword(request);
+  }
+
+  @PostMapping({"/verify-reset-otp", "/xac-nhan-otp"})
+  public Map<String, String> verifyResetOtp(@Valid @RequestBody VerifyResetOtpRequest request) {
+    return authService.verifyResetOtp(request);
+  }
+
+  @PostMapping({"/reset-password", "/dat-lai-mat-khau"})
+  public Map<String, String> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+    return authService.resetPassword(request);
   }
 
   @GetMapping("/me")

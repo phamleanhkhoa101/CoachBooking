@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import { homePathFor, useAuth } from '../../auth/AuthContext';
 import { isAdminPortal } from '../../auth/portal';
@@ -7,12 +7,15 @@ import { isAdminPortal } from '../../auth/portal';
 export function Login() {
   const { user, login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const admin = isAdminPortal();
+  const initialNotice = (location.state as { notice?: string } | null)?.notice ?? '';
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
+  const [notice, setNotice] = useState(initialNotice);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
@@ -28,6 +31,7 @@ export function Login() {
     }
     setBusy(true);
     setError('');
+    setNotice('');
     try {
       const loggedUser = await login(username.trim(), password, admin ? 'admin' : 'user');
       const role = loggedUser.role;
@@ -71,6 +75,7 @@ export function Login() {
         </div>
 
         {error ? <div className="alert alert-error">{error}</div> : null}
+        {notice ? <div className="alert alert-success">{notice}</div> : null}
 
         <form
           className="auth-form"

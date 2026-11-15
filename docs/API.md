@@ -70,14 +70,38 @@ Trả về:
 Trả về `{ "message": "Đăng ký thành công." }`. Ràng buộc: tên đăng nhập ≥ 6 ký tự,
 mật khẩu ≥ 8 ký tự có hoa/thường/số/ký tự đặc biệt, email đúng định dạng, không trùng.
 
-### `POST /api/auth/quen-mat-khau` (công khai)
+### `POST /api/auth/forgot-password` / `POST /api/auth/quen-mat-khau` (công khai)
 
 ```json
-{ "tenDangNhap": "kh1", "email": "kh1@coachbooking.com" }
+{ "email": "kh1@coachbooking.com" }
 ```
 
-Trả về `{ "matKhauTam": "Abc123!xyz" }` (môi trường demo trả mật khẩu tạm trực tiếp
-thay vì gửi email — có ghi chú rõ trong README).
+Sinh mã OTP 6 chữ số (hiệu lực 15 phút, lưu hash SHA-256 trong `password_reset_tokens`,
+giới hạn cooldown 60 giây) và gửi qua SMTP tới email đã đăng ký. Trả về:
+`{ "message": "Mã xác nhận OTP đã được gửi tới email của bạn. Vui lòng kiểm tra hộp thư." }`.
+
+### `POST /api/auth/verify-reset-otp` / `POST /api/auth/xac-nhan-otp` (công khai)
+
+```json
+{ "email": "kh1@coachbooking.com", "otp": "123456" }
+```
+
+Xác thực mã OTP 6 chữ số (tối đa 5 lần nhập sai). Nếu hợp lệ, trả về `resetToken`
+để chuyển sang bước nhập mật khẩu mới:
+`{ "message": "Xác thực OTP thành công.", "resetToken": "..." }`.
+
+### `POST /api/auth/reset-password` / `POST /api/auth/dat-lai-mat-khau` (công khai)
+
+```json
+{
+  "email": "kh1@coachbooking.com",
+  "resetToken": "...",
+  "newPassword": "KhachHang@456"
+}
+```
+
+Xác thực `resetToken` đã qua bước OTP, cập nhật mật khẩu mới (BCrypt)
+và trả về `{ "message": "Đặt lại mật khẩu thành công. Bạn có thể đăng nhập bằng mật khẩu mới." }`.
 
 ### `GET /api/auth/me`
 

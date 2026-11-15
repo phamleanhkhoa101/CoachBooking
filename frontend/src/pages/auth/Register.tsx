@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, Navigate } from 'react-router-dom';
+import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { apiRequest, getErrorMessage } from '../../api/client';
 import { homePathFor, useAuth } from '../../auth/AuthContext';
 import { isAdminPortal } from '../../auth/portal';
@@ -18,6 +18,7 @@ function isStrongPassword(value: string): boolean {
 
 export function Register() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -26,7 +27,6 @@ export function Register() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
   const [busy, setBusy] = useState(false);
 
   if (isAdminPortal()) {
@@ -62,7 +62,6 @@ export function Register() {
 
     setBusy(true);
     setError('');
-    setSuccess('');
     try {
       const data = await apiRequest<{ message: string }>(
         '/auth/register',
@@ -77,11 +76,12 @@ export function Register() {
         },
         { redirectOn401: false },
       );
-      setSuccess(data?.message ?? 'Đăng ký thành công! Bạn có thể đăng nhập ngay.');
-      setUsername('');
-      setEmail('');
-      setPassword('');
-      setConfirmPassword('');
+      navigate('/login', {
+        replace: true,
+        state: {
+          notice: data?.message ?? 'Đăng ký thành công! Vui lòng đăng nhập.',
+        },
+      });
     } catch (err) {
       setError(getErrorMessage(err));
     } finally {
@@ -119,7 +119,6 @@ export function Register() {
         </div>
 
         {error ? <div className="alert alert-error">{error}</div> : null}
-        {success ? <div className="alert alert-success">{success}</div> : null}
 
         <form
           className="auth-form"

@@ -3,6 +3,9 @@
 Base URL: `/api`. Mọi endpoint (trừ nhóm `auth` công khai) yêu cầu header
 `Authorization: Bearer <token>`.
 
+Lịch chạy định kỳ và hướng dẫn nâng cấp:
+[TRIP_OPERATIONS.md](TRIP_OPERATIONS.md).
+
 ## Tài liệu tương tác (Swagger / OpenAPI 3)
 
 - **Swagger UI:** `http://localhost:8080/swagger-ui.html`
@@ -188,7 +191,10 @@ nhân viên đã có hóa đơn, tài khoản đang được gắn với nhân v
 `POST`/`PUT` nhận `{ maXe, maTuyen, maTx, ngayGioKhoiHanh }`. Hệ thống tự tính
 `ngayGioDenDuKien` từ `thoiGianDuKien` của tuyến và tự lấy `giaVeThucTe` từ bảng
 `gia-ve` theo cặp (nhà xe, loại xe, tuyến). Từ chối khi: khởi hành ở quá khứ,
-cùng xe đã có chuyến trong cùng phút, không tìm thấy bảng giá phù hợp.
+cùng xe hoặc tài xế đã có chuyến chồng khoảng chạy, không tìm thấy bảng giá phù hợp.
+Hai chuyến nối tiếp đúng giờ đến được phép. Các yêu cầu tạo/sửa được tuần tự hóa bằng khóa
+xe rồi tài xế trong transaction. Nhà xe, xe, loại xe, tuyến và tài xế phải hoạt động.
+Giá phải lớn hơn 0. Thời gian tuyến phải lớn hơn 0; khi chưa khai báo dùng mặc định 6 giờ.
 
 ### `GET /api/trips/search?diemDi=&diemDen=&ngay=YYYY-MM-DD&tuGio=&denGio=`
 

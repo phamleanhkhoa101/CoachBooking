@@ -121,6 +121,18 @@ GitHub Actions chạy khi push vào `main`, `dev`, `feat/**`, `fix/**` và mọi
 
 ### Cấu hình SonarQube
 
+Chạy SonarQube local (JDK 25, server ở `http://localhost:9000`) từ thư mục gốc:
+
+```powershell
+.\scripts\sonar.ps1
+```
+
+Script chạy `test jacocoTestReport sonar` cho project `coachbooking`.
+Token lấy từ biến môi trường `SONAR_TOKEN`, sau đó từ file `.env` ở thư mục gốc;
+nếu cả hai chưa có, script yêu cầu nhập ẩn. Token không được in ra hoặc ghi vào mã nguồn.
+Có thể tùy chỉnh: `.\scripts\sonar.ps1 -ProjectKey coachbooking -ProjectName coachbooking -HostUrl http://localhost:9000`.
+Script trả lại exit code của Gradle và giữ nguyên thư mục/biến môi trường của phiên gọi.
+
 Project key, organization và host nằm trong `backend/build.gradle` (block `sonarqube`), đang trỏ tới
 `phamleanhkhoa101_CoachBooking` / `phamleanhkhoa101`.
 
@@ -153,6 +165,13 @@ Bước triển khai thực tế chưa được tự động hóa; thêm job dep
 > Đã bổ sung `backend/gradle/wrapper/gradle-wrapper.jar` và `frontend/package-lock.json`, nên chạy local bằng `./gradlew` và cài dependency bằng `npm ci` được. CI vẫn cài Gradle 9.1.0 trực tiếp để không phụ thuộc wrapper jar.
 
 ## API
+
+Lịch chạy định kỳ và kiểm tra chồng lịch xe/tài xế đã được bổ sung. Xem
+[hướng dẫn triển khai, demo và kiểm thử](docs/TRIP_OPERATIONS.md).
+Đặt vé chỉ cần chọn chuyến và ghế; không có bước chọn điểm đón/trả.
+Lịch chạy không yêu cầu bộ điểm mẫu. Dữ liệu mẫu dùng tên tự nhiên, vẫn là dữ liệu mô phỏng cho đồ án.
+Muốn làm mới dữ liệu nghiệp vụ local và giữ tài khoản/hồ sơ, dùng script
+`scripts/reset-demo.ps1` theo hướng dẫn trên. Backend không tự tạo hóa đơn/vé mẫu khi khởi động.
 
 Hợp đồng đầy đủ ở [`docs/API.md`](docs/API.md): xác thực JWT, danh mục, tìm chuyến,
 sơ đồ ghế, đặt vé, hóa đơn, hủy vé, hồ sơ và thống kê.

@@ -74,7 +74,7 @@ export function ETicketPage() {
   const idNum = invoice?.invoiceId ?? Number(invoiceId);
   const customerName =
     invoice?.customerName ?? state?.passengerName ?? 'Quý khách';
-  const customerPhone = invoice?.phone ?? state?.passengerPhone ?? '—';
+  const customerPhone = invoice?.customerPhone ?? invoice?.phone ?? state?.passengerPhone ?? '—';
   const totalAmount =
     invoice?.totalAmount ?? invoice?.tongTien ?? state?.totalPrice ?? 0;
   const isPaid = invoice?.isPaid ?? invoice?.trangThai ?? (state?.paymentMethod !== 'Thanh toán sau');
@@ -96,11 +96,11 @@ export function ETicketPage() {
     firstTicket?.typeName ??
     firstTicket?.vehicleTypeName ??
     state?.typeName ??
-    'Xe khách Limousine';
+    'Chưa ghi nhận loại xe';
   const licensePlate =
     firstTicket?.licensePlate ??
     state?.trip?.licensePlate ??
-    '51B-342.89';
+    'Chưa ghi nhận biển số';
 
   const seatLabels =
     tickets.length > 0
@@ -113,6 +113,11 @@ export function ETicketPage() {
   const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
     qrValue,
   )}`;
+
+  if (loading) return <div className="empty-state" role="status">Đang tải vé điện tử…</div>;
+  if (!invoice) return <div className="empty-state" role="alert">
+    <p>{errorMsg || 'Không thể tải vé điện tử.'}</p><Link to="/tra-cuu-ve">Tra cứu vé</Link>
+  </div>;
 
   return (
     <div className="eticket-page">
@@ -163,8 +168,7 @@ export function ETicketPage() {
               </button>
             </p>
             <span className="hero-alert-sub">
-              Thông tin vé điện tử và mã QR đã được gửi về số điện thoại{' '}
-              <strong>{customerPhone}</strong>.
+              Vui lòng kiểm tra tuyến, ghế và giờ khởi hành trên vé trước khi đi.
             </span>
           </div>
         </div>
@@ -222,7 +226,6 @@ export function ETicketPage() {
             <div className="pass-route-row">
               <div className="route-point">
                 <span className="point-city">{departure}</span>
-                <span className="point-sub">Bến xe Miền Đông Mới</span>
               </div>
 
               <div className="route-arrow-center">
@@ -233,7 +236,6 @@ export function ETicketPage() {
 
               <div className="route-point right">
                 <span className="point-city">{destination}</span>
-                <span className="point-sub">Bến xe trung tâm liên tỉnh</span>
               </div>
             </div>
 
@@ -265,10 +267,7 @@ export function ETicketPage() {
                   Ghế: {seatLabels}
                 </strong>
               </div>
-              <div className="detail-item">
-                <span className="d-label">Cửa lên xe</span>
-                <strong className="d-val">Cửa số 03 (Sảnh tầng 1)</strong>
-              </div>
+
             </div>
 
             <div className="pass-footer-price">
@@ -317,8 +316,8 @@ export function ETicketPage() {
             </div>
             <div className="guide-card">
               <div className="guide-icon">🚐</div>
-              <strong>Trung chuyển nội thành</strong>
-              <p>Xe có dịch vụ trung chuyển miễn phí trong bán kính 5km tại điểm đến. Vui lòng liên hệ phụ xe khi xe gần tới nơi.</p>
+              <strong>Hướng dẫn hành trình</strong>
+              <p>Vui lòng liên hệ trực tiếp nhà xe để được hướng dẫn trước khi khởi hành.</p>
             </div>
             <div className="guide-card">
               <div className="guide-icon">📞</div>

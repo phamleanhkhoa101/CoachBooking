@@ -11,6 +11,20 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 public interface TripRepository extends JpaRepository<Trip, Integer> {
+  @Query(
+      """
+      select t from Trip t
+      where (t.vehicleId = :vehicleId or t.driverId = :driverId)
+        and (:excludeId is null or t.tripId <> :excludeId)
+        and t.departureTime < :arrival
+        and coalesce(t.estimatedArrivalTime, t.departureTime) > :departure
+      """)
+  List<Trip> findOverlapping(
+      @Param("vehicleId") Integer vehicleId,
+      @Param("driverId") Integer driverId,
+      @Param("departure") LocalDateTime departure,
+      @Param("arrival") LocalDateTime arrival,
+      @Param("excludeId") Integer excludeId);
 
   @Lock(LockModeType.PESSIMISTIC_WRITE)
   @Query("select t from Trip t where t.tripId = :tripId")

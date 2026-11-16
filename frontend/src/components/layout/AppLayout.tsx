@@ -87,6 +87,7 @@ const STAFF_NAV: NavGroup[] = [
 const STAFF_SYSTEM_NAV: NavGroup = {
   title: 'Hệ thống',
   items: [
+    { to: '/admin/lich-chay', label: 'Lịch chạy định kỳ', icon: 'history' },
     { to: '/admin/nhan-vien', label: 'Nhân viên', icon: 'staff' },
     { to: '/admin/tai-khoan', label: 'Tài khoản', icon: 'account' },
   ],

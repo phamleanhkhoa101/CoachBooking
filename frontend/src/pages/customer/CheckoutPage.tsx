@@ -15,8 +15,6 @@ interface CheckoutLocationState {
   tripId: number;
   trip?: TripSearchResponse;
   selectedSeats: number[];
-  boardingPoint: string;
-  dropoffPoint: string;
   totalPrice: number;
   price: number;
   dep: string;
@@ -210,8 +208,6 @@ export function CheckoutPage() {
           bookingResponse: res,
           passengerName: fullName,
           passengerPhone: phone,
-          boardingPoint: state.boardingPoint,
-          dropoffPoint: state.dropoffPoint,
           selectedSeats: state.selectedSeats,
           trip: state.trip,
           dep: state.dep,
@@ -353,10 +349,10 @@ export function CheckoutPage() {
                 </div>
 
                 <div className="form-group-field full-width">
-                  <label>Ghi chú đón / trả hoặc hành lý kèm theo (nếu có)</label>
+                  <label>Ghi chú hành lý kèm theo (nếu có)</label>
                   <textarea
                     rows={2}
-                    placeholder="Ví dụ: Có 1 thùng trái cây 15kg, đón gần ngã tư Hàng Xanh..."
+                    placeholder="Ví dụ: Có 1 thùng trái cây 15kg..."
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                   />
@@ -489,23 +485,6 @@ export function CheckoutPage() {
                 <span className="summary-time">
                   Giờ xuất bến: <strong>{state.depTime ? formatTime(state.depTime) : '--:--'}</strong>
                 </span>
-              </div>
-
-              <div className="summary-points">
-                <div className="point-item">
-                  <span className="dot blue" />
-                  <div>
-                    <span className="p-label">Điểm đón:</span>
-                    <span className="p-name">{state.boardingPoint}</span>
-                  </div>
-                </div>
-                <div className="point-item">
-                  <span className="dot orange" />
-                  <div>
-                    <span className="p-label">Điểm trả:</span>
-                    <span className="p-name">{state.dropoffPoint}</span>
-                  </div>
-                </div>
               </div>
 
               <div className="order-divider" />

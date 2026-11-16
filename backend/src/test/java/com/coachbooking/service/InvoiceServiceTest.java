@@ -27,6 +27,8 @@ class InvoiceServiceTest {
   private RouteRepository routeRepository;
   private CurrentUserService currentUserService;
   private SeatStatusService seatStatusService;
+  private SepayService sepayService;
+  private SepaySessionRepository sepaySessions;
   private InvoiceService service;
 
   private Account adminAccount;
@@ -45,6 +47,8 @@ class InvoiceServiceTest {
     routeRepository = mock(RouteRepository.class);
     currentUserService = mock(CurrentUserService.class);
     seatStatusService = mock(SeatStatusService.class);
+    sepayService = mock(SepayService.class);
+    sepaySessions = mock(SepaySessionRepository.class);
 
     service =
         new InvoiceService(
@@ -56,7 +60,9 @@ class InvoiceServiceTest {
             tripRepository,
             routeRepository,
             currentUserService,
-            seatStatusService);
+            seatStatusService,
+            sepayService,
+            sepaySessions);
 
     adminAccount = new Account();
     adminAccount.setAccountId(1);
@@ -248,6 +254,41 @@ class InvoiceServiceTest {
     // Phone mismatch
     ApiException notFound = assertThrows(ApiException.class, () -> service.lookup(1, "0999999999"));
     assertEquals(HttpStatus.NOT_FOUND, notFound.getStatus());
+  }
+
+  @Test
+  void customerCannotSelfConfirmAndStaffCannotOverrideSepay() {
+    assertEquals(
+        HttpStatus.FORBIDDEN,
+        assertThrows(ApiException.class, () -> service.pay(1, "Chuyển khoản", customerAccount))
+            .getStatus());
+    when(sepaySessions.findSessionIdByInvoiceId(1)).thenReturn(Optional.of(UUID.randomUUID()));
+    assertEquals(
+        HttpStatus.CONFLICT,
+        assertThrows(ApiException.class, () -> service.pay(1, "Tiền mặt", adminAccount))
+            .getStatus());
+    verify(paymentRepository, never()).save(any());
+  }
+
+  @Test
+  void managedInvoiceCancelsThroughSepayAndCannotCancelSingleTicket() {
+    Invoice invoice = new Invoice();
+    invoice.setInvoiceId(1);
+    invoice.setCustomerId(10);
+    when(invoiceRepository.findById(1)).thenReturn(Optional.of(invoice));
+    when(sepayService.cancelInvoice(1)).thenReturn(true);
+    assertNotNull(service.cancel(1, customerAccount).get("message"));
+    verify(invoiceRepository, never()).delete(any());
+    Ticket ticket = new Ticket();
+    ticket.setTicketId(1);
+    ticket.setInvoiceId(1);
+    when(ticketRepository.findById(1)).thenReturn(Optional.of(ticket));
+    when(sepaySessions.findSessionIdByInvoiceId(1)).thenReturn(Optional.of(UUID.randomUUID()));
+    assertEquals(
+        HttpStatus.CONFLICT,
+        assertThrows(ApiException.class, () -> service.cancelTicket(1, customerAccount))
+            .getStatus());
+    verify(ticketRepository, never()).delete(any());
   }
 
   @Test

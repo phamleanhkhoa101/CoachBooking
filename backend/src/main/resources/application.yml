@@ -52,6 +52,15 @@ spring:
             redirect-uri: "{baseUrl}/api/login/oauth2/code/{registrationId}"
 
 app:
+  sepay:
+    enabled: ${SEPAY_ENABLED:false}
+    environment: ${SEPAY_ENVIRONMENT:sandbox}
+    merchant-id: ${SEPAY_MERCHANT_ID:}
+    secret-key: ${SEPAY_SECRET_KEY:}
+    ipn-secret: ${SEPAY_IPN_SECRET:}
+    frontend-url: ${SEPAY_FRONTEND_URL:}
+    confirmation-mode: ${SEPAY_CONFIRMATION_MODE:IPN}
+    local-return-url: ${SEPAY_LOCAL_RETURN_URL:http://localhost:3000}
   jwt:
     secret: ${APP_JWT_SECRET}
   auth:

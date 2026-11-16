@@ -51,6 +51,7 @@ public class BookingService {
   private final CurrentUserService currentUserService;
   private final SeatHoldRepository seatHoldRepository;
   private final SeatStatusService seatStatusService;
+  private final SepayService sepayService;
 
   public BookingService(
       TripRepository tripRepository,
@@ -63,7 +64,8 @@ public class BookingService {
       PaymentRepository paymentRepository,
       CurrentUserService currentUserService,
       SeatHoldRepository seatHoldRepository,
-      SeatStatusService seatStatusService) {
+      SeatStatusService seatStatusService,
+      SepayService sepayService) {
     this.tripRepository = tripRepository;
     this.vehicleRepository = vehicleRepository;
     this.vehicleTypeRepository = vehicleTypeRepository;
@@ -75,6 +77,7 @@ public class BookingService {
     this.currentUserService = currentUserService;
     this.seatHoldRepository = seatHoldRepository;
     this.seatStatusService = seatStatusService;
+    this.sepayService = sepayService;
   }
 
   @Transactional
@@ -93,6 +96,13 @@ public class BookingService {
 
     List<Integer> seatNumbers = normalizeSeats(request.seatNumbers());
     boolean customerActor = currentUserService.isCustomer(actor);
+    if (customerActor) {
+      var replay =
+          sepayService.replay(
+              actor, request.holdToken(), trip.getTripId(), seatNumbers, request.paymentMethod());
+      if (replay.isPresent()) return replay.get();
+      sepayService.requireAvailable();
+    }
     Vehicle vehicle =
         vehicleRepository
             .findById(trip.getVehicleId())
@@ -144,6 +154,7 @@ public class BookingService {
     if (customerActor && !"Chuyển khoản".equals(paymentMethod)) {
       throw ApiException.badRequest("Khách hàng chỉ có thể chọn phương thức Chuyển khoản.");
     }
+    if (customerActor) payNow = false;
 
     BigDecimal totalAmount = trip.getActualPrice().multiply(BigDecimal.valueOf(seatNumbers.size()));
 
@@ -175,11 +186,18 @@ public class BookingService {
       paymentRepository.save(payment);
     }
 
+    BookingResponse onlineResponse =
+        customerActor
+            ? sepayService.create(savedInvoice, actor, trip, request.holdToken(), seatNumbers)
+            : null;
     if (customerActor) {
       seatHoldRepository.deleteByHoldToken(request.holdToken());
     }
     seatStatusService.publishAfterCommit(trip.getTripId());
 
+    if (customerActor) {
+      return onlineResponse;
+    }
     return new BookingResponse(
         savedInvoice.getInvoiceId(),
         totalAmount,

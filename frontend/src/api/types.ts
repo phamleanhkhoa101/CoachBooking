@@ -246,6 +246,9 @@ export interface SeatStatusResponse {
 }
 
 export interface BookingResponse {
+  paymentSessionId?: string | null;
+  paymentStatus?: SepayPaymentStatus | null;
+  expiresAt?: string | null;
   invoiceId: number;
   totalAmount: number;
   ticketCount: number;
@@ -262,6 +265,7 @@ export interface BookingResponse {
 export type DatVeResponse = BookingResponse;
 
 export interface InvoiceItem {
+  sepay?: SepayStatus | null;
   invoiceId: number;
   customerName: string;
   employeeName: string | null;
@@ -325,6 +329,7 @@ export interface PaymentInfo {
 export type ThanhToanInfo = PaymentInfo;
 
 export interface InvoiceDetail {
+  sepay?: SepayStatus | null;
   invoiceId: number;
   customerName: string;
   customerPhone: string | null;
@@ -350,6 +355,21 @@ export interface InvoiceDetail {
   thanhToan?: PaymentInfo | null;
 }
 export type HoaDonDetail = InvoiceDetail;
+export type SepayPaymentStatus = 'PENDING' | 'PAID' | 'EXPIRED' | 'CANCELLED' | 'REVIEW_REQUIRED';
+export interface SepayStatus {
+  confirmationMode: 'IPN' | 'POLLING';
+  lastCheckedAt?: string | null;
+  syncError?: string | null;
+  paymentSessionId: string;
+  invoiceId: number;
+  paymentStatus: SepayPaymentStatus;
+  totalAmount: number;
+  expiresAt: string;
+}
+export interface SepayCheckout {
+  checkoutUrl: string;
+  fields: { name: string; value: string }[];
+}
 export type HoaDonKhachHang = InvoiceItem & { veXes?: TicketItem[]; tickets?: TicketItem[]; ngayTao?: string };
 
 export interface Profile {

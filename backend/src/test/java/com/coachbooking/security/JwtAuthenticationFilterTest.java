@@ -3,88 +3,87 @@ package com.coachbooking.security;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import com.coachbooking.common.ApiException;
+import com.coachbooking.domain.Account;
+import com.coachbooking.service.AuthSessionService;
+import io.jsonwebtoken.*;
 import jakarta.servlet.FilterChain;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
+import org.junit.jupiter.api.*;
+import org.springframework.mock.web.*;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 class JwtAuthenticationFilterTest {
+  final JwtService jwt = mock(JwtService.class);
+  final AppUserDetailsService users = mock(AppUserDetailsService.class);
+  final AuthSessionService sessions = mock(AuthSessionService.class);
+  final JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwt, users, sessions);
+  final FilterChain chain = mock(FilterChain.class);
 
   @AfterEach
-  void cleanUp() {
+  void cleanup() {
     SecurityContextHolder.clearContext();
   }
 
-  @Test
-  void setsAuthenticationForValidTokenAndEnabledUser() throws Exception {
-    JwtService jwtService = mock(JwtService.class);
-    AppUserDetailsService userDetailsService = mock(AppUserDetailsService.class);
-    JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtService, userDetailsService);
-
-    when(jwtService.isValid("good-token")).thenReturn(true);
-    when(jwtService.extractUsername("good-token")).thenReturn("kh1");
-    UserDetails user = User.withUsername("kh1").password("").authorities("ROLE_KhachHang").build();
-    when(userDetailsService.loadUserByUsername("kh1")).thenReturn(user);
-
-    MockHttpServletRequest request = new MockHttpServletRequest();
-    request.addHeader("Authorization", "Bearer good-token");
-    MockHttpServletResponse response = new MockHttpServletResponse();
-    FilterChain chain = mock(FilterChain.class);
-
-    filter.doFilter(request, response, chain);
-
-    assertNotNull(SecurityContextHolder.getContext().getAuthentication());
-    assertEquals("kh1", SecurityContextHolder.getContext().getAuthentication().getName());
-    verify(chain).doFilter(request, response);
+  MockHttpServletRequest request(String header) {
+    var request = new MockHttpServletRequest();
+    if (header != null) request.addHeader("Authorization", header);
+    return request;
   }
 
   @Test
-  void skipsOrClearsAuthenticationForMissingInvalidDisabledOrUnknownUser() throws Exception {
-    JwtService jwtService = mock(JwtService.class);
-    AppUserDetailsService userDetailsService = mock(AppUserDetailsService.class);
-    JwtAuthenticationFilter filter = new JwtAuthenticationFilter(jwtService, userDetailsService);
-    FilterChain chain = mock(FilterChain.class);
+  void authenticatesSessionWithCurrentAuthoritiesAndParsesOnce() throws Exception {
+    Claims claims = Jwts.claims().build();
+    Account account = new Account();
+    account.setUsername("customer");
+    when(jwt.parse("valid")).thenReturn(claims);
+    when(sessions.authenticate(claims)).thenReturn(account);
+    when(users.fromAccount(account))
+        .thenReturn(
+            User.withUsername("customer").password("").authorities("ROLE_KhachHang").build());
+    filter.doFilter(request("Bearer valid"), new MockHttpServletResponse(), chain);
+    assertEquals("customer", SecurityContextHolder.getContext().getAuthentication().getName());
+    verify(jwt, times(1)).parse("valid");
+    verify(users, never()).loadUserByUsername(anyString());
+    verify(chain).doFilter(any(), any());
+  }
 
-    // Missing header
-    MockHttpServletRequest noHeaderReq = new MockHttpServletRequest();
-    filter.doFilter(noHeaderReq, new MockHttpServletResponse(), chain);
+  @Test
+  void rejectsBadTokensRevokedSessionsAndDisabledUsers() throws Exception {
+    for (String header : new String[] {null, "Basic credentials"}) {
+      filter.doFilter(request(header), new MockHttpServletResponse(), chain);
+      assertNull(SecurityContextHolder.getContext().getAuthentication());
+    }
+    when(jwt.parse("bad")).thenThrow(new MalformedJwtException("bad"));
+    filter.doFilter(request("Bearer bad"), new MockHttpServletResponse(), chain);
     assertNull(SecurityContextHolder.getContext().getAuthentication());
+    Claims claims = Jwts.claims().build();
+    when(jwt.parse("revoked")).thenReturn(claims);
+    when(sessions.authenticate(claims)).thenThrow(ApiException.forbidden("revoked"));
+    filter.doFilter(request("Bearer revoked"), new MockHttpServletResponse(), chain);
+    assertNull(SecurityContextHolder.getContext().getAuthentication());
+    reset(sessions);
+    Account account = new Account();
+    account.setUsername("locked");
+    when(sessions.authenticate(claims)).thenReturn(account);
+    when(users.fromAccount(account))
+        .thenReturn(
+            User.withUsername("locked")
+                .password("")
+                .authorities("ROLE_KhachHang")
+                .disabled(true)
+                .build());
+    filter.doFilter(request("Bearer revoked"), new MockHttpServletResponse(), chain);
+    assertNull(SecurityContextHolder.getContext().getAuthentication());
+  }
 
-    // Invalid token
-    when(jwtService.isValid("bad-token")).thenReturn(false);
-    MockHttpServletRequest badReq = new MockHttpServletRequest();
-    badReq.addHeader("Authorization", "Bearer bad-token");
-    filter.doFilter(badReq, new MockHttpServletResponse(), chain);
-    assertNull(SecurityContextHolder.getContext().getAuthentication());
-
-    // Disabled user
-    when(jwtService.isValid("disabled-token")).thenReturn(true);
-    when(jwtService.extractUsername("disabled-token")).thenReturn("locked");
-    UserDetails disabledUser =
-        User.withUsername("locked")
-            .password("")
-            .authorities("ROLE_KhachHang")
-            .disabled(true)
-            .build();
-    when(userDetailsService.loadUserByUsername("locked")).thenReturn(disabledUser);
-    MockHttpServletRequest disabledReq = new MockHttpServletRequest();
-    disabledReq.addHeader("Authorization", "Bearer disabled-token");
-    filter.doFilter(disabledReq, new MockHttpServletResponse(), chain);
-    assertNull(SecurityContextHolder.getContext().getAuthentication());
-
-    // Unknown user throws RuntimeException
-    when(jwtService.isValid("ghost-token")).thenReturn(true);
-    when(jwtService.extractUsername("ghost-token")).thenReturn("ghost");
-    when(userDetailsService.loadUserByUsername("ghost"))
-        .thenThrow(new UsernameNotFoundException("missing"));
-    MockHttpServletRequest ghostReq = new MockHttpServletRequest();
-    ghostReq.addHeader("Authorization", "Bearer ghost-token");
-    filter.doFilter(ghostReq, new MockHttpServletResponse(), chain);
-    assertNull(SecurityContextHolder.getContext().getAuthentication());
+  @Test
+  void infrastructureFailureIsNotMaskedAsInvalidToken() {
+    when(jwt.parse("token"))
+        .thenThrow(
+            new org.springframework.dao.DataAccessResourceFailureException("database unavailable"));
+    assertThrows(
+        org.springframework.dao.DataAccessResourceFailureException.class,
+        () -> filter.doFilter(request("Bearer token"), new MockHttpServletResponse(), chain));
   }
 }

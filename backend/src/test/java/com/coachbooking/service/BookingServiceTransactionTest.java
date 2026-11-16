@@ -58,6 +58,10 @@ class BookingServiceTransactionTest {
 
   @TestConfiguration
   static class MocksConfig {
+    @Bean
+    SepayService sepayService() {
+      return mock(SepayService.class);
+    }
 
     @Bean
     CurrentUserService currentUserService() {

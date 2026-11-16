@@ -21,6 +21,7 @@ Luồng dữ liệu: React gọi `/api/**` → nginx (container frontend) chuy�
 
 ```bash
 cp .env.example .env      # Windows: copy .env.example .env
+# Đặt JWT_SECRET riêng trong .env trước khi chạy (hướng dẫn bên dưới).
 docker compose up --build
 ```
 
@@ -45,6 +46,88 @@ docker compose up --build
 Nếu volume `db-data` được tạo bởi bộ script `db/init` cũ (không có bảng
 `flyway_schema_history`), Flyway sẽ đánh dấu schema đang có là phiên bản 2 thay vì
 chạy lại migration; dữ liệu cũ được giữ nguyên.
+
+## Thanh toán khách hàng qua SePay sandbox
+
+Khách đặt vé tạo hóa đơn chưa thanh toán, sau đó chuyển sang trang SePay quét QR.
+Backend chỉ xác nhận khi nhận IPN đã xác thực hoặc kết quả tra cứu SePay hợp lệ và khớp số tiền. Sandbox không dùng tiền thật.
+Nhân viên tại quầy tiếp tục sử dụng luồng thanh toán hiện có.
+
+1. Trong `.env` cục bộ, đặt `SEPAY_ENABLED=true`, `SEPAY_ENVIRONMENT=sandbox`,
+   `SEPAY_MERCHANT_ID`, `SEPAY_SECRET_KEY`, `SEPAY_IPN_SECRET`, `SEPAY_FRONTEND_URL`.
+   Merchant secret lấy từ tài khoản sandbox; IPN secret là chuỗi ngẫu nhiên riêng (khuyến nghị ít nhất 32 ký tự).
+   Không dùng lại secret đã gửi qua ảnh/chat. Không đặt secret trong biến `VITE_*`.
+2. Expose **frontend có proxy `/api`** bằng một domain/tunnel HTTPS công khai,
+   ví dụ tunnel tới cổng Docker frontend `3000` hoặc Vite `5173`.
+   Đặt `SEPAY_FRONTEND_URL=https://<domain>` và thêm origin đó vào
+   `CORS_ALLOWED_ORIGINS` (Docker) / `APP_CORS_ALLOWED_ORIGINS` (backend local).
+   Khi dùng HTTPS, đặt `APP_AUTH_COOKIE_SECURE=true`.
+   Nếu backend chạy trực tiếp, export các biến môi trường tương ứng; Spring không tự đọc `.env` ở root.
+3. Trên SePay, cấu hình IPN URL `https://<domain>/api/payments/sepay/ipn`,
+   Auth Type `SECRET_KEY`, Secret Key bằng `SEPAY_IPN_SECRET`. Merchant secret và IPN secret độc lập.
+4. Khởi động lại backend sau khi đổi cấu hình (Docker: `docker compose up -d --build backend`).
+   Flyway áp dụng migration mới, không cần reset dữ liệu.
+5. Đặt vé bằng tài khoản khách, thử thanh toán sandbox, quay về kiểm tra trạng thái và vé điện tử.
+   Thử mở lại phiên, bỏ dở đến hết hạn, hủy đơn, gửi lại IPN và giao dịch đến muộn.
+
+Phiên giữ ghế tối đa 10 phút từ lúc tạo, không vượt giờ khởi hành; mở lại không gia hạn.
+Chỉ cho hủy toàn bộ khi chờ. Khi hết hạn/hủy, ghế được nhả và hóa đơn được giữ lại.
+Khách không thể tự xác nhận thanh toán bằng nút “đã chuyển khoản” hay API `/pay`.
+Hóa đơn cũ chưa thanh toán cần liên hệ quầy vé.
+
+Giao dịch đến muộn hoặc không khớp chuyển `REVIEW_REQUIRED`, không tự cấp vé/hoàn tiền.
+Tra cứu đối soát bằng quyền quản trị database ở `sepay_sessions` và `sepay_notifications`
+(mã tham chiếu, ID giao dịch, số tiền, kết quả xử lý); chưa có màn hình đối soát riêng.
+Không lưu secret hoặc dữ liệu thẻ trong các bảng này.
+
+Tích hợp hiện chỉ chấp nhận cấu hình sandbox. Chưa bật giao dịch tiền thật;
+khi SePay tắt hoặc thiếu cấu hình, đặt vé khách hàng trả `503` thay vì giả lập thanh toán.
+Xem [API](docs/API.md) và [tài liệu SePay](https://developer.sepay.vn/vi/cong-thanh-toan/sandbox).
+
+### Chạy cả frontend và backend local, không dùng tunnel
+
+Chế độ này vẫn dùng trang checkout sandbox của SePay trong **cùng tab**. Backend local
+chủ động tra cứu giao dịch, không cần IPN truy cập vào máy bạn. Bản deploy mặc định dùng IPN.
+
+1. Deploy frontend có hai file `sepay-local-return.html` và `sepay-local-return.js` trong
+   `frontend/public/` lên `https://coachbooking.io.vn`. Kiểm tra URL
+   `https://coachbooking.io.vn/sepay-local-return.html` hiển thị trang chuyển tiếp,
+   không phải trang chủ SPA. Chưa cần deploy API SePay cho luồng local này.
+2. Đặt các biến sau **trong môi trường local**, giữ merchant credentials sandbox hiện có:
+
+   ```env
+   SEPAY_ENABLED=true
+   SEPAY_ENVIRONMENT=sandbox
+   SEPAY_CONFIRMATION_MODE=POLLING
+   SPRING_PROFILES_ACTIVE=local
+   SEPAY_FRONTEND_URL=https://coachbooking.io.vn
+   SEPAY_LOCAL_RETURN_URL=http://localhost:3000
+   APP_AUTH_COOKIE_SECURE=false
+   ```
+
+   Nếu chạy Vite, dùng `SEPAY_LOCAL_RETURN_URL=http://localhost:5173`.
+   Chỉ hai địa chỉ localhost này được hỗ trợ; không thêm dấu `/` cuối URL.
+   IPN secret không bắt buộc trong chế độ polling. Không cần đổi IPN trên SePay sang localhost.
+3. Docker local: chạy `docker compose up -d --build backend frontend` để áp dụng biến và migration V13.
+   Backend chạy bằng Gradle phải được cấp biến môi trường tương ứng; không tự đọc `.env` root.
+4. Đăng nhập và đặt vé tại đúng origin localhost đã cấu hình. Sau thanh toán, SePay chuyển về
+   trang công khai; trang đó tự đưa trình duyệt về phiên thanh toán trên localhost.
+   Giữ backend và database local chạy trong suốt quá trình.
+
+Backend kiểm tra phiên đang chờ khoảng mỗi 15 giây. Giao diện đọc trạng thái mỗi 3 giây.
+Luồng đặt vé tự mở trang QR SePay trong cùng tab, hiển thị spinner khi chờ và tự chuyển tới
+vé điện tử khi backend báo `PAID`. Khi quay về/refresh không tự mở lại checkout.
+Nếu chưa xác nhận sau 30 giây, giao diện hiện nút kiểm tra lại nhưng tiếp tục theo dõi kết quả.
+Nút kiểm tra lại dùng cùng lịch giới hạn với worker, không tạo thêm đơn hoặc gọi API liên tục.
+Lỗi kết nối không đồng nghĩa thanh toán thất bại và không gia hạn ghế. Sau hủy/hết hạn,
+worker kiểm tra đối soát mỗi phút trong tối đa 24 giờ kể từ lúc tạo phiên; giao dịch phát hiện muộn
+được đánh dấu cần đối soát, không cấp lại vé. Sau 24 giờ cần đối soát thủ công trên SePay.
+Lịch kiểm tra được lưu trong database nên tiếp tục sau khi backend khởi động lại.
+
+Trên server deploy, giữ `SEPAY_CONFIRMATION_MODE=IPN` và không bật profile `local`.
+Đổi chế độ không đổi phương thức xác nhận của phiên đã tạo; nên hoàn tất/hủy phiên cũ trước khi đổi.
+Không dùng cùng merchant sandbox cho các database đang cùng nhận IPN nếu không muốn sinh
+nhật ký đơn không nhận diện được. Chế độ này không hỗ trợ giao dịch tiền thật.
 
 ## Tài khoản demo
 
@@ -102,12 +185,59 @@ SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/coachbooking
 SPRING_DATASOURCE_USERNAME=coachbooking
 SPRING_DATASOURCE_PASSWORD=coachbooking
 APP_JWT_SECRET=<chuỗi tối thiểu 32 ký tự>
+APP_AUTH_COOKIE_SECURE=false
 APP_CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
 APP_SWAGGER_ENABLED=true
 GOOGLE_CLIENT_ID=<Google OAuth2 Client ID>
 GOOGLE_CLIENT_SECRET=<Google OAuth2 Client Secret>
 APP_OAUTH2_REDIRECT_URI=http://localhost:5173/oauth2/callback
 ```
+
+JWT secret không có giá trị dự phòng. Tạo khóa riêng, ví dụ bằng
+`node -e "console.log(require('crypto').randomBytes(48).toString('base64'))"`, rồi đặt
+`JWT_SECRET` trong `.env` cho Compose hoặc `APP_JWT_SECRET` trong môi trường khi chạy
+`bootRun`. Không commit khóa hoặc file `.env`. Backend từ chối khóa mẫu và khóa dưới
+32 byte. Chạy trực tiếp không tự đọc `.env` của Compose.
+
+Refresh cookie mặc định bật `Secure`; cấu hình `APP_AUTH_COOKIE_SECURE=false` chỉ
+cho local HTTP. Production cần HTTPS, `APP_AUTH_COOKIE_SECURE=true` và cấu hình đúng
+Origin frontend/Swagger trong `APP_CORS_ALLOWED_ORIGINS` (Compose dùng
+`CORS_ALLOWED_ORIGINS`). Frontend cần trình duyệt hỗ trợ Web Locks và BroadcastChannel;
+production phải dùng secure context. Trình duyệt thiếu Web Locks báo lỗi thay vì
+refresh đồng thời gây thu hồi nhầm phiên.
+
+### Phiên đăng nhập và nâng cấp JWT
+
+- Access token tối đa 15 phút, lưu trong bộ nhớ; refresh token ngẫu nhiên lưu trong
+  cookie HttpOnly, DB chỉ lưu hash và lịch sử xoay vòng.
+- Khách hàng: 7 ngày không refresh, tối đa 30 ngày từ đăng nhập. Admin/nhân viên: 12 giờ.
+- “Ghi nhớ đăng nhập” quyết định cookie bền vững hay cookie phiên; không thay đổi
+  hạn phiên phía backend. Đăng xuất thu hồi phiên; đổi/reset mật khẩu hoặc admin
+  đổi quyền/trạng thái thu hồi mọi phiên của tài khoản.
+- Flyway `V11__authentication_sessions.sql` chỉ bổ sung bảng phiên/token, không reset
+  dữ liệu nghiệp vụ. Triển khai backend và frontend cùng đợt; mọi JWT cũ bị từ chối
+  và người dùng cần đăng nhập lại một lần. Frontend tự xóa JWT cũ khỏi localStorage.
+- Mỗi request được bảo vệ kiểm tra phiên trong PostgreSQL. Job dọn phiên quá hạn
+  tuyệt đối chạy mỗi giờ (`app.auth.cleanup-interval-ms`); lịch sử token còn được giữ
+  trong thời gian phiên để phát hiện replay. Log replay không chứa token/cookie.
+
+Kiểm thử frontend: `cd frontend; npm test` và `npm run build`.
+Kiểm thử backend: `cd backend; .\gradlew.bat test jacocoTestReport`.
+Test concurrency/rollback thật cần PostgreSQL **tạm riêng**, không dùng DB ứng dụng:
+
+```powershell
+docker run --detach --name coachbooking-jwt-test --publish 127.0.0.1:55439:5432 --env POSTGRES_DB=coachbooking_auth_test --env POSTGRES_USER=auth_test --env POSTGRES_PASSWORD=auth_test_local_only --tmpfs /var/lib/postgresql/data postgres:16-alpine
+$env:AUTH_TEST_DB_URL='jdbc:postgresql://127.0.0.1:55439/coachbooking_auth_test'
+cd backend
+.\gradlew.bat test jacocoTestReport
+Remove-Item Env:AUTH_TEST_DB_URL
+# Khi đã kiểm tra xong, chỉ xóa container tạm vừa tạo:
+docker rm --force coachbooking-jwt-test
+```
+
+Khi thiếu `AUTH_TEST_DB_URL`, bộ test PostgreSQL được skip có chủ đích; test HTTP
+vẫn dùng H2 độc lập. Test PostgreSQL kiểm tra migration thật, khóa refresh đồng thời,
+thu hồi sau replay và rollback khi ghi token mới thất bại. Chi tiết API ở `docs/API.md`.
 
 ## CI/CD và SonarQube
 
@@ -120,6 +250,18 @@ GitHub Actions chạy khi push vào `main`, `dev`, `feat/**`, `fix/**` và mọi
 | `docker` | kiểm tra `docker compose config`, build thử cả hai image |
 
 ### Cấu hình SonarQube
+
+Chạy SonarQube local (JDK 25, server ở `http://localhost:9000`) từ thư mục gốc:
+
+```powershell
+.\scripts\sonar.ps1
+```
+
+Script chạy `test jacocoTestReport sonar` cho project `coachbooking`.
+Token lấy từ biến môi trường `SONAR_TOKEN`, sau đó từ file `.env` ở thư mục gốc;
+nếu cả hai chưa có, script yêu cầu nhập ẩn. Token không được in ra hoặc ghi vào mã nguồn.
+Có thể tùy chỉnh: `.\scripts\sonar.ps1 -ProjectKey coachbooking -ProjectName coachbooking -HostUrl http://localhost:9000`.
+Script trả lại exit code của Gradle và giữ nguyên thư mục/biến môi trường của phiên gọi.
 
 Project key, organization và host nằm trong `backend/build.gradle` (block `sonarqube`), đang trỏ tới
 `phamleanhkhoa101_CoachBooking` / `phamleanhkhoa101`.
@@ -153,6 +295,13 @@ Bước triển khai thực tế chưa được tự động hóa; thêm job dep
 > Đã bổ sung `backend/gradle/wrapper/gradle-wrapper.jar` và `frontend/package-lock.json`, nên chạy local bằng `./gradlew` và cài dependency bằng `npm ci` được. CI vẫn cài Gradle 9.1.0 trực tiếp để không phụ thuộc wrapper jar.
 
 ## API
+
+Lịch chạy định kỳ và kiểm tra chồng lịch xe/tài xế đã được bổ sung. Xem
+[hướng dẫn triển khai, demo và kiểm thử](docs/TRIP_OPERATIONS.md).
+Đặt vé chỉ cần chọn chuyến và ghế; không có bước chọn điểm đón/trả.
+Lịch chạy không yêu cầu bộ điểm mẫu. Dữ liệu mẫu dùng tên tự nhiên, vẫn là dữ liệu mô phỏng cho đồ án.
+Muốn làm mới dữ liệu nghiệp vụ local và giữ tài khoản/hồ sơ, dùng script
+`scripts/reset-demo.ps1` theo hướng dẫn trên. Backend không tự tạo hóa đơn/vé mẫu khi khởi động.
 
 Hợp đồng đầy đủ ở [`docs/API.md`](docs/API.md): xác thực JWT, danh mục, tìm chuyến,
 sơ đồ ghế, đặt vé, hóa đơn, hủy vé, hồ sơ và thống kê.

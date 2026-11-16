@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { canPaySepay, sepayLabel } from '../../api/sepay';
 import { api, getErrorMessage } from '../../api/client';
 import type { HoaDonKhachHang } from '../../api/types';
 import { useAuth } from '../../auth/AuthContext';
@@ -12,6 +13,7 @@ import { formatDateTime, formatVnd } from '../../utils/format';
 import './CustomerTicketsPage.css';
 
 export function CustomerTicketsPage() {
+  const navigate = useNavigate();
   const { nguoiDung } = useAuth();
   const { showToast } = useToast();
 
@@ -25,7 +27,6 @@ export function CustomerTicketsPage() {
 
   // Pay invoice modal state
   const [payModalInvoice, setPayModalInvoice] = useState<HoaDonKhachHang | null>(null);
-  const [payMethod, setPayMethod] = useState<'Chuyển khoản' | 'Tiền mặt'>('Chuyển khoản');
   const [payBusy, setPayBusy] = useState(false);
 
   const fetchInvoices = async () => {
@@ -75,13 +76,10 @@ export function CustomerTicketsPage() {
 
   const handlePayInvoice = async () => {
     if (!payModalInvoice) return;
-    const id = payModalInvoice.invoiceId ?? payModalInvoice.maHd;
     setPayBusy(true);
     try {
-      await api.post(`/invoices/${id}/pay`, { paymentMethod: payMethod });
-      showToast(`Thanh toán thành công đơn vé #${id}`);
-      setPayModalInvoice(null);
-      await fetchInvoices();
+      if (!payModalInvoice.sepay) throw new Error('Vui lòng liên hệ quầy vé để thanh toán hóa đơn cũ.');
+      navigate(`/thanh-toan/sepay/${payModalInvoice.sepay.paymentSessionId}`, { state: { startCheckout: true } });
     } catch (err) {
       showToast(getErrorMessage(err), 'error');
     } finally {
@@ -190,10 +188,10 @@ export function CustomerTicketsPage() {
                     </div>
 
                     <div className="status-col">
-                      {isPaid ? (
+                      {isPaid && (!inv.sepay || inv.sepay.paymentStatus === 'PAID') ? (
                         <span className="tag-status paid">ĐÃ THANH TOÁN</span>
                       ) : (
-                        <span className="tag-status unpaid">CHỜ THANH TOÁN</span>
+                        <span className="tag-status unpaid">{sepayLabel(inv.sepay)}</span>
                       )}
                     </div>
                   </div>
@@ -216,6 +214,7 @@ export function CustomerTicketsPage() {
                   </div>
 
                   <div className="card-bottom-actions">
+                    {inv.sepay && <Link to={`/thanh-toan/sepay/${inv.sepay.paymentSessionId}`}>Kiểm tra thanh toán</Link>}
                     <Link
                       to={`/ve-dien-tu/${id}`}
                       className="btn-action-eticket"
@@ -228,7 +227,7 @@ export function CustomerTicketsPage() {
                       Xem vé & QR
                     </Link>
 
-                    {!isPaid && (
+                    {!isPaid && canPaySepay(inv.sepay) && (
                       <Button
                         variant="accent"
                         size="sm"
@@ -238,7 +237,7 @@ export function CustomerTicketsPage() {
                       </Button>
                     )}
 
-                    {!isPaid && (
+                    {!isPaid && canPaySepay(inv.sepay) && (
                       <Button
                         variant="danger"
                         size="sm"
@@ -315,26 +314,7 @@ export function CustomerTicketsPage() {
           </strong>
         </p>
 
-        <div className="pay-method-choice">
-          <label className="radio-label">
-            <input
-              type="radio"
-              name="modalPayMethod"
-              checked={payMethod === 'Chuyển khoản'}
-              onChange={() => setPayMethod('Chuyển khoản')}
-            />
-            <span>Chuyển khoản ngân hàng (VietQR / Internet Banking)</span>
-          </label>
-          <label className="radio-label">
-            <input
-              type="radio"
-              name="modalPayMethod"
-              checked={payMethod === 'Tiền mặt'}
-              onChange={() => setPayMethod('Tiền mặt')}
-            />
-            <span>Thanh toán tiền mặt tại quầy vé bến xe</span>
-          </label>
-        </div>
+        <p>Bạn sẽ chuyển sang SePay sandbox để thanh toán QR. Hệ thống tự cập nhật sau khi nhận xác nhận từ SePay.</p>
       </Modal>
     </div>
   );

@@ -26,6 +26,7 @@ class AccountControllerTest {
   private CustomerRepository customerRepository;
   private PasswordEncoder passwordEncoder;
   private AccountController controller;
+  private com.coachbooking.service.AuthSessionService sessions;
 
   @BeforeEach
   void setUp() {
@@ -34,13 +35,15 @@ class AccountControllerTest {
     employeeRepository = mock(EmployeeRepository.class);
     customerRepository = mock(CustomerRepository.class);
     passwordEncoder = mock(PasswordEncoder.class);
+    sessions = mock(com.coachbooking.service.AuthSessionService.class);
     controller =
         new AccountController(
             accountRepository,
             roleRepository,
             employeeRepository,
             customerRepository,
-            passwordEncoder);
+            passwordEncoder,
+            sessions);
   }
 
   @Test
@@ -101,7 +104,9 @@ class AccountControllerTest {
 
     AccountController.UpdateRequest req =
         new AccountController.UpdateRequest("new@test.com", "NewPass@123", 2, true);
+    when(accountRepository.lockById(1)).thenReturn(Optional.of(acc));
     Account updated = controller.update(1, req);
+    verify(sessions).revokeAll(1);
     assertEquals("new@test.com", updated.getEmail());
     assertEquals("new_hash", updated.getPassword());
 

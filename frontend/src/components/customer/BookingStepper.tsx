@@ -7,7 +7,7 @@ interface BookingStepperProps {
 
 const STEPS = [
   { step: 1, title: 'Chọn chuyến xe', desc: 'Lịch trình & Giờ xuất bến' },
-  { step: 2, title: 'Chọn chỗ ngồi', desc: 'Sơ đồ ghế & Điểm đón' },
+  { step: 2, title: 'Chọn chỗ ngồi', desc: 'Sơ đồ ghế' },
   { step: 3, title: 'Thanh toán', desc: 'Thông tin & VietQR 24/7' },
   { step: 4, title: 'Vé điện tử', desc: 'Boarding Pass & QR lên xe' },
 ];

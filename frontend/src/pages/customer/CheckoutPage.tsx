@@ -6,7 +6,6 @@ import { useAuth } from '../../auth/AuthContext';
 import { BookingStepper } from '../../components/customer/BookingStepper';
 import { Button } from '../../components/common/Button';
 import { ErrorBanner } from '../../components/common/ErrorBanner';
-import { useToast } from '../../components/common/Toast';
 import { formatTime, formatVnd } from '../../utils/format';
 import { CHECKOUT_HOLD_STORAGE_KEY } from './SeatSelectionPage';
 import './CheckoutPage.css';
@@ -15,8 +14,6 @@ interface CheckoutLocationState {
   tripId: number;
   trip?: TripSearchResponse;
   selectedSeats: number[];
-  boardingPoint: string;
-  dropoffPoint: string;
   totalPrice: number;
   price: number;
   dep: string;
@@ -51,7 +48,6 @@ export function CheckoutPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const { nguoiDung } = useAuth();
-  const { showToast } = useToast();
 
   const state = useMemo(
     () => (location.state as CheckoutLocationState | undefined) ?? readStoredCheckout(),
@@ -67,7 +63,6 @@ export function CheckoutPage() {
   const [notes, setNotes] = useState('');
   const paymentMethod = 'Chuyển khoản' as const;
   const [agreeTerms, setAgreeTerms] = useState(true);
-  const [transferConfirmed, setTransferConfirmed] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -136,13 +131,6 @@ export function CheckoutPage() {
     seconds < 10 ? '0' + seconds : seconds
   }`;
 
-  const transferMemo = `CBK${state.tripId} ${phone ? phone.slice(-4) : 'VE'}`;
-
-  const handleCopy = (text: string, label: string) => {
-    void navigator.clipboard.writeText(text);
-    showToast(`Đã sao chép ${label}: ${text}`);
-  };
-
   const releaseHold = async () => {
     if (!state?.holdToken) return;
     setSubmitting(true);
@@ -177,10 +165,6 @@ export function CheckoutPage() {
       setErrorMsg('Vui lòng đồng ý với điều khoản đặt vé để tiếp tục.');
       return;
     }
-    if (!transferConfirmed) {
-      setErrorMsg('Vui lòng xác nhận bạn đã thực hiện chuyển khoản.');
-      return;
-    }
     if (secondsLeft <= 0) {
       setErrorMsg('Thời gian giữ ghế đã hết. Vui lòng chọn lại ghế.');
       return;
@@ -200,27 +184,10 @@ export function CheckoutPage() {
       };
 
       const res = await api.post<BookingResponse>('/bookings', payload);
-      const invoiceId = res.invoiceId ?? res.maHd;
-
       sessionStorage.removeItem(CHECKOUT_HOLD_STORAGE_KEY);
-      showToast('Đặt vé thành công!');
-      navigate(`/ve-dien-tu/${invoiceId}`, {
-        state: {
-          invoiceId,
-          bookingResponse: res,
-          passengerName: fullName,
-          passengerPhone: phone,
-          boardingPoint: state.boardingPoint,
-          dropoffPoint: state.dropoffPoint,
-          selectedSeats: state.selectedSeats,
-          trip: state.trip,
-          dep: state.dep,
-          dest: state.dest,
-          depTime: state.depTime,
-          typeName: state.typeName,
-          totalPrice: state.totalPrice,
-          paymentMethod,
-        },
+      if (!res.paymentSessionId) throw new Error('Không nhận được phiên thanh toán. Vui lòng xem Vé của tôi.');
+      navigate(`/thanh-toan/sepay/${res.paymentSessionId}`, {
+        state: { startCheckout: res.paymentStatus === 'PENDING' },
       });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Có lỗi khi tiến hành đặt vé';
@@ -353,10 +320,10 @@ export function CheckoutPage() {
                 </div>
 
                 <div className="form-group-field full-width">
-                  <label>Ghi chú đón / trả hoặc hành lý kèm theo (nếu có)</label>
+                  <label>Ghi chú hành lý kèm theo (nếu có)</label>
                   <textarea
                     rows={2}
-                    placeholder="Ví dụ: Có 1 thùng trái cây 15kg, đón gần ngã tư Hàng Xanh..."
+                    placeholder="Ví dụ: Có 1 thùng trái cây 15kg..."
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                   />
@@ -386,88 +353,16 @@ export function CheckoutPage() {
                     />
                     <div className="option-info">
                       <div className="option-title-row">
-                        <strong>Quét mã VietQR 24/7 (Khuyên dùng)</strong>
-                        <span className="recom-badge">Miễn phí giao dịch · Nhanh nhất</span>
+                        <strong>Chuyển khoản QR qua SePay (sandbox)</strong>
+                        <span className="recom-badge">Thanh toán thử nghiệm</span>
                       </div>
                       <p className="option-desc">
-                        Thanh toán chuyển khoản đang ở chế độ mô phỏng. Hệ thống ghi nhận theo xác nhận của bạn và chưa đối soát ngân hàng tự động.
+                        Bạn sẽ chuyển sang SePay để quét QR thử nghiệm, không sử dụng tiền thật. Vé được xác nhận sau khi SePay thông báo thành công.
                       </p>
                     </div>
                   </div>
 
-                  {/* VIETQR EMBEDDED BOX */}
-                  {(
-                    <div className="vietqr-details-frame" onClick={(e) => e.stopPropagation()}>
-                      <div className="vietqr-layout">
-                        <div className="vietqr-image-card">
-                          <img
-                            src={`https://api.vietqr.io/image/970436-1028889977-compact2.jpg?amount=${state.totalPrice}&addInfo=${encodeURIComponent(
-                              transferMemo,
-                            )}&accountName=BEN%20XE%20MIEN%20DONG`}
-                            alt="Mã VietQR thanh toán vé"
-                            className="vietqr-code-img"
-                          />
-                          <span className="vietqr-hint">Mở app Ngân hàng quét QR</span>
-                        </div>
-
-                        <div className="vietqr-meta-col">
-                          <div className="meta-row">
-                            <span className="m-label">Ngân hàng thụ hưởng:</span>
-                            <strong className="m-val">Vietcombank (VCB)</strong>
-                          </div>
-                          <div className="meta-row">
-                            <span className="m-label">Tên tài khoản:</span>
-                            <strong className="m-val">CONG TY CP BEN XE MIEN DONG</strong>
-                          </div>
-                          <div className="meta-row highlight">
-                            <span className="m-label">Số tài khoản:</span>
-                            <div className="val-copy-group">
-                              <strong className="m-val copyable">1028 8899 77</strong>
-                              <button
-                                type="button"
-                                className="btn-copy"
-                                onClick={() => handleCopy('1028889977', 'Số tài khoản')}
-                              >
-                                Sao chép
-                              </button>
-                            </div>
-                          </div>
-                          <div className="meta-row highlight">
-                            <span className="m-label">Số tiền:</span>
-                            <strong className="m-val text-orange">
-                              {formatVnd(state.totalPrice)}
-                            </strong>
-                          </div>
-                          <div className="meta-row highlight">
-                            <span className="m-label">Nội dung chuyển khoản:</span>
-                            <div className="val-copy-group">
-                              <strong className="m-val text-blue copyable">
-                                {transferMemo}
-                              </strong>
-                              <button
-                                type="button"
-                                className="btn-copy"
-                                onClick={() => handleCopy(transferMemo, 'Nội dung CK')}
-                              >
-                                Sao chép
-                              </button>
-                            </div>
-                          </div>
-
-                          <div className="transfer-confirm-check">
-                            <label className="checkbox-row">
-                              <input
-                                type="checkbox"
-                                checked={transferConfirmed}
-                                onChange={(e) => setTransferConfirmed(e.target.checked)}
-                              />
-                              <span>Tôi đã mở ứng dụng ngân hàng và chuyển khoản thành công</span>
-                            </label>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  <p className="option-desc">Phiên thanh toán giữ ghế tối đa 10 phút. Khi đang chờ, bạn chỉ có thể hủy toàn bộ đơn vé.</p>
                 </div>
 
               </div>
@@ -489,23 +384,6 @@ export function CheckoutPage() {
                 <span className="summary-time">
                   Giờ xuất bến: <strong>{state.depTime ? formatTime(state.depTime) : '--:--'}</strong>
                 </span>
-              </div>
-
-              <div className="summary-points">
-                <div className="point-item">
-                  <span className="dot blue" />
-                  <div>
-                    <span className="p-label">Điểm đón:</span>
-                    <span className="p-name">{state.boardingPoint}</span>
-                  </div>
-                </div>
-                <div className="point-item">
-                  <span className="dot orange" />
-                  <div>
-                    <span className="p-label">Điểm trả:</span>
-                    <span className="p-name">{state.dropoffPoint}</span>
-                  </div>
-                </div>
               </div>
 
               <div className="order-divider" />
@@ -569,9 +447,9 @@ export function CheckoutPage() {
                 variant="accent"
                 className="btn-submit-order w-full"
                 loading={submitting}
-                disabled={secondsLeft <= 0 || !transferConfirmed}
+                disabled={submitting || secondsLeft <= 0}
               >
-                Xác nhận đặt vé ({formatVnd(state.totalPrice)})
+                Tiếp tục thanh toán SePay ({formatVnd(state.totalPrice)})
               </Button>
 
               <div className="security-commitments">

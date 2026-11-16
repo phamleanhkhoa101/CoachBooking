@@ -1,3 +1,4 @@
+import { TripSchedules } from './pages/admin/operations/TripSchedules';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider, RequireRole, useAuth } from './auth/AuthContext';
 import { AppLayout } from './components/layout/AppLayout';
@@ -32,6 +33,7 @@ import { ETicketPage } from './pages/customer/ETicketPage';
 import { TicketLookupPage } from './pages/customer/TicketLookupPage';
 import { CustomerTicketsPage } from './pages/customer/CustomerTicketsPage';
 import { CustomerProfilePage } from './pages/customer/CustomerProfilePage';
+import { SepayPaymentPage } from './pages/customer/SepayPaymentPage';
 
 function HomeRoute() {
   const { nguoiDung, loading } = useAuth();
@@ -83,6 +85,7 @@ export function App() {
                 }
               />
               <Route path="/ve-dien-tu/:invoiceId" element={<ETicketPage />} />
+              <Route path="/thanh-toan/sepay/:sessionId" element={<RequireRole roles={['KhachHang']}><SepayPaymentPage /></RequireRole>} />
               <Route path="/tra-cuu-ve" element={<TicketLookupPage />} />
               <Route path="/ve-cua-toi" element={<CustomerTicketsPage />} />
               <Route
@@ -108,6 +111,7 @@ export function App() {
               <Route path="hoa-don" element={<Invoices />} />
               <Route path="khach-hang" element={<Customers />} />
               <Route path="chuyen-xe" element={<Trips />} />
+              <Route path="lich-chay" element={<RequireRole roles={['Admin']}><TripSchedules /></RequireRole>} />
               <Route path="nha-xe" element={<BusCompanies />} />
               <Route path="loai-xe" element={<VehicleTypes />} />
               <Route path="xe" element={<Vehicles />} />

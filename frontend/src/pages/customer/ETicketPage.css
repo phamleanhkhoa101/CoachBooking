@@ -158,14 +158,9 @@
 .pass-logo-badge {
   width: 40px;
   height: 40px;
-  background: #1e40af;
-  color: #ffffff;
   border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 800;
-  font-size: 1.125rem;
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
 .pass-brand-title {
@@ -477,4 +472,10 @@
   .pass-details-grid {
     grid-template-columns: 1fr 1fr;
   }
+}
+.eticket-loading {
+  min-height: max(440px, calc(100svh - 180px));
+  display: grid;
+  place-items: center;
+  color: var(--primary);
 }

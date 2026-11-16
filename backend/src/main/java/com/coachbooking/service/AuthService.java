@@ -20,7 +20,6 @@ import com.coachbooking.repo.CustomerRepository;
 import com.coachbooking.repo.EmployeeRepository;
 import com.coachbooking.repo.PasswordResetTokenRepository;
 import com.coachbooking.repo.RoleRepository;
-import com.coachbooking.security.JwtService;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -47,7 +46,7 @@ public class AuthService {
   private final PasswordResetTokenRepository passwordResetTokenRepository;
   private final EmailService emailService;
   private final PasswordEncoder passwordEncoder;
-  private final JwtService jwtService;
+  private final AuthSessionService sessions;
   private final int resetExpirationMinutes;
   private final int resetCooldownSeconds;
   private final int resetMaxAttempts;
@@ -60,7 +59,7 @@ public class AuthService {
       PasswordResetTokenRepository passwordResetTokenRepository,
       EmailService emailService,
       PasswordEncoder passwordEncoder,
-      JwtService jwtService) {
+      AuthSessionService sessions) {
     this(
         accountRepository,
         roleRepository,
@@ -69,7 +68,7 @@ public class AuthService {
         passwordResetTokenRepository,
         emailService,
         passwordEncoder,
-        jwtService,
+        sessions,
         15,
         60,
         5);
@@ -84,7 +83,7 @@ public class AuthService {
       PasswordResetTokenRepository passwordResetTokenRepository,
       EmailService emailService,
       PasswordEncoder passwordEncoder,
-      JwtService jwtService,
+      AuthSessionService sessions,
       @Value("${app.password-reset.expiration-minutes:15}") int resetExpirationMinutes,
       @Value("${app.password-reset.cooldown-seconds:60}") int resetCooldownSeconds,
       @Value("${app.password-reset.max-attempts:5}") int resetMaxAttempts) {
@@ -95,7 +94,7 @@ public class AuthService {
     this.passwordResetTokenRepository = passwordResetTokenRepository;
     this.emailService = emailService;
     this.passwordEncoder = passwordEncoder;
-    this.jwtService = jwtService;
+    this.sessions = sessions;
     this.resetExpirationMinutes = resetExpirationMinutes;
     this.resetCooldownSeconds = resetCooldownSeconds;
     this.resetMaxAttempts = resetMaxAttempts;
@@ -104,7 +103,7 @@ public class AuthService {
   private Account authenticate(LoginRequest request) {
     Account account =
         accountRepository
-            .findByUsername(request.username().trim())
+            .lockByUsername(request.username().trim())
             .orElseThrow(() -> ApiException.badRequest("Tên đăng nhập hoặc mật khẩu không đúng."));
     if (account.getPassword() == null
         || !passwordEncoder.matches(request.password(), account.getPassword())) {
@@ -116,13 +115,14 @@ public class AuthService {
     return account;
   }
 
+  @Transactional
   public AuthResponse login(LoginRequest request) {
     Account account = authenticate(request);
     String roleName = roleName(account);
-    return new AuthResponse(
-        jwtService.generate(account, roleName), toUserResponse(account, roleName));
+    return response(sessions.create(account, roleName, request.rememberMe()));
   }
 
+  @Transactional
   public AuthResponse loginUser(LoginRequest request) {
     Account account = authenticate(request);
     String roleName = roleName(account);
@@ -130,12 +130,12 @@ public class AuthService {
       throw ApiException.forbidden(
           "Tài khoản quản trị/nhân viên vui lòng đăng nhập tại cổng Quản trị viên.");
     }
-    return new AuthResponse(
-        jwtService.generate(account, roleName), toUserResponse(account, roleName));
+    return response(sessions.create(account, roleName, request.rememberMe()));
   }
 
   @Transactional
-  public AuthResponse loginWithGoogle(String googleSub, String email, boolean emailVerified) {
+  public AuthResponse loginWithGoogle(
+      String googleSub, String email, boolean emailVerified, boolean rememberMe) {
     if (Validators.isBlank(googleSub) || Validators.isBlank(email) || !emailVerified) {
       throw ApiException.badRequest("Tài khoản Google chưa xác thực email hoặc thiếu thông tin.");
     }
@@ -171,18 +171,17 @@ public class AuthService {
       account.setGoogleSub(normalizedSub);
       account = accountRepository.save(account);
     }
-    return new AuthResponse(
-        jwtService.generate(account, roleName), toUserResponse(account, roleName));
+    return response(sessions.create(account, roleName, rememberMe));
   }
 
+  @Transactional
   public AuthResponse loginAdmin(LoginRequest request) {
     Account account = authenticate(request);
     String roleName = roleName(account);
     if ("KhachHang".equalsIgnoreCase(roleName) || "Customer".equalsIgnoreCase(roleName)) {
       throw ApiException.forbidden("Tài khoản khách hàng không có quyền truy cập quản trị.");
     }
-    return new AuthResponse(
-        jwtService.generate(account, roleName), toUserResponse(account, roleName));
+    return response(sessions.create(account, roleName, request.rememberMe()));
   }
 
   @Transactional
@@ -301,8 +300,13 @@ public class AuthService {
       throw ApiException.badRequest("Phiên xác thực không hợp lệ hoặc đã hết hạn.");
     }
 
+    account =
+        accountRepository
+            .lockById(account.getAccountId())
+            .orElseThrow(() -> ApiException.notFound("Tài khoản không tồn tại."));
     account.setPassword(passwordEncoder.encode(request.newPassword()));
     accountRepository.save(account);
+    sessions.revokeAll(account.getAccountId());
     token.setUsedAt(now);
     passwordResetTokenRepository.save(token);
 
@@ -344,6 +348,10 @@ public class AuthService {
 
   @Transactional
   public Map<String, String> changePassword(Account account, ChangePasswordRequest request) {
+    account =
+        accountRepository
+            .lockById(account.getAccountId())
+            .orElseThrow(() -> ApiException.notFound("Tài khoản không tồn tại."));
     if (account.getPassword() != null
         && !passwordEncoder.matches(request.oldPassword(), account.getPassword())) {
       throw ApiException.badRequest("Mật khẩu hiện tại không đúng.");
@@ -351,7 +359,23 @@ public class AuthService {
     Validators.requirePassword(request.newPassword());
     account.setPassword(passwordEncoder.encode(request.newPassword()));
     accountRepository.save(account);
+    sessions.revokeAll(account.getAccountId());
     return Map.of("message", "Đổi mật khẩu thành công.");
+  }
+
+  @Transactional(noRollbackFor = ApiException.class)
+  public AuthResponse refresh(String token) {
+    return response(sessions.refresh(token));
+  }
+
+  private AuthResponse response(AuthSessionService.Issued issued) {
+    return new AuthResponse(
+        issued.accessToken(),
+        toUserResponse(issued.account(), issued.role()),
+        issued.expiresIn(),
+        issued.refreshToken(),
+        issued.rememberMe(),
+        issued.refreshExpiresAt());
   }
 
   public UserResponse toUserResponse(Account account, String roleName) {

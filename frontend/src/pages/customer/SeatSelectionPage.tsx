@@ -14,19 +14,6 @@ import { ErrorBanner } from '../../components/common/ErrorBanner';
 import { formatTime, formatVnd } from '../../utils/format';
 import './SeatSelectionPage.css';
 
-const DEFAULT_BOARDING_POINTS = [
-  'Bến xe Miền Đông Mới (501 Hoàng Hữu Nam, TP. Thủ Đức) - Cửa 03',
-  'Cây xăng Comeco Hàng Xanh (178 Điện Biên Phủ, Bình Thạnh)',
-  'Khu Công nghệ cao / Cầu vượt Trạm 2 (TP. Thủ Đức)',
-  'Ngã 3 Vũng Tàu / Cổng chào Biên Hòa',
-];
-
-const DEFAULT_DROPOFF_POINTS = [
-  'Bến xe trung tâm liên tỉnh tại điểm đến',
-  'Văn phòng trung tâm nhà xe (Có trung chuyển nội thành 5km)',
-  'Dọc Quốc lộ / Điểm trả khách thuận tiện theo lộ trình xe',
-];
-
 export const CHECKOUT_HOLD_STORAGE_KEY = 'coachbooking_checkout_hold';
 
 export function SeatSelectionPage() {
@@ -43,8 +30,6 @@ export function SeatSelectionPage() {
 
   const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
   const [holding, setHolding] = useState(false);
-  const [boardingPoint, setBoardingPoint] = useState(DEFAULT_BOARDING_POINTS[0]);
-  const [dropoffPoint, setDropoffPoint] = useState(DEFAULT_DROPOFF_POINTS[0]);
 
   useEffect(() => {
     if (!tripId) return;
@@ -126,8 +111,6 @@ export function SeatSelectionPage() {
         trip: passedTrip,
         seatData,
         selectedSeats,
-        boardingPoint,
-        dropoffPoint,
         totalPrice,
         price,
         dep,
@@ -331,49 +314,6 @@ export function SeatSelectionPage() {
               </div>
 
               {/* BOARDING & DROPOFF POINTS SELECTOR */}
-              <div className="pickup-dropoff-card">
-                <h3>Chọn điểm đón & điểm trả khách</h3>
-
-                <div className="form-group-pickup">
-                  <label>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1e40af" strokeWidth="2">
-                      <circle cx="12" cy="12" r="10" />
-                      <circle cx="12" cy="12" r="3" />
-                    </svg>
-                    Điểm đón tại nơi xuất phát ({dep}):
-                  </label>
-                  <select
-                    value={boardingPoint}
-                    onChange={(e) => setBoardingPoint(e.target.value)}
-                  >
-                    {DEFAULT_BOARDING_POINTS.map((pt) => (
-                      <option key={pt} value={pt}>
-                        {pt}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="form-group-pickup">
-                  <label>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f97316" strokeWidth="2">
-                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-                      <circle cx="12" cy="10" r="3" />
-                    </svg>
-                    Điểm trả tại nơi đến ({dest}):
-                  </label>
-                  <select
-                    value={dropoffPoint}
-                    onChange={(e) => setDropoffPoint(e.target.value)}
-                  >
-                    {DEFAULT_DROPOFF_POINTS.map((pt) => (
-                      <option key={pt} value={pt}>
-                        {pt}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
             </div>
 
             {/* RIGHT: STICKY ORDER SUMMARY */}

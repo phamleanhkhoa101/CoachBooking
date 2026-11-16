@@ -20,13 +20,17 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 class OAuth2AuthenticationSuccessHandlerTest {
 
   @Test
-  void onAuthenticationSuccessRedirectsWithTokenFragmentAndClearsCookie() throws Exception {
+  void onAuthenticationSuccessRedirectsWithoutTokenAndClearsCookie() throws Exception {
     AuthService authService = mock(AuthService.class);
     HttpCookieOAuth2AuthorizationRequestRepository repo =
-        new HttpCookieOAuth2AuthorizationRequestRepository();
+        new HttpCookieOAuth2AuthorizationRequestRepository(
+            "test-only-auth-signing-key-0123456789abcdef0123456789");
     OAuth2AuthenticationSuccessHandler handler =
         new OAuth2AuthenticationSuccessHandler(
-            authService, repo, "http://localhost:5173/oauth2/callback");
+            authService,
+            repo,
+            mock(RefreshCookieService.class),
+            "http://localhost:5173/oauth2/callback");
 
     OAuth2User principal =
         new DefaultOAuth2User(
@@ -38,7 +42,7 @@ class OAuth2AuthenticationSuccessHandlerTest {
 
     UserResponse user =
         new UserResponse(1, "user", "user@gmail.com", "KhachHang", 3, null, null, "user", true);
-    when(authService.loginWithGoogle("sub-1", "user@gmail.com", true))
+    when(authService.loginWithGoogle("sub-1", "user@gmail.com", true, false))
         .thenReturn(new AuthResponse("jwt-token-abc", user));
 
     MockHttpServletRequest request = new MockHttpServletRequest();
@@ -49,8 +53,7 @@ class OAuth2AuthenticationSuccessHandlerTest {
 
     handler.onAuthenticationSuccess(request, response, authentication);
 
-    assertEquals(
-        "http://localhost:5173/oauth2/callback#token=jwt-token-abc", response.getRedirectedUrl());
+    assertEquals("http://localhost:5173/oauth2/callback", response.getRedirectedUrl());
     String expiredCookie = response.getHeader(HttpHeaders.SET_COOKIE);
     assertNotNull(expiredCookie);
     assertTrue(expiredCookie.contains("Max-Age=0"));
@@ -61,10 +64,14 @@ class OAuth2AuthenticationSuccessHandlerTest {
       throws Exception {
     AuthService authService = mock(AuthService.class);
     HttpCookieOAuth2AuthorizationRequestRepository repo =
-        new HttpCookieOAuth2AuthorizationRequestRepository();
+        new HttpCookieOAuth2AuthorizationRequestRepository(
+            "test-only-auth-signing-key-0123456789abcdef0123456789");
     OAuth2AuthenticationSuccessHandler handler =
         new OAuth2AuthenticationSuccessHandler(
-            authService, repo, "http://localhost:5173/oauth2/callback");
+            authService,
+            repo,
+            mock(RefreshCookieService.class),
+            "http://localhost:5173/oauth2/callback");
 
     OAuth2User principal =
         new DefaultOAuth2User(
@@ -73,7 +80,7 @@ class OAuth2AuthenticationSuccessHandlerTest {
             "sub");
     Authentication authentication = mock(Authentication.class);
     when(authentication.getPrincipal()).thenReturn(principal);
-    when(authService.loginWithGoogle("sub-admin", "admin@gmail.com", true))
+    when(authService.loginWithGoogle("sub-admin", "admin@gmail.com", true, false))
         .thenThrow(ApiException.forbidden("Không có quyền."));
 
     MockHttpServletRequest request = new MockHttpServletRequest();

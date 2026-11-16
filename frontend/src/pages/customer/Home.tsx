@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { api, getErrorMessage } from '../../api/client';
 import type { BusCompany, Route, Trip } from '../../api/types';
 import { formatVnd, todayISO } from '../../utils/format';
+import { BrandLogo } from '../../components/common/BrandLogo';
 import { CustomerNavbar } from '../../components/layout/CustomerNavbar';
 import './Home.css';
 
@@ -394,7 +395,7 @@ export function Home() {
                                 <span className="opt-name">{opt}</span>
                                 {meta?.region && <span className="opt-region-pill">{meta.region}</span>}
                               </div>
-                              <span className="opt-desc">{meta?.desc || 'Điểm đón bến xe liên tỉnh'}</span>
+                              <span className="opt-desc">{meta?.desc || 'Khu vực xuất phát'}</span>
                             </div>
                             {isSelected && (
                               <div className="opt-check-icon">
@@ -443,7 +444,7 @@ export function Home() {
                   </svg>
                 </button>
                 <span className="field-subtext">
-                  {LOCATION_METAS[destination]?.desc || 'Bến xe đến / Điểm trả'}
+                  {LOCATION_METAS[destination]?.desc || 'Khu vực đến'}
                 </span>
 
                 {openDestination && (
@@ -477,7 +478,7 @@ export function Home() {
                                 <span className="opt-name">{opt}</span>
                                 {meta?.region && <span className="opt-region-pill">{meta.region}</span>}
                               </div>
-                              <span className="opt-desc">{meta?.desc || 'Điểm trả khách tại bến'}</span>
+                              <span className="opt-desc">{meta?.desc || 'Khu vực đến'}</span>
                             </div>
                             {isSelected && (
                               <div className="opt-check-icon to-check">
@@ -833,7 +834,7 @@ export function Home() {
           <div className="footer-top-grid">
             <div className="footer-col-brand">
               <div className="footer-brand-header">
-                <div className="footer-brand-logo">BX</div>
+                <BrandLogo size={42} className="footer-brand-logo" />
                 <div>
                   <h3 className="footer-brand-title">Bến Xe Miền Đông Mới</h3>
                   <span className="footer-brand-sub">Tổng Công ty Cơ khí Giao thông Vận tải Sài Gòn (SAMCO)</span>

@@ -1,6 +1,8 @@
+import { getErrorMessage } from '../../api/client';
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
+import { BrandLogo } from '../common/BrandLogo';
 import { RoleBadge } from '../common/Badge';
 import type { Role } from '../../api/types';
 
@@ -86,6 +88,7 @@ const STAFF_NAV: NavGroup[] = [
 const STAFF_SYSTEM_NAV: NavGroup = {
   title: 'Hệ thống',
   items: [
+    { to: '/admin/lich-chay', label: 'Lịch chạy định kỳ', icon: 'history' },
     { to: '/admin/nhan-vien', label: 'Nhân viên', icon: 'staff' },
     { to: '/admin/tai-khoan', label: 'Tài khoản', icon: 'account' },
   ],
@@ -105,6 +108,8 @@ export function AppLayout() {
   const { user, nguoiDung, logout } = useAuth();
   const currentUser = user ?? nguoiDung;
   const navigate = useNavigate();
+  const [logoutBusy, setLogoutBusy] = useState(false);
+  const [logoutError, setLogoutError] = useState('');
   const [open, setOpen] = useState(false);
 
   if (!currentUser) return null;
@@ -125,13 +130,23 @@ export function AppLayout() {
     .map((part) => part.charAt(0).toUpperCase())
     .join('');
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login', { replace: true });
+  const handleLogout = async () => {
+    if (logoutBusy) return;
+    setLogoutBusy(true);
+    setLogoutError('');
+    try {
+      await logout();
+      navigate('/login', { replace: true });
+    } catch (error) {
+      setLogoutError('Chưa xác nhận đăng xuất. ' + getErrorMessage(error));
+    } finally {
+      setLogoutBusy(false);
+    }
   };
 
   return (
     <div className="app-shell">
+      {logoutError && <div className="alert alert-error" role="alert">{logoutError}</div>}
       {open ? (
         <div
           className="sidebar-overlay"
@@ -142,7 +157,7 @@ export function AppLayout() {
 
       <aside className={`sidebar ${open ? 'sidebar-open' : ''}`}>
         <div className="brand">
-          <div className="brand-logo">BX</div>
+          <BrandLogo size={42} className="brand-logo" />
           <div className="brand-text">
             <strong>CoachBooking</strong>
             <span>Quản lý bán vé xe</span>
@@ -201,7 +216,7 @@ export function AppLayout() {
             <button
               type="button"
               className="btn btn-ghost btn-sm btn-logout"
-              onClick={handleLogout}
+              onClick={() => { void handleLogout(); }} disabled={logoutBusy}
               title="Đăng xuất khỏi hệ thống"
             >
               <Icon name="logout" />

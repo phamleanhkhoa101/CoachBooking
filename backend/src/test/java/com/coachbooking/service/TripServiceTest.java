@@ -51,6 +51,10 @@ class TripServiceTest {
     ticketRepository = mock(TicketRepository.class);
     seatStatusService = mock(SeatStatusService.class);
 
+    BusCompanyRepository companyRepository = mock(BusCompanyRepository.class);
+    BusCompany company = new BusCompany();
+    company.setIsActive(true);
+    when(companyRepository.findById(5)).thenReturn(Optional.of(company));
     service =
         new TripService(
             tripRepository,
@@ -60,7 +64,9 @@ class TripServiceTest {
             driverRepository,
             ticketPriceRepository,
             ticketRepository,
-            seatStatusService);
+            seatStatusService,
+            mock(ScheduleOccurrenceRepository.class),
+            companyRepository);
 
     vehicleType = new VehicleType();
     vehicleType.setTypeId(1);
@@ -93,6 +99,9 @@ class TripServiceTest {
     trip.setActualPrice(BigDecimal.valueOf(250_000));
 
     when(tripRepository.findById(100)).thenReturn(Optional.of(trip));
+    when(tripRepository.findByIdForUpdate(100)).thenReturn(Optional.of(trip));
+    when(vehicleRepository.lockById(10)).thenReturn(Optional.of(vehicle));
+    when(driverRepository.lockById(30)).thenReturn(Optional.of(driver));
     when(vehicleRepository.findById(10)).thenReturn(Optional.of(vehicle));
     when(vehicleTypeRepository.findById(1)).thenReturn(Optional.of(vehicleType));
     when(routeRepository.findById(20)).thenReturn(Optional.of(route));
@@ -155,7 +164,7 @@ class TripServiceTest {
   @Test
   void createSuccessAndValidation() {
     TripRequest req = new TripRequest(10, 20, 30, LocalDateTime.now().plusDays(1));
-    when(tripRepository.save(any(Trip.class))).thenAnswer(i -> i.getArgument(0));
+    when(tripRepository.saveAndFlush(any(Trip.class))).thenAnswer(i -> i.getArgument(0));
 
     Trip created = service.create(req);
     assertNotNull(created);
@@ -165,8 +174,8 @@ class TripServiceTest {
     assertEquals(BigDecimal.valueOf(250_000), created.getActualPrice());
 
     // vehicle conflict throws
-    when(tripRepository.existsByVehicleIdAndDepartureTimeBetween(any(), any(), any()))
-        .thenReturn(true);
+    when(tripRepository.findOverlapping(any(), any(), any(), any(), isNull()))
+        .thenReturn(List.of(trip));
     ApiException conflict = assertThrows(ApiException.class, () -> service.create(req));
     assertEquals(HttpStatus.CONFLICT, conflict.getStatus());
 
@@ -189,7 +198,7 @@ class TripServiceTest {
     when(ticketRepository.existsByTripId(100)).thenReturn(true);
     Driver d2 = new Driver();
     d2.setDriverId(31);
-    when(driverRepository.findById(31)).thenReturn(Optional.of(d2));
+    when(driverRepository.lockById(31)).thenReturn(Optional.of(d2));
     TripRequest changeDriverReq = new TripRequest(10, 20, 31, trip.getDepartureTime());
     Trip updatedDriver = service.update(100, changeDriverReq);
     assertEquals(31, updatedDriver.getDriverId());
@@ -200,7 +209,7 @@ class TripServiceTest {
     v2.setVehicleId(11);
     v2.setCompanyId(5);
     v2.setTypeId(1);
-    when(vehicleRepository.findById(11)).thenReturn(Optional.of(v2));
+    when(vehicleRepository.lockById(11)).thenReturn(Optional.of(v2));
     ApiException coreConflict =
         assertThrows(ApiException.class, () -> service.update(100, changeVehicleReq));
     assertEquals(HttpStatus.CONFLICT, coreConflict.getStatus());

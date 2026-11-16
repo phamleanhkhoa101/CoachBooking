@@ -65,6 +65,7 @@ class BookingServiceTest {
   private CurrentUserService currentUserService;
   private SeatHoldRepository seatHoldRepository;
   private SeatStatusService seatStatusService;
+  private SepayService sepayService;
   private BookingService service;
 
   private Account employee;
@@ -83,6 +84,22 @@ class BookingServiceTest {
     currentUserService = mock(CurrentUserService.class);
     seatHoldRepository = mock(SeatHoldRepository.class);
     seatStatusService = mock(SeatStatusService.class);
+    sepayService = mock(SepayService.class);
+    when(sepayService.create(any(), any(), any(), any(), anyList()))
+        .thenAnswer(
+            invocation -> {
+              Invoice invoice = invocation.getArgument(0);
+              List<Integer> seats = invocation.getArgument(4);
+              return new BookingResponse(
+                  invoice.getInvoiceId(),
+                  invoice.getTotalAmount(),
+                  seats.size(),
+                  "Chuyển khoản",
+                  false,
+                  UUID.randomUUID(),
+                  "PENDING",
+                  java.time.Instant.now().plusSeconds(600));
+            });
 
     service =
         new BookingService(
@@ -96,7 +113,8 @@ class BookingServiceTest {
             paymentRepository,
             currentUserService,
             seatHoldRepository,
-            seatStatusService);
+            seatStatusService,
+            sepayService);
 
     employee = account(7, "nhanvien");
     customer = new Customer();
@@ -159,6 +177,9 @@ class BookingServiceTest {
 
     assertEquals(2, response.ticketCount());
     assertEquals("Chuyển khoản", response.paymentMethod());
+    assertFalse(response.isPaid());
+    assertEquals("PENDING", response.paymentStatus());
+    verify(paymentRepository, never()).save(any());
     verify(seatHoldRepository).deleteByHoldToken(HOLD_TOKEN);
     verify(seatStatusService, times(1)).publishAfterCommit(TRIP_ID);
   }
@@ -417,16 +438,17 @@ class BookingServiceTest {
     verify(seatStatusService, never()).publishAfterCommit(any());
   }
 
-  /** CASE: lỗi khi lưu payment phải chặn publish và giữ nguyên lượt giữ ghế. */
+  /** CASE: lỗi tạo phiên SePay phải chặn publish và giữ nguyên lượt giữ ghế. */
   @Test
-  void paymentSaveFailureAbortsBooking() {
+  void sessionSaveFailureAbortsBooking() {
     when(currentUserService.isCustomer(employee)).thenReturn(true);
     when(customerRepository.findByAccountId(employee.getAccountId()))
         .thenReturn(Optional.of(customer));
     when(seatHoldRepository.findByHoldTokenOrderBySeatNumber(HOLD_TOKEN))
         .thenReturn(List.of(hold(1)));
-    when(paymentRepository.save(any(Payment.class)))
-        .thenThrow(new IllegalStateException("DB error"));
+    org.mockito.Mockito.doThrow(new IllegalStateException("DB error"))
+        .when(sepayService)
+        .create(any(), any(), any(), any(), anyList());
 
     assertThrows(
         IllegalStateException.class,

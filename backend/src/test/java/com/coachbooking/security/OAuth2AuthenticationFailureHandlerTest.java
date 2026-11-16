@@ -17,7 +17,8 @@ class OAuth2AuthenticationFailureHandlerTest {
   void onAuthenticationFailureRedirectsToLoginAndRemovesCookieForOAuth2Exception()
       throws Exception {
     HttpCookieOAuth2AuthorizationRequestRepository repo =
-        new HttpCookieOAuth2AuthorizationRequestRepository();
+        new HttpCookieOAuth2AuthorizationRequestRepository(
+            "test-only-auth-signing-key-0123456789abcdef0123456789");
     OAuth2AuthenticationFailureHandler handler =
         new OAuth2AuthenticationFailureHandler(repo, "http://localhost:3000/oauth2/callback");
 
@@ -41,7 +42,8 @@ class OAuth2AuthenticationFailureHandlerTest {
   @Test
   void onAuthenticationFailureHandlesGenericAuthenticationException() throws Exception {
     HttpCookieOAuth2AuthorizationRequestRepository repo =
-        new HttpCookieOAuth2AuthorizationRequestRepository();
+        new HttpCookieOAuth2AuthorizationRequestRepository(
+            "test-only-auth-signing-key-0123456789abcdef0123456789");
     OAuth2AuthenticationFailureHandler handler =
         new OAuth2AuthenticationFailureHandler(repo, "http://localhost:3000/oauth2/callback");
 

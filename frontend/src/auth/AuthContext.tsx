@@ -8,16 +8,16 @@ import {
   type ReactNode,
 } from 'react';
 import { Navigate } from 'react-router-dom';
-import { api, apiRequest, getToken, setToken } from '../api/client';
-import type { LoginResponse, Role, User } from '../api/types';
+import { ApiError, getErrorMessage, loginSession, logoutSession, refreshSession, subscribeSession } from '../api/client';
+import type { Role, User } from '../api/types';
 
 interface AuthContextValue {
   user: User | null;
   nguoiDung: User | null; // Alias for backward compatibility
   loading: boolean;
-  login: (username: string, password: string, portal?: 'user' | 'admin') => Promise<User>;
-  loginWithToken: (token: string) => Promise<User>;
-  logout: () => void;
+  login: (username: string, password: string, portal?: 'user' | 'admin', rememberMe?: boolean) => Promise<User>;
+  restoreSession: () => Promise<User>;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -29,84 +29,51 @@ export function homePathFor(role?: Role | null): string {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(Boolean(getToken()));
+  const [loading, setLoading] = useState(true);
+  const [restoreError, setRestoreError] = useState('');
+
+  const restoreSession = useCallback(async () => {
+    const data = await refreshSession();
+    setUser(data.user);
+    return data.user;
+  }, []);
+
+  const restore = useCallback(async () => {
+    setLoading(true); setRestoreError('');
+    try { await restoreSession(); }
+    catch (error) {
+      if (error instanceof ApiError && error.status === 401) setUser(null);
+      else setRestoreError(getErrorMessage(error));
+    } finally { setLoading(false); }
+  }, [restoreSession]);
 
   useEffect(() => {
-    let cancelled = false;
-    if (!getToken()) {
-      setLoading(false);
-      return;
-    }
-    api
-      .get<User>('/auth/me', { redirectOn401: false })
-      .then((data) => {
-        if (!cancelled) setUser(data);
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setToken(null);
-          setUser(null);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
+    const unsubscribe = subscribeSession(session => setUser(session?.user ?? null));
+    void restore();
+    return unsubscribe;
+  }, [restore]);
+
+  const login = useCallback(async (username: string, password: string, portal?: 'user' | 'admin', rememberMe = false) => {
+    const data = await loginSession(username, password, portal, rememberMe);
+    setUser(data.user);
+    return data.user;
   }, []);
 
-  const login = useCallback(
-    async (username: string, password: string, portal?: 'user' | 'admin') => {
-      const endpoint =
-        portal === 'admin'
-          ? '/auth/admin/login'
-          : portal === 'user'
-            ? '/auth/user/login'
-            : '/auth/login';
-      const data = await apiRequest<LoginResponse>(
-        endpoint,
-        {
-          method: 'POST',
-          body: JSON.stringify({
-            username,
-            password,
-          }),
-        },
-        { redirectOn401: false },
-      );
-      setToken(data.token);
-      const currentUser = data.user ?? null;
-      setUser(currentUser);
-      return currentUser!;
-    },
-    [],
-  );
-
-  const loginWithToken = useCallback(async (token: string) => {
-    setToken(token);
-    try {
-      const data = await api.get<User>('/auth/me', { redirectOn401: false });
-      setUser(data);
-      return data;
-    } catch (err) {
-      setToken(null);
-      setUser(null);
-      throw err;
-    }
-  }, []);
-
-  const logout = useCallback(() => {
-    setToken(null);
+  const logout = useCallback(async () => {
+    await logoutSession();
     setUser(null);
   }, []);
 
   const value = useMemo<AuthContextValue>(
-    () => ({ user, nguoiDung: user, loading, login, loginWithToken, logout }),
-    [user, loading, login, loginWithToken, logout],
+    () => ({ user, nguoiDung: user, loading, login, restoreSession, logout }),
+    [user, loading, login, restoreSession, logout],
   );
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={value}>
+    {restoreError ? <div className="alert alert-error" role="alert">
+      {restoreError} <button className="btn btn-secondary" disabled={loading} onClick={() => { void restore(); }}>Thử lại</button>
+    </div> : children}
+  </AuthContext.Provider>;
 }
 
 export function useAuth(): AuthContextValue {

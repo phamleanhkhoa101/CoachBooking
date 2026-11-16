@@ -21,6 +21,7 @@ Luồng dữ liệu: React gọi `/api/**` → nginx (container frontend) chuy�
 
 ```bash
 cp .env.example .env      # Windows: copy .env.example .env
+# Đặt JWT_SECRET riêng trong .env trước khi chạy (hướng dẫn bên dưới).
 docker compose up --build
 ```
 
@@ -102,12 +103,59 @@ SPRING_DATASOURCE_URL=jdbc:postgresql://localhost:5432/coachbooking
 SPRING_DATASOURCE_USERNAME=coachbooking
 SPRING_DATASOURCE_PASSWORD=coachbooking
 APP_JWT_SECRET=<chuỗi tối thiểu 32 ký tự>
+APP_AUTH_COOKIE_SECURE=false
 APP_CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
 APP_SWAGGER_ENABLED=true
 GOOGLE_CLIENT_ID=<Google OAuth2 Client ID>
 GOOGLE_CLIENT_SECRET=<Google OAuth2 Client Secret>
 APP_OAUTH2_REDIRECT_URI=http://localhost:5173/oauth2/callback
 ```
+
+JWT secret không có giá trị dự phòng. Tạo khóa riêng, ví dụ bằng
+`node -e "console.log(require('crypto').randomBytes(48).toString('base64'))"`, rồi đặt
+`JWT_SECRET` trong `.env` cho Compose hoặc `APP_JWT_SECRET` trong môi trường khi chạy
+`bootRun`. Không commit khóa hoặc file `.env`. Backend từ chối khóa mẫu và khóa dưới
+32 byte. Chạy trực tiếp không tự đọc `.env` của Compose.
+
+Refresh cookie mặc định bật `Secure`; cấu hình `APP_AUTH_COOKIE_SECURE=false` chỉ
+cho local HTTP. Production cần HTTPS, `APP_AUTH_COOKIE_SECURE=true` và cấu hình đúng
+Origin frontend/Swagger trong `APP_CORS_ALLOWED_ORIGINS` (Compose dùng
+`CORS_ALLOWED_ORIGINS`). Frontend cần trình duyệt hỗ trợ Web Locks và BroadcastChannel;
+production phải dùng secure context. Trình duyệt thiếu Web Locks báo lỗi thay vì
+refresh đồng thời gây thu hồi nhầm phiên.
+
+### Phiên đăng nhập và nâng cấp JWT
+
+- Access token tối đa 15 phút, lưu trong bộ nhớ; refresh token ngẫu nhiên lưu trong
+  cookie HttpOnly, DB chỉ lưu hash và lịch sử xoay vòng.
+- Khách hàng: 7 ngày không refresh, tối đa 30 ngày từ đăng nhập. Admin/nhân viên: 12 giờ.
+- “Ghi nhớ đăng nhập” quyết định cookie bền vững hay cookie phiên; không thay đổi
+  hạn phiên phía backend. Đăng xuất thu hồi phiên; đổi/reset mật khẩu hoặc admin
+  đổi quyền/trạng thái thu hồi mọi phiên của tài khoản.
+- Flyway `V11__authentication_sessions.sql` chỉ bổ sung bảng phiên/token, không reset
+  dữ liệu nghiệp vụ. Triển khai backend và frontend cùng đợt; mọi JWT cũ bị từ chối
+  và người dùng cần đăng nhập lại một lần. Frontend tự xóa JWT cũ khỏi localStorage.
+- Mỗi request được bảo vệ kiểm tra phiên trong PostgreSQL. Job dọn phiên quá hạn
+  tuyệt đối chạy mỗi giờ (`app.auth.cleanup-interval-ms`); lịch sử token còn được giữ
+  trong thời gian phiên để phát hiện replay. Log replay không chứa token/cookie.
+
+Kiểm thử frontend: `cd frontend; npm test` và `npm run build`.
+Kiểm thử backend: `cd backend; .\gradlew.bat test jacocoTestReport`.
+Test concurrency/rollback thật cần PostgreSQL **tạm riêng**, không dùng DB ứng dụng:
+
+```powershell
+docker run --detach --name coachbooking-jwt-test --publish 127.0.0.1:55439:5432 --env POSTGRES_DB=coachbooking_auth_test --env POSTGRES_USER=auth_test --env POSTGRES_PASSWORD=auth_test_local_only --tmpfs /var/lib/postgresql/data postgres:16-alpine
+$env:AUTH_TEST_DB_URL='jdbc:postgresql://127.0.0.1:55439/coachbooking_auth_test'
+cd backend
+.\gradlew.bat test jacocoTestReport
+Remove-Item Env:AUTH_TEST_DB_URL
+# Khi đã kiểm tra xong, chỉ xóa container tạm vừa tạo:
+docker rm --force coachbooking-jwt-test
+```
+
+Khi thiếu `AUTH_TEST_DB_URL`, bộ test PostgreSQL được skip có chủ đích; test HTTP
+vẫn dùng H2 độc lập. Test PostgreSQL kiểm tra migration thật, khóa refresh đồng thời,
+thu hồi sau replay và rollback khi ghi token mới thất bại. Chi tiết API ở `docs/API.md`.
 
 ## CI/CD và SonarQube
 

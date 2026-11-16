@@ -28,6 +28,26 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
 
   public static final String OAUTH2_AUTH_REQUEST_COOKIE_NAME = "coachbooking_oauth2_auth_request";
   private static final int COOKIE_EXPIRE_SECONDS = 180;
+  private final javax.crypto.SecretKey signingKey;
+
+  public HttpCookieOAuth2AuthorizationRequestRepository(
+      @org.springframework.beans.factory.annotation.Value("${app.jwt.secret}") String secret) {
+    this.signingKey =
+        new javax.crypto.spec.SecretKeySpec(
+            secret.getBytes(java.nio.charset.StandardCharsets.UTF_8), "HmacSHA256");
+  }
+
+  private String sign(String value) {
+    try {
+      var mac = javax.crypto.Mac.getInstance("HmacSHA256");
+      mac.init(signingKey);
+      return Base64.getUrlEncoder()
+          .withoutPadding()
+          .encodeToString(mac.doFinal(value.getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+    } catch (java.security.GeneralSecurityException ex) {
+      throw new IllegalStateException(ex);
+    }
+  }
 
   @Override
   public OAuth2AuthorizationRequest loadAuthorizationRequest(HttpServletRequest request) {
@@ -47,7 +67,17 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
       return;
     }
     ResponseCookie cookie =
-        ResponseCookie.from(OAUTH2_AUTH_REQUEST_COOKIE_NAME, serialize(authorizationRequest))
+        ResponseCookie.from(
+                OAUTH2_AUTH_REQUEST_COOKIE_NAME,
+                serialize(
+                    OAuth2AuthorizationRequest.from(authorizationRequest)
+                        .attributes(
+                            attrs -> {
+                              attrs.put(
+                                  "rememberMe", "true".equals(request.getParameter("rememberMe")));
+                              attrs.put("issuedAtEpoch", java.time.Instant.now().getEpochSecond());
+                            })
+                        .build()))
             .path("/")
             .httpOnly(true)
             .maxAge(COOKIE_EXPIRE_SECONDS)
@@ -99,20 +129,38 @@ public class HttpCookieOAuth2AuthorizationRequestRepository
         ObjectOutputStream oos = new ObjectOutputStream(baos)) {
       oos.writeObject(authorizationRequest);
       oos.flush();
-      return Base64.getUrlEncoder().encodeToString(baos.toByteArray());
+      String payload = Base64.getUrlEncoder().encodeToString(baos.toByteArray());
+      return payload + "." + sign(payload);
     } catch (IOException ex) {
       throw new IllegalStateException("Không thể serialize OAuth2AuthorizationRequest.", ex);
     }
   }
 
   private OAuth2AuthorizationRequest deserialize(String encoded) {
-    byte[] bytes = Base64.getUrlDecoder().decode(encoded);
+    if (encoded == null || encoded.length() > 16000) return null;
+    String[] parts = encoded.split("\\.", -1);
+    if (parts.length != 2
+        || !java.security.MessageDigest.isEqual(
+            sign(parts[0]).getBytes(java.nio.charset.StandardCharsets.UTF_8),
+            parts[1].getBytes(java.nio.charset.StandardCharsets.UTF_8))) return null;
+    byte[] bytes;
+    try {
+      bytes = Base64.getUrlDecoder().decode(parts[0]);
+    } catch (IllegalArgumentException ex) {
+      return null;
+    }
     try (ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
         ObjectInputStream ois = new ObjectInputStream(bais)) {
       ois.setObjectInputFilter(
           ObjectInputFilter.Config.createFilter(
               "org.springframework.security.oauth2.core.**;java.util.*;java.lang.*;!*"));
-      return (OAuth2AuthorizationRequest) ois.readObject();
+      Object value = ois.readObject();
+      if (!(value instanceof OAuth2AuthorizationRequest result)) return null;
+      Object issued = result.getAttribute("issuedAtEpoch");
+      long now = java.time.Instant.now().getEpochSecond();
+      if (!(issued instanceof Long epoch) || epoch > now || now - epoch > COOKIE_EXPIRE_SECONDS)
+        return null;
+      return result;
     } catch (IOException | ClassNotFoundException ex) {
       return null;
     }

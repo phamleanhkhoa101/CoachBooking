@@ -15,7 +15,8 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequ
 class HttpCookieOAuth2AuthorizationRequestRepositoryTest {
 
   private final HttpCookieOAuth2AuthorizationRequestRepository repository =
-      new HttpCookieOAuth2AuthorizationRequestRepository();
+      new HttpCookieOAuth2AuthorizationRequestRepository(
+          "test-only-auth-signing-key-0123456789abcdef0123456789");
 
   @Test
   void saveLoadAndRemoveAuthorizationRequestRoundTrip() {
@@ -30,6 +31,7 @@ class HttpCookieOAuth2AuthorizationRequestRepositoryTest {
             .build();
 
     MockHttpServletRequest saveReq = new MockHttpServletRequest();
+    saveReq.setParameter("rememberMe", "true");
     MockHttpServletResponse saveRes = new MockHttpServletResponse();
     repository.saveAuthorizationRequest(authRequest, saveReq, saveRes);
 
@@ -40,6 +42,7 @@ class HttpCookieOAuth2AuthorizationRequestRepositoryTest {
 
     List<HttpCookie> parsed = HttpCookie.parse(setCookieHeader);
     String cookieValue = parsed.get(0).getValue();
+    assertTrue(cookieValue.length() < 4000, "OAuth cookie must fit browser limits");
 
     MockHttpServletRequest callbackReq = new MockHttpServletRequest();
     callbackReq.setCookies(
@@ -54,11 +57,18 @@ class HttpCookieOAuth2AuthorizationRequestRepositoryTest {
     assertEquals("state-abc", loaded.getState());
     assertEquals("client-123", loaded.getClientId());
     assertEquals("google", loaded.getAttribute("registration_id"));
+    assertEquals(Boolean.TRUE, loaded.getAttribute("rememberMe"));
     assertTrue(loaded.getScopes().contains("email"));
 
     String expiredHeader = callbackRes.getHeader(HttpHeaders.SET_COOKIE);
     assertNotNull(expiredHeader);
     assertTrue(expiredHeader.contains("Max-Age=0"));
+
+    callbackReq.setCookies(
+        new Cookie(
+            HttpCookieOAuth2AuthorizationRequestRepository.OAUTH2_AUTH_REQUEST_COOKIE_NAME,
+            cookieValue + "tampered"));
+    assertNull(repository.loadAuthorizationRequest(callbackReq));
   }
 
   @Test

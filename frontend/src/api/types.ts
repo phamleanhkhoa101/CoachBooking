@@ -29,6 +29,7 @@ export interface User {
 export type NguoiDung = User;
 
 export interface LoginResponse {
+  expiresIn: number;
   token: string;
   user: User;
 }

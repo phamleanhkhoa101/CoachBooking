@@ -1,5 +1,8 @@
 package com.coachbooking.security;
 
+import com.coachbooking.common.ApiException;
+import com.coachbooking.service.AuthSessionService;
+import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,10 +20,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   private final JwtService jwtService;
   private final AppUserDetailsService userDetailsService;
+  private final AuthSessionService sessions;
 
-  public JwtAuthenticationFilter(JwtService jwtService, AppUserDetailsService userDetailsService) {
+  public JwtAuthenticationFilter(
+      JwtService jwtService,
+      AppUserDetailsService userDetailsService,
+      AuthSessionService sessions) {
     this.jwtService = jwtService;
     this.userDetailsService = userDetailsService;
+    this.sessions = sessions;
   }
 
   @Override
@@ -32,20 +40,21 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         && header.startsWith("Bearer ")
         && SecurityContextHolder.getContext().getAuthentication() == null) {
       String token = header.substring(7);
-      if (jwtService.isValid(token)) {
-        try {
-          UserDetails userDetails =
-              userDetailsService.loadUserByUsername(jwtService.extractUsername(token));
-          if (userDetails.isEnabled()) {
-            UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(
-                    userDetails, null, userDetails.getAuthorities());
-            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-          }
-        } catch (RuntimeException ignored) {
-          SecurityContextHolder.clearContext();
+      try {
+        var account = sessions.authenticate(jwtService.parse(token));
+        UserDetails userDetails = userDetailsService.fromAccount(account);
+        if (userDetails.isEnabled()) {
+          UsernamePasswordAuthenticationToken authentication =
+              new UsernamePasswordAuthenticationToken(
+                  userDetails, null, userDetails.getAuthorities());
+          authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+          SecurityContextHolder.getContext().setAuthentication(authentication);
         }
+      } catch (JwtException
+          | IllegalArgumentException
+          | ApiException
+          | org.springframework.security.core.userdetails.UsernameNotFoundException ignored) {
+        SecurityContextHolder.clearContext();
       }
     }
     chain.doFilter(request, response);

@@ -4,37 +4,19 @@ import { getErrorMessage } from '../../api/client';
 import { homePathFor, useAuth } from '../../auth/AuthContext';
 
 export function OAuth2Callback() {
-  const { loginWithToken } = useAuth();
+  const { restoreSession } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     let active = true;
-    const hash = window.location.hash.startsWith('#')
-      ? window.location.hash.slice(1)
-      : window.location.hash;
-    const hashParams = new URLSearchParams(hash);
-    const searchParams = new URLSearchParams(window.location.search);
-
-    const token = hashParams.get('token');
-    const errorParam = searchParams.get('error') || hashParams.get('error');
+    const errorParam = new URLSearchParams(window.location.search).get('error');
 
     if (errorParam) {
       navigate(`/login?error=${encodeURIComponent(errorParam)}`, { replace: true });
       return;
     }
 
-    if (!token) {
-      navigate(
-        `/login?error=${encodeURIComponent('Không nhận được mã xác thực từ Google.')}`,
-        { replace: true },
-      );
-      return;
-    }
-
-    // Xóa token khỏi URL fragment trước khi xử lý tiếp
-    window.history.replaceState(null, '', window.location.pathname);
-
-    loginWithToken(token)
+    restoreSession()
       .then((loggedUser) => {
         if (!active) return;
         navigate(homePathFor(loggedUser.role), { replace: true });
@@ -47,7 +29,7 @@ export function OAuth2Callback() {
     return () => {
       active = false;
     };
-  }, [loginWithToken, navigate]);
+  }, [restoreSession, navigate]);
 
   return (
     <div className="page-loading">

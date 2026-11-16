@@ -152,6 +152,15 @@ For every change:
 - If business tests are absent, add focused regression tests when practical; the README identifies automatic business tests as an outstanding gap.
 - Report exact commands executed and their outcomes, including environment-related failures. Never fake verification.
 
+### Backend coverage requirement
+
+- For backend changes, add meaningful regression tests and keep SonarQube **Coverage on New Code > 80%** and **Overall Coverage > 80%** before reporting completion. Aim for at least 81% to avoid rounding at the boundary.
+- Run `cd backend; .\gradlew.bat test jacocoTestReport`, inspect the JaCoCo report, then run `.\scripts\sonar.ps1` from the repository root when the local SonarQube server is available. Check the processed analysis and Quality Gate, not only the scanner exit code.
+- Cover success, validation failures, missing resources and business conflicts. For booking or scheduling changes, include relevant duplicate/concurrent request and rollback cases.
+- Do not lower the threshold, expand coverage exclusions, remove tests or add assertion-free tests to improve the metric. Preserve the existing SonarQube exclusions unless the user explicitly approves a change.
+- If required services or credentials are unavailable, report the exact blocker and measured JaCoCo results; never claim SonarQube passed without verification. Do not run integration tests against the application database or reset user data.
+- This requirement governs backend coverage; do not claim frontend coverage without an actual frontend coverage report.
+
 ## 10. Git and Change Safety
 
 - **ABSOLUTELY NO AUTO-COMMIT:** Do not run `git commit`, `git push`, `git merge`, or `git rebase` unless the user explicitly requests you to commit. After modifying code, leave changes in the working directory/staged area and report the results to the user.

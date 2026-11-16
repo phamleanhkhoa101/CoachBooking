@@ -1,0 +1,16 @@
+---
+description: Maintain backend SonarQube coverage above 80 percent with meaningful tests
+globs: backend/**
+alwaysApply: false
+---
+
+# Backend coverage
+
+- Follow the backend coverage requirement in `AGENTS.md`.
+- Keep both SonarQube Overall Coverage and Coverage on New Code strictly above 80%; target at least 81%.
+- Add tests with behavioral assertions for success, invalid input, missing resources and conflicts. Include duplicate/concurrent execution and rollback where relevant.
+- Run `test jacocoTestReport` using the backend Gradle wrapper. Inspect uncovered lines and branches before adding tests.
+- Run `scripts/sonar.ps1` from the repository root when local SonarQube is available; verify the completed analysis and Quality Gate.
+- Never lower thresholds, expand exclusions, remove tests or add tests without meaningful assertions to satisfy coverage.
+- Preserve user data and use a separate database for integration tests.
+- Report actual metrics and any verification blockers; do not claim coverage passed without measurement.

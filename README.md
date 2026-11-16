@@ -121,6 +121,18 @@ GitHub Actions chạy khi push vào `main`, `dev`, `feat/**`, `fix/**` và mọi
 
 ### Cấu hình SonarQube
 
+Chạy SonarQube local (JDK 25, server ở `http://localhost:9000`) từ thư mục gốc:
+
+```powershell
+.\scripts\sonar.ps1
+```
+
+Script chạy `test jacocoTestReport sonar` cho project `coachbooking`.
+Token lấy từ biến môi trường `SONAR_TOKEN`, sau đó từ file `.env` ở thư mục gốc;
+nếu cả hai chưa có, script yêu cầu nhập ẩn. Token không được in ra hoặc ghi vào mã nguồn.
+Có thể tùy chỉnh: `.\scripts\sonar.ps1 -ProjectKey coachbooking -ProjectName coachbooking -HostUrl http://localhost:9000`.
+Script trả lại exit code của Gradle và giữ nguyên thư mục/biến môi trường của phiên gọi.
+
 Project key, organization và host nằm trong `backend/build.gradle` (block `sonarqube`), đang trỏ tới
 `phamleanhkhoa101_CoachBooking` / `phamleanhkhoa101`.
 

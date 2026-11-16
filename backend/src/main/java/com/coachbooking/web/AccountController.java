@@ -7,6 +7,7 @@ import com.coachbooking.repo.AccountRepository;
 import com.coachbooking.repo.CustomerRepository;
 import com.coachbooking.repo.EmployeeRepository;
 import com.coachbooking.repo.RoleRepository;
+import com.coachbooking.service.AuthSessionService;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -15,8 +16,10 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,18 +40,21 @@ public class AccountController {
   private final EmployeeRepository employeeRepository;
   private final CustomerRepository customerRepository;
   private final PasswordEncoder passwordEncoder;
+  private final AuthSessionService sessions;
 
   public AccountController(
       AccountRepository accountRepository,
       RoleRepository roleRepository,
       EmployeeRepository employeeRepository,
       CustomerRepository customerRepository,
-      PasswordEncoder passwordEncoder) {
+      PasswordEncoder passwordEncoder,
+      AuthSessionService sessions) {
     this.accountRepository = accountRepository;
     this.roleRepository = roleRepository;
     this.employeeRepository = employeeRepository;
     this.customerRepository = customerRepository;
     this.passwordEncoder = passwordEncoder;
+    this.sessions = sessions;
   }
 
   @GetMapping
@@ -89,9 +95,18 @@ public class AccountController {
     return accountRepository.save(account);
   }
 
+  @Transactional
   @PutMapping("/{id}")
   public Account update(@PathVariable Integer id, @Valid @RequestBody UpdateRequest request) {
-    Account account = get(id);
+    Account account =
+        accountRepository
+            .lockById(id)
+            .orElseThrow(() -> ApiException.notFound("Tài khoản không tồn tại."));
+    boolean securityChanged =
+        !Objects.equals(account.getRoleId(), request.roleId())
+            || (request.isActive() != null
+                && !Objects.equals(account.getIsActive(), request.isActive()))
+            || !Validators.isBlank(request.password());
     if (!roleRepository.existsById(request.roleId())) {
       throw ApiException.notFound("Quyền không tồn tại.");
     }
@@ -108,6 +123,7 @@ public class AccountController {
       Validators.requirePassword(request.password());
       account.setPassword(passwordEncoder.encode(request.password()));
     }
+    if (securityChanged) sessions.revokeAll(id);
     return accountRepository.save(account);
   }
 

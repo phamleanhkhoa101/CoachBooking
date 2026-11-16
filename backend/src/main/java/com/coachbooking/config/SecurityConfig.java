@@ -38,6 +38,7 @@ public class SecurityConfig {
   public SecurityFilterChain securityFilterChain(
       HttpSecurity http,
       JwtAuthenticationFilter jwtAuthenticationFilter,
+      com.coachbooking.security.AuthOriginFilter authOriginFilter,
       HttpCookieOAuth2AuthorizationRequestRepository authorizationRequestRepository,
       OAuth2AuthenticationSuccessHandler oAuth2SuccessHandler,
       OAuth2AuthenticationFailureHandler oAuth2FailureHandler,
@@ -52,6 +53,8 @@ public class SecurityConfig {
             auth ->
                 auth.requestMatchers(
                         "/api/auth/login",
+                        "/api/auth/refresh",
+                        "/api/auth/logout",
                         "/api/auth/user/login",
                         "/api/auth/admin/login",
                         "/api/auth/register",
@@ -84,6 +87,7 @@ public class SecurityConfig {
                 ex.authenticationEntryPoint(
                         (request, response, authException) -> {
                           response.setStatus(HttpStatus.UNAUTHORIZED.value());
+                          response.setHeader("X-Auth-Expired", "1");
                           response.setContentType(MediaType.APPLICATION_JSON_VALUE);
                           response.setCharacterEncoding("UTF-8");
                           objectMapper.writeValue(
@@ -111,6 +115,7 @@ public class SecurityConfig {
                         redirection -> redirection.baseUri("/api/login/oauth2/code/*"))
                     .successHandler(oAuth2SuccessHandler)
                     .failureHandler(oAuth2FailureHandler))
+        .addFilterBefore(authOriginFilter, UsernamePasswordAuthenticationFilter.class)
         .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
     return http.build();
@@ -119,7 +124,7 @@ public class SecurityConfig {
   @Bean
   public CorsConfigurationSource corsConfigurationSource(
       @Value(
-              "${app.cors.allowed-origins:http://localhost:5173,http://localhost:3000,http://localhost:3001}")
+              "${app.cors.allowed-origins:http://localhost:5173,http://localhost:3000,http://localhost:3001,http://localhost:8080}")
           String allowedOrigins) {
     CorsConfiguration configuration = new CorsConfiguration();
     configuration.setAllowedOrigins(

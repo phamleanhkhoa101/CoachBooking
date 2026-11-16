@@ -19,21 +19,27 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
   private final AuthService authService;
   private final HttpCookieOAuth2AuthorizationRequestRepository authorizationRequestRepository;
   private final String redirectUri;
+  private final RefreshCookieService cookies;
 
   public OAuth2AuthenticationSuccessHandler(
       AuthService authService,
       HttpCookieOAuth2AuthorizationRequestRepository authorizationRequestRepository,
+      RefreshCookieService cookies,
       @Value("${app.oauth2.redirect-uri:http://localhost:5173/oauth2/callback}")
           String redirectUri) {
     this.authService = authService;
     this.authorizationRequestRepository = authorizationRequestRepository;
     this.redirectUri = redirectUri;
+    this.cookies = cookies;
   }
 
   @Override
   public void onAuthenticationSuccess(
       HttpServletRequest request, HttpServletResponse response, Authentication authentication)
       throws IOException {
+    var authRequest = authorizationRequestRepository.loadAuthorizationRequest(request);
+    boolean rememberMe =
+        authRequest != null && Boolean.TRUE.equals(authRequest.getAttribute("rememberMe"));
     authorizationRequestRepository.removeAuthorizationRequestCookies(request, response);
 
     OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
@@ -45,12 +51,11 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
             || "true".equalsIgnoreCase(String.valueOf(emailVerifiedAttr));
 
     try {
-      AuthResponse authResponse = authService.loginWithGoogle(sub, email, emailVerified);
+      AuthResponse authResponse =
+          authService.loginWithGoogle(sub, email, emailVerified, rememberMe);
+      cookies.write(response, authResponse);
       String targetUrl =
-          UriComponentsBuilder.fromUriString(redirectUri)
-              .fragment("token=" + authResponse.token())
-              .build()
-              .toUriString();
+          UriComponentsBuilder.fromUriString(redirectUri).fragment(null).build().toUriString();
       getRedirectStrategy().sendRedirect(request, response, targetUrl);
     } catch (ApiException ex) {
       String loginErrorUrl =

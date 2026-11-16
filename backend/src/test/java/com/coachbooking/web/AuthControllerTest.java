@@ -21,7 +21,12 @@ class AuthControllerTest {
   void setUp() {
     authService = mock(AuthService.class);
     currentUserService = mock(CurrentUserService.class);
-    controller = new AuthController(authService, currentUserService);
+    controller =
+        new AuthController(
+            authService,
+            currentUserService,
+            mock(com.coachbooking.security.RefreshCookieService.class),
+            mock(com.coachbooking.service.AuthSessionService.class));
   }
 
   @Test
@@ -35,9 +40,19 @@ class AuthControllerTest {
     when(authService.loginUser(req)).thenReturn(resp);
     when(authService.loginAdmin(req)).thenReturn(resp);
 
-    assertEquals("tok", controller.login(req).token());
-    assertEquals("tok", controller.loginUser(req).token());
-    assertEquals("tok", controller.loginAdmin(req).token());
+    assertEquals(
+        "tok",
+        controller.login(req, new org.springframework.mock.web.MockHttpServletResponse()).token());
+    assertEquals(
+        "tok",
+        controller
+            .loginUser(req, new org.springframework.mock.web.MockHttpServletResponse())
+            .token());
+    assertEquals(
+        "tok",
+        controller
+            .loginAdmin(req, new org.springframework.mock.web.MockHttpServletResponse())
+            .token());
   }
 
   @Test
@@ -64,7 +79,11 @@ class AuthControllerTest {
     assertEquals("otp_sent", controller.forgotPassword(forgot).get("message"));
     assertEquals("tok123", controller.verifyResetOtp(verifyOtp).get("resetToken"));
     assertEquals("reset_ok", controller.resetPassword(reset).get("message"));
-    assertEquals("changed", controller.changePassword(change).get("message"));
+    assertEquals(
+        "changed",
+        controller
+            .changePassword(change, new org.springframework.mock.web.MockHttpServletResponse())
+            .get("message"));
     assertEquals(1, controller.me().accountId());
   }
 }

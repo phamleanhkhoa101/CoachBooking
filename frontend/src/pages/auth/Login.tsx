@@ -10,7 +10,9 @@ export function Login() {
   const navigate = useNavigate();
   const location = useLocation();
   const admin = isAdminPortal();
-  const initialNotice = (location.state as { notice?: string } | null)?.notice ?? '';
+  const initialNotice = new URLSearchParams(location.search).get('passwordChanged') === '1'
+    ? 'Đã đổi mật khẩu. Vui lòng đăng nhập lại.'
+    : (location.state as { notice?: string } | null)?.notice ?? '';
   const initialError = new URLSearchParams(location.search).get('error') ?? '';
 
   const [username, setUsername] = useState('');
@@ -35,7 +37,7 @@ export function Login() {
     setError('');
     setNotice('');
     try {
-      const loggedUser = await login(username.trim(), password, admin ? 'admin' : 'user');
+      const loggedUser = await login(username.trim(), password, admin ? 'admin' : 'user', rememberMe);
       const role = loggedUser.role;
       navigate(homePathFor(role), { replace: true });
     } catch (err) {
@@ -48,7 +50,7 @@ export function Login() {
   const handleGoogleLogin = () => {
     setError('');
     setNotice('');
-    window.location.href = '/api/oauth2/authorization/google';
+    window.location.href = `/api/oauth2/authorization/google?rememberMe=${rememberMe}`;
   };
 
   return (

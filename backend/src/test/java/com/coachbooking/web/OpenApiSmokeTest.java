@@ -22,7 +22,8 @@ import org.springframework.test.web.servlet.MockMvc;
       "spring.datasource.username=sa",
       "spring.datasource.password=",
       "spring.jpa.hibernate.ddl-auto=create-drop",
-      "spring.flyway.enabled=false"
+      "spring.flyway.enabled=false",
+      "app.jwt.secret=test-only-auth-signing-key-0123456789abcdef0123456789"
     })
 @AutoConfigureMockMvc
 class OpenApiSmokeTest {

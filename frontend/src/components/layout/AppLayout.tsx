@@ -1,3 +1,4 @@
+import { getErrorMessage } from '../../api/client';
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../auth/AuthContext';
@@ -107,6 +108,8 @@ export function AppLayout() {
   const { user, nguoiDung, logout } = useAuth();
   const currentUser = user ?? nguoiDung;
   const navigate = useNavigate();
+  const [logoutBusy, setLogoutBusy] = useState(false);
+  const [logoutError, setLogoutError] = useState('');
   const [open, setOpen] = useState(false);
 
   if (!currentUser) return null;
@@ -127,13 +130,23 @@ export function AppLayout() {
     .map((part) => part.charAt(0).toUpperCase())
     .join('');
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login', { replace: true });
+  const handleLogout = async () => {
+    if (logoutBusy) return;
+    setLogoutBusy(true);
+    setLogoutError('');
+    try {
+      await logout();
+      navigate('/login', { replace: true });
+    } catch (error) {
+      setLogoutError('Chưa xác nhận đăng xuất. ' + getErrorMessage(error));
+    } finally {
+      setLogoutBusy(false);
+    }
   };
 
   return (
     <div className="app-shell">
+      {logoutError && <div className="alert alert-error" role="alert">{logoutError}</div>}
       {open ? (
         <div
           className="sidebar-overlay"
@@ -203,7 +216,7 @@ export function AppLayout() {
             <button
               type="button"
               className="btn btn-ghost btn-sm btn-logout"
-              onClick={handleLogout}
+              onClick={() => { void handleLogout(); }} disabled={logoutBusy}
               title="Đăng xuất khỏi hệ thống"
             >
               <Icon name="logout" />

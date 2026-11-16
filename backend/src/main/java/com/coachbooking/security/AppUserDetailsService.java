@@ -28,6 +28,11 @@ public class AppUserDetailsService implements UserDetailsService {
             .findByUsername(username)
             .orElseThrow(
                 () -> new UsernameNotFoundException("Không tìm thấy tài khoản: " + username));
+    return fromAccount(account);
+  }
+
+  /** Use the account snapshot already validated against the authentication session. */
+  public UserDetails fromAccount(Account account) {
     String roleName =
         roleRepository.findById(account.getRoleId()).map(Role::getRoleName).orElse("KhachHang");
     return User.withUsername(account.getUsername())

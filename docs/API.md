@@ -11,7 +11,7 @@ Lịch chạy định kỳ và hướng dẫn nâng cấp:
 - **Swagger UI:** `http://localhost:8080/swagger-ui.html`
 - **OpenAPI JSON:** `http://localhost:8080/v3/api-docs`
 - Bật/tắt qua biến môi trường `APP_SWAGGER_ENABLED` (mặc định `true`).
-- Để gọi các endpoint yêu cầu xác thực trên Swagger UI: đăng nhập qua nhóm **Xác thực** (`/api/auth/login`, `/api/auth/user/login` hoặc `/api/auth/admin/login`) để lấy `token`, bấm nút **Authorize**, dán `token` vào ô `bearerAuth` (Swagger tự thêm tiền tố `Bearer `).
+- Để gọi các endpoint yêu cầu xác thực trên Swagger UI: đăng nhập qua nhóm **Xác thực**, đặt header `X-Auth-Request: 1`, lấy `token`, bấm **Authorize** và dán token vào `bearerAuth`. Origin của Swagger (ví dụ `http://localhost:8080`) phải nằm trong `APP_CORS_ALLOWED_ORIGINS`.
 
 Lỗi trả về thống nhất:
 
@@ -32,12 +32,29 @@ Mã trạng thái: `400` dữ liệu không hợp lệ, `401` chưa đăng nhậ
 
 ## 1. Xác thực
 
+Access token có hạn tối đa **15 phút** và chỉ được frontend lưu trong bộ nhớ. Backend
+kiểm tra chữ ký, thời hạn, `accountId`, `sid`, trạng thái phiên và trạng thái/quyền tài khoản
+ở mỗi request. JWT cũ không có `sid` không còn được chấp nhận.
+
+- Khách hàng: hết phiên sau **7 ngày không refresh**, tối đa **30 ngày từ lúc đăng nhập**.
+- Admin/nhân viên: hết phiên cố định sau **12 giờ**.
+- Login hoặc refresh thành công cập nhật mốc hoạt động; refresh không kéo dài hạn tuyệt đối.
+- `rememberMe=true`: cookie tồn tại sau khi đóng trình duyệt đến hạn còn lại của phiên.
+  `false` hoặc thiếu trường: cookie phiên trình duyệt, vẫn chịu giới hạn thời gian của backend.
+  Trình duyệt có thể khôi phục cookie phiên khi bật tính năng khôi phục cửa sổ.
+- Không refresh định kỳ; request nền ở tab ẩn không tự refresh.
+
+Ba API login, `/auth/refresh` và `/auth/logout` yêu cầu **POST**, header
+`X-Auth-Request: 1` và `Origin` khớp danh sách cho phép; thiếu/sai trả `403`.
+Trình duyệt tự gửi Origin; client ngoài trình duyệt phải cung cấp cả hai header.
+Phản hồi có `Cache-Control: no-store`.
+
 ### `POST /api/auth/user/login` (công khai)
 
 Đăng nhập dành cho cổng Khách hàng (`KhachHang`). Nếu tài khoản có quyền `Admin` hoặc `NhanVien`, hệ thống trả về HTTP 403 yêu cầu đăng nhập tại cổng Quản trị.
 
 ```json
-{ "tenDangNhap": "kh1", "matKhau": "KhachHang@123" }
+{ "username": "kh1", "password": "KhachHang@123", "rememberMe": true }
 ```
 
 ### `POST /api/auth/admin/login` (công khai)
@@ -45,7 +62,7 @@ Mã trạng thái: `400` dữ liệu không hợp lệ, `401` chưa đăng nhậ
 Đăng nhập dành cho cổng Quản trị viên (`Admin`) và Nhân viên (`NhanVien`). Nếu tài khoản là `KhachHang`, hệ thống trả về HTTP 403 từ chối quyền truy cập.
 
 ```json
-{ "tenDangNhap": "admin", "matKhau": "Admin@123" }
+{ "username": "admin", "password": "Admin@123", "rememberMe": false }
 ```
 
 ### `POST /api/auth/login` (công khai - kế thừa)
@@ -53,7 +70,7 @@ Mã trạng thái: `400` dữ liệu không hợp lệ, `401` chưa đăng nhậ
 Đăng nhập tổng quát (hỗ trợ mọi vai trò hợp lệ).
 
 ```json
-{ "tenDangNhap": "admin", "matKhau": "Admin@123" }
+{ "username": "admin", "password": "Admin@123", "rememberMe": false }
 ```
 
 Trả về:
@@ -61,15 +78,37 @@ Trả về:
 ```json
 {
   "token": "eyJhbGciOi...",
-  "nguoiDung": {
-    "maTk": 1, "tenDangNhap": "admin", "email": "admin@coachbooking.com",
-    "quyen": "Admin", "maQuyen": 1, "maNv": 1, "maKh": null,
-    "hoTen": "Nguyễn Văn An", "trangThai": true
+  "expiresIn": 900,
+  "user": {
+    "accountId": 1, "username": "admin", "email": "admin@coachbooking.com",
+    "role": "Admin", "roleId": 1, "employeeId": 1, "customerId": null,
+    "fullName": "Nguyễn Văn An", "isActive": true
   }
 }
 ```
 
-`maNv`/`maKh` là `null` nếu tài khoản chưa gắn với nhân viên/khách hàng.
+`employeeId`/`customerId` là `null` nếu tài khoản chưa gắn với hồ sơ.
+`expiresIn` tính bằng giây, có thể nhỏ hơn 900 khi gần hết phiên.
+Login đặt cookie `coachbooking_refresh`: `HttpOnly`, `SameSite=Lax`, path `/api/auth`,
+không có Domain; `Secure=true` mặc định. Chỉ local HTTP được cấu hình
+`APP_AUTH_COOKIE_SECURE=false`. Refresh token không xuất hiện trong JSON.
+
+### `POST /api/auth/refresh` (không cần access token)
+
+Không có body; dùng refresh cookie và hai header chống CSRF ở trên. Trả về cùng
+shape `{token, user, expiresIn}` như login và thay refresh cookie. Token cũ chỉ dùng
+được một lần; tái sử dụng sẽ thu hồi cả phiên, kể cả access token còn hạn. Token
+thiếu/sai/hết hạn hoặc phiên bị thu hồi trả `401` và xóa cookie.
+
+### `POST /api/auth/logout` (không cần access token)
+
+Dùng refresh cookie và hai header chống CSRF. Thu hồi phiên hiện tại, xóa cookie,
+trả `204`. Cookie không còn tồn tại hoặc gọi lại vẫn trả `204`. Lỗi hạ tầng không
+được coi là logout thành công; client cần thông báo và cho phép thử lại.
+
+Access token bị lớp xác thực từ chối tại endpoint được bảo vệ trả `401` kèm
+`X-Auth-Expired: 1`. Frontend chỉ refresh và thử lại request này một lần; không
+tự gửi lại lỗi mạng, `5xx`, `403` hoặc `401` từ nghiệp vụ.
 
 ### `POST /api/auth/register` (công khai)
 
@@ -115,7 +154,7 @@ và trả về `{ "message": "Đặt lại mật khẩu thành công. Bạn có 
 
 ### `GET /api/auth/me`
 
-Trả về đúng đối tượng `nguoiDung` như trên.
+Trả về đúng đối tượng `user` như trên.
 
 ### `POST /api/auth/change-password`
 
@@ -123,12 +162,17 @@ Trả về đúng đối tượng `nguoiDung` như trên.
 { "matKhauCu": "KhachHang@123", "matKhauMoi": "KhachHang@456" }
 ```
 
+Đổi/reset mật khẩu, admin đổi mật khẩu/quyền/trạng thái tài khoản sẽ thu hồi toàn bộ
+phiên của tài khoản trong cùng transaction. Đổi mật khẩu của chính mình xóa cookie
+hiện tại và frontend yêu cầu đăng nhập lại. Mở khóa không khôi phục phiên cũ.
+
 ### `GET /api/oauth2/authorization/google` (công khai)
 
 Khởi tạo luồng Google OAuth2 (Authorization Code Flow) cho cổng Khách hàng:
 - Chuyển hướng người dùng tới Google Consent Screen.
 - Google callback về `/api/login/oauth2/code/google`.
-- Thành công: tự động liên kết hoặc tạo tài khoản `KhachHang` (`auth_provider = GOOGLE`), phát hành JWT và chuyển hướng về `${APP_OAUTH2_REDIRECT_URI}#token=<jwt>`.
+- Tham số tùy chọn `rememberMe=true`; mặc định `false`. Lựa chọn được gắn với OAuth2 request trong cookie có chữ ký và hạn 180 giây.
+- Thành công: tự động liên kết hoặc tạo tài khoản `KhachHang` (`auth_provider = GOOGLE`), tạo phiên, đặt refresh cookie và chuyển về `${APP_OAUTH2_REDIRECT_URI}`. Không đưa token vào URL; frontend gọi `/api/auth/refresh` để hoàn tất.
 - Thất bại (tài khoản bị khóa, tài khoản `Admin`/`NhanVien`, hoặc từ chối): chuyển hướng về `/login?error=<message>`.
 
 ## 2. Danh mục (CRUD)

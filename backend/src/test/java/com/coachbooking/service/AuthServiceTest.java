@@ -14,7 +14,6 @@ import com.coachbooking.repo.CustomerRepository;
 import com.coachbooking.repo.EmployeeRepository;
 import com.coachbooking.repo.PasswordResetTokenRepository;
 import com.coachbooking.repo.RoleRepository;
-import com.coachbooking.security.JwtService;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.time.LocalDateTime;
@@ -36,8 +35,9 @@ class AuthServiceTest {
   private PasswordResetTokenRepository passwordResetTokenRepository;
   private EmailService emailService;
   private PasswordEncoder passwordEncoder;
-  private JwtService jwtService;
+  private AuthSessionService sessions;
   private AuthService authService;
+  private Account lockedAccount;
 
   @BeforeEach
   void setUp() {
@@ -48,7 +48,8 @@ class AuthServiceTest {
     passwordResetTokenRepository = mock(PasswordResetTokenRepository.class);
     emailService = mock(EmailService.class);
     passwordEncoder = mock(PasswordEncoder.class);
-    jwtService = mock(JwtService.class);
+    sessions = mock(AuthSessionService.class);
+    when(accountRepository.lockById(anyInt())).thenAnswer(i -> Optional.ofNullable(lockedAccount));
 
     authService =
         new AuthService(
@@ -59,7 +60,12 @@ class AuthServiceTest {
             passwordResetTokenRepository,
             emailService,
             passwordEncoder,
-            jwtService);
+            sessions);
+  }
+
+  private AuthSessionService.Issued issued(Account account, String role, String token) {
+    return new AuthSessionService.Issued(
+        account, role, token, "a".repeat(64), false, java.time.Instant.now().plusSeconds(900), 900);
   }
 
   private Account createAccount(int accountId, String username, int roleId, boolean isActive) {
@@ -70,20 +76,22 @@ class AuthServiceTest {
     acc.setPassword("encoded_secret");
     acc.setRoleId(roleId);
     acc.setIsActive(isActive);
+    lockedAccount = acc;
     return acc;
   }
 
   @Test
   void loginUser_success_whenCustomer() {
     Account acc = createAccount(1, "kh1", 3, true);
-    when(accountRepository.findByUsername("kh1")).thenReturn(Optional.of(acc));
+    when(accountRepository.lockByUsername("kh1")).thenReturn(Optional.of(acc));
     when(passwordEncoder.matches("pass123", "encoded_secret")).thenReturn(true);
 
     Role role = new Role();
     role.setRoleId(3);
     role.setRoleName("KhachHang");
     when(roleRepository.findById(3)).thenReturn(Optional.of(role));
-    when(jwtService.generate(acc, "KhachHang")).thenReturn("mock_token");
+    when(sessions.create(acc, "KhachHang", false))
+        .thenReturn(issued(acc, "KhachHang", "mock_token"));
 
     AuthResponse response = authService.loginUser(new LoginRequest("kh1", "pass123"));
 
@@ -95,7 +103,7 @@ class AuthServiceTest {
   @Test
   void loginUser_forbidden_whenAdmin() {
     Account acc = createAccount(2, "admin", 1, true);
-    when(accountRepository.findByUsername("admin")).thenReturn(Optional.of(acc));
+    when(accountRepository.lockByUsername("admin")).thenReturn(Optional.of(acc));
     when(passwordEncoder.matches("pass123", "encoded_secret")).thenReturn(true);
 
     Role role = new Role();
@@ -113,14 +121,14 @@ class AuthServiceTest {
   @Test
   void loginAdmin_success_whenAdminOrEmployee() {
     Account acc = createAccount(2, "admin", 1, true);
-    when(accountRepository.findByUsername("admin")).thenReturn(Optional.of(acc));
+    when(accountRepository.lockByUsername("admin")).thenReturn(Optional.of(acc));
     when(passwordEncoder.matches("pass123", "encoded_secret")).thenReturn(true);
 
     Role role = new Role();
     role.setRoleId(1);
     role.setRoleName("Admin");
     when(roleRepository.findById(1)).thenReturn(Optional.of(role));
-    when(jwtService.generate(acc, "Admin")).thenReturn("admin_token");
+    when(sessions.create(acc, "Admin", false)).thenReturn(issued(acc, "Admin", "admin_token"));
 
     AuthResponse response = authService.loginAdmin(new LoginRequest("admin", "pass123"));
 
@@ -132,7 +140,7 @@ class AuthServiceTest {
   @Test
   void loginAdmin_forbidden_whenCustomer() {
     Account acc = createAccount(1, "kh1", 3, true);
-    when(accountRepository.findByUsername("kh1")).thenReturn(Optional.of(acc));
+    when(accountRepository.lockByUsername("kh1")).thenReturn(Optional.of(acc));
     when(passwordEncoder.matches("pass123", "encoded_secret")).thenReturn(true);
 
     Role role = new Role();
@@ -150,7 +158,7 @@ class AuthServiceTest {
   @Test
   void authenticate_badRequest_whenWrongPassword() {
     Account acc = createAccount(1, "kh1", 3, true);
-    when(accountRepository.findByUsername("kh1")).thenReturn(Optional.of(acc));
+    when(accountRepository.lockByUsername("kh1")).thenReturn(Optional.of(acc));
     when(passwordEncoder.matches("wrong", "encoded_secret")).thenReturn(false);
 
     ApiException ex =
@@ -161,7 +169,7 @@ class AuthServiceTest {
   @Test
   void authenticate_forbidden_whenAccountInactive() {
     Account acc = createAccount(1, "kh1", 3, false);
-    when(accountRepository.findByUsername("kh1")).thenReturn(Optional.of(acc));
+    when(accountRepository.lockByUsername("kh1")).thenReturn(Optional.of(acc));
     when(passwordEncoder.matches("pass123", "encoded_secret")).thenReturn(true);
 
     ApiException ex =
@@ -292,6 +300,7 @@ class AuthServiceTest {
         resetRes.get("message"));
     assertEquals("new_hash", acc.getPassword());
     assertNotNull(token.getUsedAt());
+    verify(sessions).revokeAll(acc.getAccountId());
     verify(accountRepository).save(acc);
 
     // wrong OTP increments attempts and locks after maxAttempts (5)
@@ -373,9 +382,10 @@ class AuthServiceTest {
     Role role = new Role();
     role.setRoleName("KhachHang");
     when(roleRepository.findById(3)).thenReturn(Optional.of(role));
-    when(jwtService.generate(any(Account.class), eq("KhachHang"))).thenReturn("google-jwt");
+    when(sessions.create(any(Account.class), eq("KhachHang"), eq(false)))
+        .thenAnswer(i -> issued(i.getArgument(0), "KhachHang", "google-jwt"));
 
-    AuthResponse res = authService.loginWithGoogle("sub-123", "newgoogle@gmail.com", true);
+    AuthResponse res = authService.loginWithGoogle("sub-123", "newgoogle@gmail.com", true, false);
     assertEquals("google-jwt", res.token());
     assertEquals("GOOGLE", Account.class.cast(verifyAndCaptureSavedAccount()).getAuthProvider());
 
@@ -389,7 +399,8 @@ class AuthServiceTest {
         .thenReturn(Optional.of(existingLocal));
     when(accountRepository.save(existingLocal)).thenReturn(existingLocal);
 
-    AuthResponse linkedRes = authService.loginWithGoogle("sub-existing", "local@gmail.com", true);
+    AuthResponse linkedRes =
+        authService.loginWithGoogle("sub-existing", "local@gmail.com", true, false);
     assertEquals("google-jwt", linkedRes.token());
     assertEquals("sub-existing", existingLocal.getGoogleSub());
     assertEquals("LOCAL", existingLocal.getAuthProvider());
@@ -401,7 +412,7 @@ class AuthServiceTest {
     when(accountRepository.existsByUsername("google_a")).thenReturn(true);
     when(accountRepository.existsByUsername("google_a_1")).thenReturn(false);
 
-    AuthResponse shortRes = authService.loginWithGoogle("sub-short", "a!@gmail.com", true);
+    AuthResponse shortRes = authService.loginWithGoogle("sub-short", "a!@gmail.com", true, false);
     assertEquals("google-jwt", shortRes.token());
 
     String longPrefix = "a".repeat(45) + "@gmail.com";
@@ -409,7 +420,7 @@ class AuthServiceTest {
     when(accountRepository.findByEmailIgnoreCase(longPrefix)).thenReturn(Optional.empty());
     when(accountRepository.existsByUsername("a".repeat(40))).thenReturn(false);
 
-    AuthResponse longRes = authService.loginWithGoogle("sub-long", longPrefix, true);
+    AuthResponse longRes = authService.loginWithGoogle("sub-long", longPrefix, true, false);
     assertEquals("google-jwt", longRes.token());
   }
 
@@ -423,7 +434,8 @@ class AuthServiceTest {
   void loginWithGoogleRejectsUnverifiedLockedAndAdminAccounts() {
     ApiException unverified =
         assertThrows(
-            ApiException.class, () -> authService.loginWithGoogle("sub-1", "a@gmail.com", false));
+            ApiException.class,
+            () -> authService.loginWithGoogle("sub-1", "a@gmail.com", false, false));
     assertEquals(HttpStatus.BAD_REQUEST, unverified.getStatus());
 
     Account locked = createAccount(10, "locked", 3, false);
@@ -431,7 +443,7 @@ class AuthServiceTest {
     ApiException lockedEx =
         assertThrows(
             ApiException.class,
-            () -> authService.loginWithGoogle("sub-locked", "locked@gmail.com", true));
+            () -> authService.loginWithGoogle("sub-locked", "locked@gmail.com", true, false));
     assertEquals(HttpStatus.FORBIDDEN, lockedEx.getStatus());
 
     Account adminAcc = createAccount(11, "admin", 1, true);
@@ -442,7 +454,7 @@ class AuthServiceTest {
     ApiException adminEx =
         assertThrows(
             ApiException.class,
-            () -> authService.loginWithGoogle("sub-admin", "admin@gmail.com", true));
+            () -> authService.loginWithGoogle("sub-admin", "admin@gmail.com", true, false));
     assertEquals(HttpStatus.FORBIDDEN, adminEx.getStatus());
   }
 
@@ -450,7 +462,7 @@ class AuthServiceTest {
   void passwordLoginRejectsGoogleAccountWithoutLocalPassword() {
     Account googleOnly = createAccount(12, "guser", 3, true);
     googleOnly.setPassword(null);
-    when(accountRepository.findByUsername("guser")).thenReturn(Optional.of(googleOnly));
+    when(accountRepository.lockByUsername("guser")).thenReturn(Optional.of(googleOnly));
 
     ApiException ex =
         assertThrows(

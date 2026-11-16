@@ -33,6 +33,7 @@ import { ETicketPage } from './pages/customer/ETicketPage';
 import { TicketLookupPage } from './pages/customer/TicketLookupPage';
 import { CustomerTicketsPage } from './pages/customer/CustomerTicketsPage';
 import { CustomerProfilePage } from './pages/customer/CustomerProfilePage';
+import { SepayPaymentPage } from './pages/customer/SepayPaymentPage';
 
 function HomeRoute() {
   const { nguoiDung, loading } = useAuth();
@@ -84,6 +85,7 @@ export function App() {
                 }
               />
               <Route path="/ve-dien-tu/:invoiceId" element={<ETicketPage />} />
+              <Route path="/thanh-toan/sepay/:sessionId" element={<RequireRole roles={['KhachHang']}><SepayPaymentPage /></RequireRole>} />
               <Route path="/tra-cuu-ve" element={<TicketLookupPage />} />
               <Route path="/ve-cua-toi" element={<CustomerTicketsPage />} />
               <Route

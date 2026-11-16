@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ApiError, api, buildQuery, getErrorMessage } from '../../api/client';
 import type {
   BookingRequest,
@@ -24,6 +25,7 @@ interface BookingProps {
 }
 
 export function Booking({ mode }: BookingProps) {
+  const navigate = useNavigate();
   const isStaff = mode === 'nhanvien';
   const { user, nguoiDung } = useAuth();
   const currentUser = user ?? nguoiDung;
@@ -228,6 +230,10 @@ export function Booking({ mode }: BookingProps) {
         body.holdToken = hold.holdToken;
       }
       const res = await api.post<BookingResponse>('/bookings', body);
+      if (!isStaff && res.paymentSessionId) {
+        navigate(`/thanh-toan/sepay/${res.paymentSessionId}`, { state: { startCheckout: true } });
+        return;
+      }
       setResult(res);
       const invoiceId = res.invoiceId ?? res.maHd;
       showToast(`Đặt vé thành công, hóa đơn #${invoiceId}.`);

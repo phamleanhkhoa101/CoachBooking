@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Đang hoàn tất thanh toán · CoachBooking</title>
+    <style>
+      body { margin: 0; padding: 24px; box-sizing: border-box; min-height: 100svh; display: grid; place-items: center; background: #fff; color: #101828; font: 16px/1.6 system-ui, sans-serif; }
+      main { max-width: 480px; text-align: center; }
+      h1 { font-size: 24px; line-height: 1.35; } p { color: #667085; } a { color: #1d4ed8; } a:focus-visible { outline: 3px solid #1d4ed8; outline-offset: 4px; }
+      .spinner { display: inline-block; width: 40px; height: 40px; border: 3px solid #dbeafe; border-top-color: #1d4ed8; border-radius: 50%; animation: spin .8s linear infinite; }
+      [hidden] { display: none !important; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+    </style>
+    <script src="/sepay-local-return.js" defer></script>
+  </head>
+  <body>
+    <main>
+      <span id="return-spinner" class="spinner" aria-hidden="true"></span>
+      <h1>Đang hoàn tất thanh toán…</h1>
+      <p id="return-status" role="status">Vui lòng chờ trong giây lát.</p>
+      <a id="return-link" hidden>Tiếp tục xem kết quả</a>
+      <noscript>Vui lòng bật JavaScript hoặc tự mở lại trang thanh toán của bạn.</noscript>
+    </main>
+  </body>
+</html>

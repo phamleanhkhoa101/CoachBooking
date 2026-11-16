@@ -47,6 +47,88 @@ Nếu volume `db-data` được tạo bởi bộ script `db/init` cũ (không c�
 `flyway_schema_history`), Flyway sẽ đánh dấu schema đang có là phiên bản 2 thay vì
 chạy lại migration; dữ liệu cũ được giữ nguyên.
 
+## Thanh toán khách hàng qua SePay sandbox
+
+Khách đặt vé tạo hóa đơn chưa thanh toán, sau đó chuyển sang trang SePay quét QR.
+Backend chỉ xác nhận khi nhận IPN đã xác thực hoặc kết quả tra cứu SePay hợp lệ và khớp số tiền. Sandbox không dùng tiền thật.
+Nhân viên tại quầy tiếp tục sử dụng luồng thanh toán hiện có.
+
+1. Trong `.env` cục bộ, đặt `SEPAY_ENABLED=true`, `SEPAY_ENVIRONMENT=sandbox`,
+   `SEPAY_MERCHANT_ID`, `SEPAY_SECRET_KEY`, `SEPAY_IPN_SECRET`, `SEPAY_FRONTEND_URL`.
+   Merchant secret lấy từ tài khoản sandbox; IPN secret là chuỗi ngẫu nhiên riêng (khuyến nghị ít nhất 32 ký tự).
+   Không dùng lại secret đã gửi qua ảnh/chat. Không đặt secret trong biến `VITE_*`.
+2. Expose **frontend có proxy `/api`** bằng một domain/tunnel HTTPS công khai,
+   ví dụ tunnel tới cổng Docker frontend `3000` hoặc Vite `5173`.
+   Đặt `SEPAY_FRONTEND_URL=https://<domain>` và thêm origin đó vào
+   `CORS_ALLOWED_ORIGINS` (Docker) / `APP_CORS_ALLOWED_ORIGINS` (backend local).
+   Khi dùng HTTPS, đặt `APP_AUTH_COOKIE_SECURE=true`.
+   Nếu backend chạy trực tiếp, export các biến môi trường tương ứng; Spring không tự đọc `.env` ở root.
+3. Trên SePay, cấu hình IPN URL `https://<domain>/api/payments/sepay/ipn`,
+   Auth Type `SECRET_KEY`, Secret Key bằng `SEPAY_IPN_SECRET`. Merchant secret và IPN secret độc lập.
+4. Khởi động lại backend sau khi đổi cấu hình (Docker: `docker compose up -d --build backend`).
+   Flyway áp dụng migration mới, không cần reset dữ liệu.
+5. Đặt vé bằng tài khoản khách, thử thanh toán sandbox, quay về kiểm tra trạng thái và vé điện tử.
+   Thử mở lại phiên, bỏ dở đến hết hạn, hủy đơn, gửi lại IPN và giao dịch đến muộn.
+
+Phiên giữ ghế tối đa 10 phút từ lúc tạo, không vượt giờ khởi hành; mở lại không gia hạn.
+Chỉ cho hủy toàn bộ khi chờ. Khi hết hạn/hủy, ghế được nhả và hóa đơn được giữ lại.
+Khách không thể tự xác nhận thanh toán bằng nút “đã chuyển khoản” hay API `/pay`.
+Hóa đơn cũ chưa thanh toán cần liên hệ quầy vé.
+
+Giao dịch đến muộn hoặc không khớp chuyển `REVIEW_REQUIRED`, không tự cấp vé/hoàn tiền.
+Tra cứu đối soát bằng quyền quản trị database ở `sepay_sessions` và `sepay_notifications`
+(mã tham chiếu, ID giao dịch, số tiền, kết quả xử lý); chưa có màn hình đối soát riêng.
+Không lưu secret hoặc dữ liệu thẻ trong các bảng này.
+
+Tích hợp hiện chỉ chấp nhận cấu hình sandbox. Chưa bật giao dịch tiền thật;
+khi SePay tắt hoặc thiếu cấu hình, đặt vé khách hàng trả `503` thay vì giả lập thanh toán.
+Xem [API](docs/API.md) và [tài liệu SePay](https://developer.sepay.vn/vi/cong-thanh-toan/sandbox).
+
+### Chạy cả frontend và backend local, không dùng tunnel
+
+Chế độ này vẫn dùng trang checkout sandbox của SePay trong **cùng tab**. Backend local
+chủ động tra cứu giao dịch, không cần IPN truy cập vào máy bạn. Bản deploy mặc định dùng IPN.
+
+1. Deploy frontend có hai file `sepay-local-return.html` và `sepay-local-return.js` trong
+   `frontend/public/` lên `https://coachbooking.io.vn`. Kiểm tra URL
+   `https://coachbooking.io.vn/sepay-local-return.html` hiển thị trang chuyển tiếp,
+   không phải trang chủ SPA. Chưa cần deploy API SePay cho luồng local này.
+2. Đặt các biến sau **trong môi trường local**, giữ merchant credentials sandbox hiện có:
+
+   ```env
+   SEPAY_ENABLED=true
+   SEPAY_ENVIRONMENT=sandbox
+   SEPAY_CONFIRMATION_MODE=POLLING
+   SPRING_PROFILES_ACTIVE=local
+   SEPAY_FRONTEND_URL=https://coachbooking.io.vn
+   SEPAY_LOCAL_RETURN_URL=http://localhost:3000
+   APP_AUTH_COOKIE_SECURE=false
+   ```
+
+   Nếu chạy Vite, dùng `SEPAY_LOCAL_RETURN_URL=http://localhost:5173`.
+   Chỉ hai địa chỉ localhost này được hỗ trợ; không thêm dấu `/` cuối URL.
+   IPN secret không bắt buộc trong chế độ polling. Không cần đổi IPN trên SePay sang localhost.
+3. Docker local: chạy `docker compose up -d --build backend frontend` để áp dụng biến và migration V13.
+   Backend chạy bằng Gradle phải được cấp biến môi trường tương ứng; không tự đọc `.env` root.
+4. Đăng nhập và đặt vé tại đúng origin localhost đã cấu hình. Sau thanh toán, SePay chuyển về
+   trang công khai; trang đó tự đưa trình duyệt về phiên thanh toán trên localhost.
+   Giữ backend và database local chạy trong suốt quá trình.
+
+Backend kiểm tra phiên đang chờ khoảng mỗi 15 giây. Giao diện đọc trạng thái mỗi 3 giây.
+Luồng đặt vé tự mở trang QR SePay trong cùng tab, hiển thị spinner khi chờ và tự chuyển tới
+vé điện tử khi backend báo `PAID`. Khi quay về/refresh không tự mở lại checkout.
+Nếu chưa xác nhận sau 30 giây, giao diện hiện nút kiểm tra lại nhưng tiếp tục theo dõi kết quả.
+Nút kiểm tra lại dùng cùng lịch giới hạn với worker, không tạo thêm đơn hoặc gọi API liên tục.
+Lỗi kết nối không đồng nghĩa thanh toán thất bại và không gia hạn ghế. Sau hủy/hết hạn,
+worker kiểm tra đối soát mỗi phút trong tối đa 24 giờ kể từ lúc tạo phiên; giao dịch phát hiện muộn
+được đánh dấu cần đối soát, không cấp lại vé. Sau 24 giờ cần đối soát thủ công trên SePay.
+Lịch kiểm tra được lưu trong database nên tiếp tục sau khi backend khởi động lại.
+
+Trên server deploy, giữ `SEPAY_CONFIRMATION_MODE=IPN` và không bật profile `local`.
+Đổi chế độ không đổi phương thức xác nhận của phiên đã tạo; nên hoàn tất/hủy phiên cũ trước khi đổi.
+Không dùng cùng merchant sandbox cho các database đang cùng nhận IPN nếu không muốn sinh
+nhật ký đơn không nhận diện được. Chế độ này không hỗ trợ giao dịch tiền thật.
+
 ## Tài khoản demo
 
 | Tên đăng nhập | Mật khẩu | Vai trò |

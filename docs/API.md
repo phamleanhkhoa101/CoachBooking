@@ -321,8 +321,74 @@ ghế chưa bị đặt (kiểm tra lại trong transaction, vi phạm ràng bu�
 số điện thoại 10–11 ký tự, tên khách không rỗng. Hold của khách phải đúng tài khoản,
 chuyến, tập ghế và chưa hết hạn. Nếu số điện thoại đã tồn tại thì dùng khách hàng cũ,
 ngược lại tạo mới. Nhân viên tại quầy dùng `Tiền mặt`, `Chuyển khoản`, `Thẻ ATM` và
-không được ghi đè ghế khách đang giữ. Chuyển khoản khách hàng hiện là luồng mô phỏng
-tự xác nhận, chưa có callback đối soát ngân hàng.
+không được ghi đè ghế khách đang giữ. Chuyển khoản khách hàng dùng Cổng thanh toán SePay
+sandbox: tạo hóa đơn chưa thanh toán và phiên giữ ghế tối đa 10 phút từ lúc đặt vé,
+không vượt giờ khởi hành. Không tạo `Payment` trước khi có IPN hoặc kết quả tra cứu SePay hợp lệ.
+
+Phản hồi khách hàng dùng tên trường tiếng Anh như DTO backend:
+
+```json
+{
+  "invoiceId": 21, "totalAmount": 300000, "ticketCount": 2,
+  "paymentMethod": "Chuyển khoản", "isPaid": false,
+  "paymentSessionId": "6ef80623-073d-4be7-a900-f9b9ac28a48a",
+  "paymentStatus": "PENDING", "expiresAt": "2026-11-16T10:10:00Z"
+}
+```
+
+Gửi lại cùng `holdToken`, chủ tài khoản, chuyến, ghế và phương thức trả cùng hóa đơn/phiên,
+không gia hạn. Gửi lại với dữ liệu khác trả `409` (khác chủ trả `403`).
+Khi SePay chưa bật hoặc cấu hình thiếu, đặt vé khách hàng trả `503`, không tạo hóa đơn/vé.
+Luồng nhân viên giữ nguyên; các trường phiên thanh toán trả `null`.
+
+### Thanh toán SePay sandbox
+
+- `POST /api/payments/sepay/{sessionId}/checkout`: chỉ role `KhachHang`, đúng chủ phiên.
+  Trả `{ "checkoutUrl": "https://pay-sandbox.sepay.vn/v1/checkout/init", "fields": [{"name":"order_amount","value":"300000"}, ...] }`.
+  Frontend tạo form HTML POST theo thứ tự `fields`; không gọi checkout bằng fetch.
+  Backend tự lấy số tiền, mã tham chiếu, URL callback và ký HMAC-SHA256/Base64.
+  Mở lại phiên dùng cùng mã tham chiếu/hạn. Phiên không còn `PENDING` trả `409`.
+- `GET /api/payments/sepay/{sessionId}`: chỉ role `KhachHang`, đúng chủ phiên.
+  Trả `{ paymentSessionId, invoiceId, paymentStatus, totalAmount, expiresAt, confirmationMode, lastCheckedAt, syncError }`.
+  `confirmationMode` là `IPN` hoặc `POLLING`, được giữ cố định từ lúc tạo phiên.
+  `lastCheckedAt` là ISO-8601 hoặc null; `syncError` là thông báo an toàn hoặc null.
+  GET chỉ đọc database và kiểm tra hết hạn, không gọi API SePay.
+  Không đăng nhập trả `401`, sai role/chủ trả `403`, không tồn tại trả `404`.
+- `POST /api/payments/sepay/ipn`: không yêu cầu JWT, nhưng bắt buộc header `X-Secret-Key`
+  khớp `SEPAY_IPN_SECRET` (Auth Type `SECRET_KEY`); sai/thiếu trả `401`.
+  Payload theo SePay, dùng `notification_type`, `order`, `transaction` theo snake_case.
+  Đối chiếu `ORDER_PAID`, `CAPTURED`, `APPROVED`, loại `PAYMENT`, phương thức
+  `BANK_TRANSFER`, mã tham chiếu và số tiền/tiền tệ VND của cả order lẫn transaction.
+  IPN hợp lệ cập nhật hóa đơn và tạo Payment trong cùng transaction; IPN lặp không tạo thêm Payment.
+  Trả HTTP `200` với `{ "success": true }` sau khi lưu; payload sai định dạng trả `400`,
+  lỗi transaction trả lỗi server để SePay gửi lại. Đơn không nhận diện được được lưu để đối soát.
+
+Trạng thái phiên: `PENDING`, `PAID`, `EXPIRED`, `CANCELLED`, `REVIEW_REQUIRED`.
+Job mỗi phút nhả ghế hết hạn; GET trạng thái/POST checkout cũng kiểm tra hạn ngay.
+IPN đến muộn, thanh toán sai tiền/trạng thái hoặc thanh toán bổ sung chuyển sang
+`REVIEW_REQUIRED`, lưu giao dịch để đối soát, không tự cấp lại vé/hoàn tiền.
+`TRANSACTION_VOID` của phiên đã thanh toán cần đối soát; không tự đảo trạng thái hóa đơn.
+Redirect thành công/lỗi/hủy chỉ điều hướng về trang trạng thái, không cập nhật thanh toán.
+
+#### Polling dành cho local sandbox
+
+- Bật bằng `SEPAY_CONFIRMATION_MODE=POLLING`, profile Spring `local`, SePay `sandbox`.
+  Khởi động backend thất bại nếu chế độ/profile/URL local không hợp lệ.
+- `POST /api/payments/sepay/{sessionId}/sync`: khách hàng đăng nhập, đúng chủ phiên.
+  Trả cùng cấu trúc GET trạng thái. `401` nếu chưa đăng nhập, `403` nếu sai role/chủ,
+  `404` nếu không có phiên, `409` nếu chế độ hiện tại hoặc phiên không dùng polling,
+  `503` nếu thiếu cấu hình SePay. Lỗi mạng/provider được trả trong `syncError`, không giả xác nhận thanh toán.
+- Worker và POST sync dùng chung lịch kiểm tra/lease đã lưu: tối thiểu 15 giây giữa các lượt
+  của phiên chờ; không giữ khóa database khi gọi HTTP. `404` từ SePay trước khi mở checkout là đang chờ.
+  Lỗi được backoff tới 60 giây; `429` tuân thủ `Retry-After` trong cửa sổ đối soát 24 giờ.
+- Chỉ backend gọi `https://pgapi-sandbox.sepay.vn/v1/order/detail/{order_invoice_number}`
+  bằng Basic Auth. Đối chiếu mã đơn, số tiền, VND và từng giao dịch PAYMENT/APPROVED;
+  dùng chung transaction, khóa, chống trùng và nhật ký với IPN. Nhật ký bổ sung `source=IPN|POLLING`.
+- Giữ nguyên hạn ghế. Phiên hủy/hết hạn tiếp tục đối soát mỗi phút, tối đa 24 giờ từ lúc tạo;
+  giao dịch đến muộn chuyển `REVIEW_REQUIRED`, không cấp lại ghế. Phiên đã PAID dừng polling.
+- Callback của phiên polling trỏ tới `{SEPAY_FRONTEND_URL}/sepay-local-return.html?sessionId={uuid}&port={3000|5173}`.
+  File tĩnh chuyển về `http://localhost:{port}/thanh-toan/sepay/{uuid}`; không gọi API, không cần đăng nhập,
+  không nhận URL đích tùy ý và không xác nhận thanh toán. Chế độ IPN giữ callback hiện tại.
 
 ## 5. Hóa đơn, vé
 
@@ -361,6 +427,13 @@ Chi tiết hóa đơn:
 ```
 
 Chỉ được hủy vé khi hóa đơn chưa thanh toán và chuyến chưa khởi hành.
+
+Với hóa đơn SePay, danh sách và chi tiết bổ sung `sepay` chứa cùng cấu trúc GET trạng thái;
+hóa đơn khác trả `sepay: null`. Khách hàng không được gọi API `/pay` để tự xác nhận (`403`);
+nhân viên cũng không được thanh toán thủ công hóa đơn thuộc SePay (`409`).
+Chỉ hủy **toàn bộ** hóa đơn SePay qua `/invoices/{id}/cancel`; hủy từng vé trả `409`.
+Hủy/hết hạn nhả ghế, giữ hóa đơn, số tiền ban đầu và phiên để đối soát/lịch sử.
+Hóa đơn cũ chưa thanh toán không tự chuyển sang SePay; liên hệ quầy vé.
 
 ## 6. Hồ sơ
 

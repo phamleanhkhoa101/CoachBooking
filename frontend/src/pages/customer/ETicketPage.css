@@ -473,3 +473,9 @@
     grid-template-columns: 1fr 1fr;
   }
 }
+.eticket-loading {
+  min-height: max(440px, calc(100svh - 180px));
+  display: grid;
+  place-items: center;
+  color: var(--primary);
+}

@@ -14,11 +14,13 @@ import com.coachbooking.dto.invoice.InvoiceDetail;
 import com.coachbooking.dto.invoice.InvoiceRow;
 import com.coachbooking.dto.invoice.PaymentRow;
 import com.coachbooking.dto.invoice.TicketRow;
+import com.coachbooking.dto.payment.SepayStatus;
 import com.coachbooking.repo.CustomerRepository;
 import com.coachbooking.repo.EmployeeRepository;
 import com.coachbooking.repo.InvoiceRepository;
 import com.coachbooking.repo.PaymentRepository;
 import com.coachbooking.repo.RouteRepository;
+import com.coachbooking.repo.SepaySessionRepository;
 import com.coachbooking.repo.TicketRepository;
 import com.coachbooking.repo.TripRepository;
 import java.math.BigDecimal;
@@ -48,6 +50,8 @@ public class InvoiceService {
   private final RouteRepository routeRepository;
   private final CurrentUserService currentUserService;
   private final SeatStatusService seatStatusService;
+  private final SepayService sepayService;
+  private final SepaySessionRepository sepaySessions;
 
   public InvoiceService(
       InvoiceRepository invoiceRepository,
@@ -58,7 +62,9 @@ public class InvoiceService {
       TripRepository tripRepository,
       RouteRepository routeRepository,
       CurrentUserService currentUserService,
-      SeatStatusService seatStatusService) {
+      SeatStatusService seatStatusService,
+      SepayService sepayService,
+      SepaySessionRepository sepaySessions) {
     this.invoiceRepository = invoiceRepository;
     this.ticketRepository = ticketRepository;
     this.paymentRepository = paymentRepository;
@@ -68,6 +74,8 @@ public class InvoiceService {
     this.routeRepository = routeRepository;
     this.currentUserService = currentUserService;
     this.seatStatusService = seatStatusService;
+    this.sepayService = sepayService;
+    this.sepaySessions = sepaySessions;
   }
 
   public List<InvoiceRow> list(LocalDate fromDate, LocalDate toDate, Boolean isPaid) {
@@ -138,25 +146,33 @@ public class InvoiceService {
     Payment payment = paymentRepository.findByInvoiceId(invoice.getInvoiceId()).orElse(null);
 
     return new InvoiceDetail(
-        invoice.getInvoiceId(),
-        customer == null ? null : customer.getFullName(),
-        customer == null ? null : customer.getPhone(),
-        employee == null ? null : employee.getFullName(),
-        invoice.getCreatedAt(),
-        invoice.getTotalAmount(),
-        invoice.getIsPaid(),
-        ticketRows,
-        payment == null
-            ? null
-            : new PaymentRow(
-                payment.getPaymentId(),
-                payment.getAmount(),
-                payment.getPaymentDate(),
-                payment.getPaymentMethod()));
+            invoice.getInvoiceId(),
+            customer == null ? null : customer.getFullName(),
+            customer == null ? null : customer.getPhone(),
+            employee == null ? null : employee.getFullName(),
+            invoice.getCreatedAt(),
+            invoice.getTotalAmount(),
+            invoice.getIsPaid(),
+            ticketRows,
+            payment == null
+                ? null
+                : new PaymentRow(
+                    payment.getPaymentId(),
+                    payment.getAmount(),
+                    payment.getPaymentDate(),
+                    payment.getPaymentMethod()))
+        .withPayment(paymentStatus(invoice.getInvoiceId()));
   }
 
   @Transactional
   public Map<String, String> pay(Integer invoiceId, String paymentMethod, Account account) {
+    if (currentUserService.isCustomer(account)) {
+      throw ApiException.forbidden(
+          "Vui lòng thanh toán qua SePay, không thể tự xác nhận thanh toán.");
+    }
+    if (sepaySessions.findSessionIdByInvoiceId(invoiceId).isPresent()) {
+      throw ApiException.conflict("Hóa đơn SePay chỉ được xác nhận qua IPN.");
+    }
     if (Validators.isBlank(paymentMethod)
         || !VALID_PAYMENT_METHODS.contains(paymentMethod.trim())) {
       throw ApiException.badRequest("Phương thức thanh toán không hợp lệ.");
@@ -187,6 +203,9 @@ public class InvoiceService {
   public Map<String, String> cancel(Integer invoiceId, Account account) {
     Invoice invoice = findInvoice(invoiceId);
     requireOwnership(account, invoice);
+    if (sepayService.cancelInvoice(invoiceId)) {
+      return Map.of("message", "Đã xử lý hủy phiên thanh toán và nhả ghế.");
+    }
     if (Boolean.TRUE.equals(invoice.getIsPaid())) {
       throw ApiException.conflict("Không thể hủy hóa đơn đã thanh toán.");
     }
@@ -209,6 +228,10 @@ public class InvoiceService {
             .orElseThrow(() -> ApiException.notFound("Vé không tồn tại."));
     Invoice invoice = findInvoice(ticket.getInvoiceId());
     requireOwnership(account, invoice);
+    if (sepaySessions.findSessionIdByInvoiceId(invoice.getInvoiceId()).isPresent()) {
+      throw ApiException.conflict(
+          "Hóa đơn SePay chỉ cho phép hủy toàn bộ, không được hủy từng vé.");
+    }
     if (Boolean.TRUE.equals(invoice.getIsPaid())) {
       throw ApiException.conflict("Không thể hủy vé của hóa đơn đã thanh toán.");
     }
@@ -278,21 +301,26 @@ public class InvoiceService {
         .map(
             invoice ->
                 new InvoiceRow(
-                    invoice.getInvoiceId(),
-                    invoice.getCustomerId() == null
-                        ? null
-                        : customerNames.get(invoice.getCustomerId()),
-                    invoice.getEmployeeId() == null
-                        ? null
-                        : employeeNames.get(invoice.getEmployeeId()),
-                    invoice.getCreatedAt(),
-                    invoice.getTotalAmount(),
-                    invoice.getIsPaid(),
-                    ticketCounts.getOrDefault(invoice.getInvoiceId(), 0L),
-                    payments.containsKey(invoice.getInvoiceId())
-                        ? payments.get(invoice.getInvoiceId()).getPaymentMethod()
-                        : null))
+                        invoice.getInvoiceId(),
+                        invoice.getCustomerId() == null
+                            ? null
+                            : customerNames.get(invoice.getCustomerId()),
+                        invoice.getEmployeeId() == null
+                            ? null
+                            : employeeNames.get(invoice.getEmployeeId()),
+                        invoice.getCreatedAt(),
+                        invoice.getTotalAmount(),
+                        invoice.getIsPaid(),
+                        ticketCounts.getOrDefault(invoice.getInvoiceId(), 0L),
+                        payments.containsKey(invoice.getInvoiceId())
+                            ? payments.get(invoice.getInvoiceId()).getPaymentMethod()
+                            : null)
+                    .withPayment(paymentStatus(invoice.getInvoiceId())))
         .toList();
+  }
+
+  private SepayStatus paymentStatus(Integer invoiceId) {
+    return sepaySessions.findByInvoiceId(invoiceId).map(SepayStatus::from).orElse(null);
   }
 
   private <T> Map<Integer, String> loadNames(

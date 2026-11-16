@@ -4,6 +4,7 @@ import { api } from '../../api/client';
 import type { InvoiceDetail } from '../../api/types';
 import { BookingStepper } from '../../components/customer/BookingStepper';
 import { BrandLogo } from '../../components/common/BrandLogo';
+import { LoadingState } from '../../components/common/LoadingState';
 import { useToast } from '../../components/common/Toast';
 import { formatCurrency, formatDateTime } from '../../utils/format';
 import './ETicketPage.css';
@@ -77,7 +78,7 @@ export function ETicketPage() {
   const customerPhone = invoice?.customerPhone ?? invoice?.phone ?? state?.passengerPhone ?? '—';
   const totalAmount =
     invoice?.totalAmount ?? invoice?.tongTien ?? state?.totalPrice ?? 0;
-  const isPaid = invoice?.isPaid ?? invoice?.trangThai ?? (state?.paymentMethod !== 'Thanh toán sau');
+  const isPaid = Boolean(invoice?.isPaid ?? invoice?.trangThai ?? false);
   const tickets = invoice?.tickets ?? [];
 
   const firstTicket = tickets.length > 0 ? tickets[0] : null;
@@ -114,10 +115,19 @@ export function ETicketPage() {
     qrValue,
   )}`;
 
-  if (loading) return <div className="empty-state" role="status">Đang tải vé điện tử…</div>;
+  if (loading) return <div className="eticket-loading"><LoadingState message="Đang mở vé điện tử…" size="lg" /></div>;
   if (!invoice) return <div className="empty-state" role="alert">
     <p>{errorMsg || 'Không thể tải vé điện tử.'}</p><Link to="/tra-cuu-ve">Tra cứu vé</Link>
   </div>;
+
+  if (!isPaid || (invoice.sepay && invoice.sepay.paymentStatus !== 'PAID')) {
+    return <main className="page"><section className="card">
+      <h1>Hóa đơn #{idNum} chưa có vé điện tử hợp lệ</h1>
+      <p>Vé điện tử chỉ hiển thị sau khi thanh toán được xác nhận.</p>
+      {invoice.sepay && <Link className="btn btn-primary" to={`/thanh-toan/sepay/${invoice.sepay.paymentSessionId}`}>Xem trạng thái thanh toán</Link>}
+      <Link to="/ve-cua-toi">Vé của tôi</Link>
+    </section></main>;
+  }
 
   return (
     <div className="eticket-page">

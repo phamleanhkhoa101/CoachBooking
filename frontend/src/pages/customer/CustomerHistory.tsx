@@ -1,16 +1,16 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { canPaySepay, sepayLabel } from '../../api/sepay';
 import { api, getErrorMessage } from '../../api/client';
 import type { HoaDonKhachHang, InvoiceDetail, TicketItem } from '../../api/types';
 import { PaidBadge } from '../../components/common/Badge';
-import { FormField } from '../../components/common/FormField';
 import { Modal } from '../../components/common/Modal';
 import { useToast } from '../../components/common/Toast';
 import { formatDateTime, formatVnd } from '../../utils/format';
 
-const PAYMENT_METHODS = ['Tiền mặt', 'Chuyển khoản', 'Thẻ ATM'];
 
 export function CustomerHistory() {
+  const navigate = useNavigate();
   const { showToast } = useToast();
   const [rows, setRows] = useState<HoaDonKhachHang[]>([]);
   const [loading, setLoading] = useState(true);
@@ -19,7 +19,7 @@ export function CustomerHistory() {
   const [detailLoading, setDetailLoading] = useState(false);
 
   const [payTarget, setPayTarget] = useState<HoaDonKhachHang | null>(null);
-  const [payMethod, setPayMethod] = useState('Tiền mặt');
+  const [cancelInvoiceTarget, setCancelInvoiceTarget] = useState<number | null>(null);
   const [cancelTarget, setCancelTarget] = useState<{ invoiceId: number; ticket: TicketItem } | null>(
     null,
   );
@@ -70,17 +70,29 @@ export function CustomerHistory() {
 
   const handlePay = async () => {
     if (!payTarget) return;
-    const id = payTarget.invoiceId ?? payTarget.maHd;
     setBusy(true);
     try {
-      await api.post(`/invoices/${id}/pay`, { paymentMethod: payMethod });
-      showToast(`Đã thanh toán hóa đơn #${id}.`);
-      setPayTarget(null);
-      setDetails((prev) => {
+      if (!payTarget.sepay) throw new Error('Vui lòng liên hệ quầy vé để thanh toán hóa đơn cũ.');
+      navigate(`/thanh-toan/sepay/${payTarget.sepay.paymentSessionId}`, { state: { startCheckout: true } });
+    } catch (error) {
+      showToast(getErrorMessage(error), 'error');
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleCancelInvoice = async () => {
+    if (cancelInvoiceTarget === null) return;
+    setBusy(true);
+    try {
+      await api.post(`/invoices/${cancelInvoiceTarget}/cancel`);
+      setDetails(prev => {
         const next = { ...prev };
-        delete next[id];
+        delete next[cancelInvoiceTarget];
         return next;
       });
+      setCancelInvoiceTarget(null);
+      showToast('Đã hủy toàn bộ đơn vé.');
       await load();
     } catch (error) {
       showToast(getErrorMessage(error), 'error');
@@ -153,7 +165,7 @@ export function CustomerHistory() {
                   <div className="history-head-main">
                     <span className="history-id">Hóa đơn #{invoiceId}</span>
                     <span className="text-muted">· {formatDateTime(createdAt)}</span>
-                    <PaidBadge paid={isPaid} />
+                    {row.sepay ? <span>{sepayLabel(row.sepay)}</span> : <PaidBadge paid={isPaid} />}
                   </div>
                   <div className="history-head-meta">
                     <strong className="text-primary">{formatVnd(totalAmount)}</strong>
@@ -161,6 +173,8 @@ export function CustomerHistory() {
                     <span className="text-muted">· {paymentMethod ?? 'Chưa thanh toán'}</span>
                   </div>
                   <div className="history-head-actions">
+                    {row.sepay && <Link to={`/thanh-toan/sepay/${row.sepay.paymentSessionId}`}>Kiểm tra thanh toán</Link>}
+                    {!isPaid && canPaySepay(row.sepay) && <button type="button" className="btn btn-danger-ghost btn-sm" disabled={busy} onClick={() => setCancelInvoiceTarget(invoiceId)}>Hủy đơn vé</button>}
                     <button
                       type="button"
                       className="btn btn-secondary btn-sm"
@@ -168,12 +182,11 @@ export function CustomerHistory() {
                     >
                       {isOpen ? 'Thu gọn' : 'Chi tiết vé'}
                     </button>
-                    {!isPaid ? (
+                    {!isPaid && canPaySepay(row.sepay) ? (
                       <button
                         type="button"
                         className="btn btn-primary btn-sm"
                         onClick={() => {
-                          setPayMethod('Tiền mặt');
                           setPayTarget(row);
                         }}
                       >
@@ -220,7 +233,7 @@ export function CustomerHistory() {
                                   <strong>{formatVnd(price)}</strong>
                                 </div>
                               </div>
-                              <div className="ticket-card-actions">
+                              {!isPaid && !row.sepay && <div className="ticket-card-actions">
                                 <button
                                   type="button"
                                   className="btn btn-danger-ghost btn-sm"
@@ -233,7 +246,7 @@ export function CustomerHistory() {
                                 >
                                   Hủy vé
                                 </button>
-                              </div>
+                              </div>}
                             </div>
                           );
                         })}
@@ -269,18 +282,24 @@ export function CustomerHistory() {
               onClick={() => void handlePay()}
               disabled={busy}
             >
-              {busy ? 'Đang xử lý…' : 'Xác nhận thanh toán'}
+              {busy ? 'Đang xử lý…' : 'Mở SePay'}
             </button>
           </>
         }
       >
-        <FormField
-          label="Phương thức thanh toán"
-          type="select"
-          value={payMethod}
-          onChange={setPayMethod}
-          options={PAYMENT_METHODS.map((value) => ({ value, label: value }))}
-        />
+        <p>Thanh toán chuyển khoản qua trang SePay sandbox. Chỉ xác nhận thành công sau khi hệ thống nhận IPN.</p>
+      </Modal>
+
+      <Modal
+        open={cancelInvoiceTarget !== null}
+        title="Hủy toàn bộ đơn vé"
+        onClose={() => { if (!busy) setCancelInvoiceTarget(null); }}
+        footer={<>
+          <button type="button" className="btn btn-secondary" disabled={busy} onClick={() => setCancelInvoiceTarget(null)}>Giữ lại vé</button>
+          <button type="button" className="btn btn-danger" disabled={busy} onClick={() => void handleCancelInvoice()}>{busy ? 'Đang hủy…' : 'Xác nhận hủy đơn'}</button>
+        </>}
+      >
+        <p>Bạn muốn hủy toàn bộ đơn vé #{cancelInvoiceTarget}? Các ghế trong đơn sẽ được nhả.</p>
       </Modal>
 
       <Modal
@@ -320,7 +339,7 @@ export function CustomerHistory() {
           )}
           )?
         </p>
-        <p className="text-muted">Chỉ hủy được khi vé đã thanh toán và trước giờ xe khởi hành.</p>
+        <p className="text-muted">Chỉ hủy được khi vé chưa thanh toán và trước giờ xe khởi hành.</p>
       </Modal>
     </div>
   );

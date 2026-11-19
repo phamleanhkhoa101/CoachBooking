@@ -3,7 +3,7 @@ import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { apiRequest, getErrorMessage } from '../../api/client';
 import { homePathFor, useAuth } from '../../auth/AuthContext';
 import { isAdminPortal } from '../../auth/portal';
-import { BrandLogo } from '../../components/common/BrandLogo';
+import { AuthShell } from '../../components/layout/AuthShell';
 
 const PASSWORD_HINT = 'Tối thiểu 8 ký tự, gồm chữ hoa, chữ thường, chữ số và ký tự đặc biệt.';
 
@@ -15,6 +15,20 @@ function isStrongPassword(value: string): boolean {
     /[0-9]/.test(value) &&
     /[^A-Za-z0-9]/.test(value)
   );
+}
+
+function passwordStrength(value: string): { score: number; label: string } {
+  if (!value) return { score: 0, label: 'Chưa nhập' };
+  let score = 0;
+  if (value.length >= 8) score += 1;
+  if (/[A-Z]/.test(value) && /[a-z]/.test(value)) score += 1;
+  if (/[0-9]/.test(value)) score += 1;
+  if (/[^A-Za-z0-9]/.test(value)) score += 1;
+
+  if (score <= 1) return { score: 1, label: 'Yếu' };
+  if (score === 2) return { score: 2, label: 'Trung bình' };
+  if (score === 3) return { score: 3, label: 'Mạnh' };
+  return { score: 4, label: 'Rất mạnh' };
 }
 
 export function Register() {
@@ -95,22 +109,20 @@ export function Register() {
     window.location.href = '/api/oauth2/authorization/google';
   };
 
+  const strength = passwordStrength(password);
+
   return (
-    <div className="auth-page auth-page-single">
-      <div className="auth-card auth-card-wide">
-        {/* Brand Header Centered */}
-        <div className="auth-brand-center">
-          <BrandLogo size={56} className="auth-logo-badge" />
-          <h2 className="auth-brand-title">CoachBooking</h2>
-        </div>
-
-        <div className="auth-card-divider" />
-
-        <div className="auth-heading-center">
-          <h1>Đăng ký tài khoản</h1>
-        </div>
-
-        {error ? <div className="alert alert-error">{error}</div> : null}
+    <AuthShell
+      wide
+      title="Đăng ký tài khoản"
+      subtitle="Tạo tài khoản để đặt vé nhanh và theo dõi hành trình"
+      footer={
+        <>
+          Đã có tài khoản? <Link to="/login">Đăng nhập ngay</Link>
+        </>
+      }
+    >
+      {error ? <div className="alert alert-error">{error}</div> : null}
 
         <form
           className="auth-form"
@@ -143,7 +155,7 @@ export function Register() {
               />
             </div>
             {username.length > 0 && username.trim().length < 6 && (
-              <span style={{ fontSize: '0.8rem', color: '#dc2626', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span className="auth-field-error">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="10"></circle>
                   <line x1="12" y1="8" x2="12" y2="12"></line>
@@ -194,7 +206,7 @@ export function Register() {
               <input
                 id="reg-password"
                 type={showPassword ? 'text' : 'password'}
-                className="auth-input"
+                className="auth-input has-toggle"
                 placeholder="Nhập mật khẩu"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -220,9 +232,26 @@ export function Register() {
                 )}
               </button>
             </div>
-            {/* Dòng hướng dẫn/báo lỗi chỉ hiện khi người dùng đang nhập và chưa đạt yêu cầu */}
+            {password.length > 0 && (
+              <div className="password-strength">
+                <div className="password-strength-header">
+                  <span>Độ mạnh mật khẩu:</span>
+                  <strong>{strength.label}</strong>
+                </div>
+                <div className="password-strength-bars">
+                  {[1, 2, 3, 4].map((bar) => (
+                    <div
+                      key={bar}
+                      className={`password-strength-bar ${
+                        strength.score >= bar ? `level-${strength.score}` : ''
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
             {password.length > 0 && !isStrongPassword(password) && (
-              <span style={{ fontSize: '0.8rem', color: '#dc2626', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span className="auth-field-error">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="10"></circle>
                   <line x1="12" y1="8" x2="12" y2="12"></line>
@@ -248,7 +277,7 @@ export function Register() {
               <input
                 id="reg-confirm-password"
                 type={showConfirmPassword ? 'text' : 'password'}
-                className="auth-input"
+                className="auth-input has-toggle"
                 placeholder="Nhập lại mật khẩu vừa tạo"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
@@ -275,7 +304,7 @@ export function Register() {
               </button>
             </div>
             {confirmPassword.length > 0 && password !== confirmPassword && (
-              <span style={{ fontSize: '0.8rem', color: '#dc2626', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+              <span className="auth-field-error">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="10"></circle>
                   <line x1="12" y1="8" x2="12" y2="12"></line>
@@ -338,12 +367,6 @@ export function Register() {
           </svg>
           <span>Google</span>
         </button>
-
-        <div className="auth-card-footer">
-          Đã có tài khoản?{' '}
-          <Link to="/login">Đăng nhập ngay</Link>
-        </div>
-      </div>
-    </div>
+    </AuthShell>
   );
 }

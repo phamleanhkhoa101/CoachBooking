@@ -1,14 +1,16 @@
 .ticket-lookup-page {
   display: flex;
   flex-direction: column;
-  background-color: #f8fafc;
+  background-color: var(--bg);
   min-height: calc(100vh - 200px);
 }
 
 .lookup-hero {
-  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
-  color: #ffffff;
-  padding: 3rem 1.5rem;
+  background:
+    radial-gradient(circle at 80% 20%, rgba(242, 163, 75, 0.16) 0%, transparent 45%),
+    linear-gradient(135deg, var(--nw-midnight) 0%, var(--nw-deep-navy) 100%);
+  color: var(--nw-ivory);
+  padding: 3.25rem 1.5rem 4rem;
   text-align: center;
 }
 
@@ -104,22 +106,23 @@
 .btn-lookup-submit {
   height: 44px;
   padding: 0 1.5rem;
-  background: #f97316;
-  color: #ffffff;
+  background: var(--nw-amber);
+  color: var(--nw-midnight);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   font-size: 0.9375rem;
   font-weight: 700;
   cursor: pointer;
-  transition: background 0.15s ease;
+  transition: background-color var(--transition-fast);
 }
 
 .btn-lookup-submit:hover:not(:disabled) {
-  background: #ea580c;
+  background: var(--nw-amber-hover);
 }
 
 .btn-lookup-submit:disabled {
-  background: #cbd5e1;
+  background: var(--border-strong);
+  color: var(--muted);
   cursor: not-allowed;
 }
 
@@ -153,12 +156,13 @@
 
 .invoice-tag {
   display: inline-block;
-  padding: 0.2rem 0.5rem;
-  background: #eff6ff;
-  color: #1e40af;
-  border-radius: 4px;
+  padding: 0.22rem 0.55rem;
+  background: var(--primary-soft);
+  color: var(--nw-midnight);
+  border-radius: var(--radius-xs);
   font-size: 0.75rem;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
   margin-bottom: 0.25rem;
 }
 
@@ -204,7 +208,8 @@
 .total-val {
   font-size: 1.25rem;
   font-weight: 800;
-  color: #1e40af;
+  font-variant-numeric: tabular-nums;
+  color: var(--nw-midnight);
 }
 
 .result-passenger-info {
@@ -294,13 +299,15 @@
 
 .ticket-price {
   font-size: 1rem;
-  color: #1e40af;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--nw-amber-strong);
 }
 
 .result-actions-footer {
   margin-top: 1.5rem;
   padding-top: 1.25rem;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid var(--border);
   text-align: center;
 }
 
@@ -309,16 +316,17 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  background: #1e40af;
-  color: #ffffff;
-  border-radius: 8px;
+  background: var(--nw-midnight);
+  color: var(--nw-ivory);
+  border-radius: var(--radius-sm);
   font-weight: 700;
   text-decoration: none;
-  transition: background 0.15s ease;
+  transition: background-color var(--transition-fast);
 }
 
 .btn-open-eticket:hover {
-  background: #1d4ed8;
+  background: var(--nw-deep-navy);
+  text-decoration: none;
 }
 
 @media (max-width: 768px) {

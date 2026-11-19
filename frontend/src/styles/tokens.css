@@ -1,0 +1,119 @@
+/* =====================================================================
+   CoachBooking — Global Design System Tokens
+   Art Direction: THE NIGHT WINDOW — CINEMATIC TWILIGHT
+   ===================================================================== */
+
+:root {
+  /* ==================== 1. CORE BRAND PALETTE ==================== */
+  --nw-midnight: #0b1521;
+  --nw-midnight-90: rgba(11, 21, 33, 0.9);
+  --nw-midnight-75: rgba(11, 21, 33, 0.75);
+  --nw-deep-navy: #172638;
+  --nw-deep-navy-85: rgba(23, 38, 56, 0.85);
+  --nw-slate-blue: #30445b;
+  --nw-slate-muted: #556a82;
+  --nw-amber: #f2a34b;
+  --nw-amber-hover: #e08e32;
+  --nw-amber-strong: #c87419;
+  --nw-amber-soft: rgba(242, 163, 75, 0.14);
+  --nw-amber-border: rgba(242, 163, 75, 0.35);
+  --nw-ivory: #f5f2ee;
+  --nw-ivory-muted: rgba(245, 242, 238, 0.74);
+  --nw-ivory-subtle: rgba(245, 242, 238, 0.52);
+
+  /* ==================== 2. SEMANTIC LIGHT SURFACE (Booking / Dashboard / Admin) ==================== */
+  --primary: #172638;
+  --primary-strong: #0b1521;
+  --primary-soft: #eaeef4;
+  --primary-surface: #d7e0eb;
+
+  --accent: #f2a34b;
+  --accent-strong: #c87419;
+  --accent-soft: #fef6eb;
+
+  --bg: #f5f2ee;
+  --surface: #ffffff;
+  --surface-alt: #efece6;
+  --border: #dfd9ce;
+  --border-strong: #c7bfb1;
+
+  --text: #0b1521;
+  --text-secondary: #30445b;
+  --muted: #5e6d7e;
+  --text-inverse: #f5f2ee;
+
+  /* Semantic Status */
+  --success: #047857;
+  --success-bg: #ecfdf5;
+  --success-border: #a7f3d0;
+
+  --warning: #b45309;
+  --warning-bg: #fffbeb;
+  --warning-border: #fde68a;
+
+  --danger: #b91c1c;
+  --danger-bg: #fef2f2;
+  --danger-border: #fecaca;
+
+  --info: #0369a1;
+  --info-bg: #f0f9ff;
+  --info-border: #bae6fd;
+
+  --indigo: #30445b;
+
+  /* ==================== 3. TYPOGRAPHY ==================== */
+  --font-editorial: 'Playfair Display', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Be Vietnam Pro', 'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+  /* ==================== 4. SPACING SCALE (8px Grid) ==================== */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ==================== 5. RADII ==================== */
+  --radius-xs: 6px;
+  --radius-sm: 10px;
+  --radius: 14px;
+  --radius-lg: 20px;
+  --radius-full: 9999px;
+
+  /* ==================== 6. ELEVATION & SHADOWS ==================== */
+  --shadow-xs: 0 1px 2px rgba(11, 21, 33, 0.05);
+  --shadow-sm: 0 2px 6px rgba(11, 21, 33, 0.06), 0 1px 2px rgba(11, 21, 33, 0.04);
+  --shadow-md: 0 8px 20px -4px rgba(11, 21, 33, 0.09), 0 2px 6px -2px rgba(11, 21, 33, 0.04);
+  --shadow-lg: 0 18px 36px -8px rgba(11, 21, 33, 0.14), 0 6px 14px -4px rgba(11, 21, 33, 0.06);
+  --shadow-hover: 0 14px 28px -6px rgba(11, 21, 33, 0.14), 0 4px 10px -2px rgba(11, 21, 33, 0.05);
+  --shadow-glass: 0 24px 56px rgba(4, 9, 16, 0.48), inset 0 1px 0 rgba(245, 242, 238, 0.12);
+
+  /* ==================== 7. TRANSITIONS ==================== */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Tabular numbers utility for prices, dates, times, seat counts, KPIs */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.font-editorial {
+  font-family: var(--font-editorial);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+

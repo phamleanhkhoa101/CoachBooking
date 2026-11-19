@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App';
+import './styles/tokens.css';
 import './styles.css';
 
 // Dọn sạch mọi Service Worker và CacheStorage tồn dư từ các dự án khác trên localhost:3000

@@ -3,6 +3,7 @@ import { api, getErrorMessage } from '../../../api/client';
 import type { GenerationResult, TripSchedule } from '../../../api/operations';
 import type { Driver, Route, Vehicle } from '../../../api/types';
 import { DataTable } from '../../../components/table/DataTable';
+import { StatusBadge } from '../../../components/common/Badge';
 import { FormField } from '../../../components/common/FormField';
 import { Modal } from '../../../components/common/Modal';
 import { useToast } from '../../../components/common/Toast';
@@ -49,18 +50,21 @@ export function TripSchedules() {
     } catch (e) { setError(getErrorMessage(e)); } finally { setBusy(false); }
   }
   return <div className="page">
-    <div className="page-header"><div><h1>Lịch chạy định kỳ</h1><p className="page-subtitle">Giờ Việt Nam. Tự bổ sung 14 ngày khi khởi động và lúc 00:05 mỗi ngày. Sửa lịch không đổi chuyến đã sinh.</p></div>
-      <button className="btn btn-primary" onClick={() => { setId(null); setForm(emptyForm()); setError(''); setOpen(true); }}>+ Thêm lịch</button>
+    <div className="page-header">
+      <div><h1>Lịch chạy định kỳ</h1><p className="page-subtitle">Giờ Việt Nam. Tự bổ sung 14 ngày khi khởi động và lúc 00:05 mỗi ngày. Sửa lịch không đổi chuyến đã sinh.</p></div>
+      <div className="page-actions">
+        <button className="btn btn-secondary" disabled={loading} onClick={() => void load()}>Làm mới</button>
+        <button className="btn btn-primary" onClick={() => { setId(null); setForm(emptyForm()); setError(''); setOpen(true); }}>+ Thêm lịch</button>
+      </div>
     </div>
     {error && <p role="alert" className="form-error-banner">{error}</p>}
-    <button className="btn btn-secondary" disabled={loading} onClick={() => void load()}>Làm mới</button>
     <DataTable rows={rows} rowKey={s => String(s.scheduleId)} loading={loading} emptyText="Chưa có lịch chạy. Chọn xe, tuyến và tài xế để tạo lịch."
       columns={[
         { key: 'name', label: 'Lịch', render: s => s.name },
-        { key: 'time', label: 'Giờ / Thứ', render: s => `${s.departureTime} · ${s.weekdays.split(',').map(d => Number(d) === 7 ? 'CN' : 'T' + (Number(d) + 1)).join(', ')}` },
-        { key: 'range', label: 'Hiệu lực', render: s => `${s.validFrom} → ${s.validTo}` },
-        { key: 'active', label: 'Trạng thái', render: s => s.isActive ? 'Hoạt động' : 'Tắt' },
-        { key: 'last', label: 'Lần xử lý gần nhất', render: s => s.lastRunAt ? formatDateTime(s.lastRunAt) : 'Chưa chạy' },
+        { key: 'time', label: 'Giờ / Thứ', render: s => <span className="tabular-nums">{`${s.departureTime} · ${s.weekdays.split(',').map(d => Number(d) === 7 ? 'CN' : 'T' + (Number(d) + 1)).join(', ')}`}</span> },
+        { key: 'range', label: 'Hiệu lực', render: s => <span className="tabular-nums">{`${s.validFrom} → ${s.validTo}`}</span> },
+        { key: 'active', label: 'Trạng thái', render: s => <StatusBadge active={s.isActive} trueLabel="Hoạt động" falseLabel="Tắt" /> },
+        { key: 'last', label: 'Lần xử lý gần nhất', render: s => <span className="tabular-nums">{s.lastRunAt ? formatDateTime(s.lastRunAt) : 'Chưa chạy'}</span> },
       ]} actions={s => <div className="table-actions">
         <button className="btn btn-secondary btn-sm" onClick={() => {
           setId(s.scheduleId); setError(''); setForm({ ...s, vehicleId: String(s.vehicleId), routeId: String(s.routeId), driverId: String(s.driverId), weekdays: s.weekdays.split(',').map(Number), excludedDates: s.excludedDates }); setOpen(true);

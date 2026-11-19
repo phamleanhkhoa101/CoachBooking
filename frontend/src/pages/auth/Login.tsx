@@ -3,10 +3,10 @@ import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import { homePathFor, useAuth } from '../../auth/AuthContext';
 import { isAdminPortal } from '../../auth/portal';
-import { BrandLogo } from '../../components/common/BrandLogo';
+import { AuthShell } from '../../components/layout/AuthShell';
 
 export function Login() {
-  const { user, login } = useAuth();
+  const { user, login, logout } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const admin = isAdminPortal();
@@ -22,11 +22,30 @@ export function Login() {
   const [notice, setNotice] = useState(initialNotice);
   const [error, setError] = useState(initialError);
   const [busy, setBusy] = useState(false);
+  const [logoutBusy, setLogoutBusy] = useState(false);
 
-  if (user) {
+  const isStaffUser = user?.role === 'Admin' || user?.role === 'NhanVien';
+  const customerOnAdminPortal = Boolean(admin && user && !isStaffUser);
+
+  if (user && !customerOnAdminPortal) {
     const role = user.role;
     return <Navigate to={homePathFor(role)} replace />;
   }
+
+  const handleSwitchAccount = async () => {
+    if (logoutBusy) return;
+    setLogoutBusy(true);
+    setError('');
+    setNotice('');
+    try {
+      await logout();
+      setNotice('Đã đăng xuất tài khoản Khách hàng. Vui lòng đăng nhập bằng tài khoản Quản trị hoặc Nhân viên.');
+    } catch (err) {
+      setError('Không thể đăng xuất phiên hiện tại. ' + getErrorMessage(err));
+    } finally {
+      setLogoutBusy(false);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!username.trim() || !password) {
@@ -54,25 +73,43 @@ export function Login() {
   };
 
   return (
-    <div className="auth-page auth-page-single">
-      <div className="auth-card">
-        {/* Logo Bus centered & Brand Title */}
-        <div className="auth-brand-center">
-          <BrandLogo size={56} className="auth-logo-badge" />
-          <h2 className="auth-brand-title">
-            {admin ? 'CoachBooking Quản trị' : 'CoachBooking'}
-          </h2>
-        </div>
+    <AuthShell
+      title={admin ? 'Đăng nhập Quản trị' : 'Đăng nhập'}
+      subtitle={
+        admin
+          ? 'Dành cho quản trị viên và nhân viên bán vé'
+          : 'Tiếp tục hành trình cùng CoachBooking'
+      }
+      showBrandTitle={!admin}
+      showBackHome={!admin}
+      footer={
+        !admin ? (
+          <>
+            Chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
+          </>
+        ) : undefined
+      }
+    >
+      {error ? <div className="alert alert-error">{error}</div> : null}
+      {notice ? <div className="alert alert-success">{notice}</div> : null}
 
-        <div className="auth-card-divider" />
-
-        <div className="auth-heading-center">
-          <h1>{admin ? 'Đăng nhập Quản trị' : 'Đăng nhập'}</h1>
-        </div>
-
-        {error ? <div className="alert alert-error">{error}</div> : null}
-        {notice ? <div className="alert alert-success">{notice}</div> : null}
-
+        {customerOnAdminPortal ? (
+          <div className="auth-form">
+            <div className="alert alert-error" role="alert">
+              Trình duyệt đang giữ phiên Khách hàng (<strong>{user?.username}</strong>). Cổng Quản trị chỉ dành cho Quản trị viên và Nhân viên.
+            </div>
+            <button
+              type="button"
+              className="btn btn-primary btn-block"
+              disabled={logoutBusy}
+              onClick={() => {
+                void handleSwitchAccount();
+              }}
+            >
+              {logoutBusy ? 'Đang đăng xuất…' : 'Đăng xuất để đăng nhập Quản trị'}
+            </button>
+          </div>
+        ) : (
         <form
           className="auth-form"
           onSubmit={(event) => {
@@ -174,6 +211,7 @@ export function Login() {
             )}
           </button>
         </form>
+        )}
 
         {!admin && (
           <>
@@ -205,12 +243,6 @@ export function Login() {
             </button>
           </>
         )}
-
-        <div className="auth-card-footer">
-          Chưa có tài khoản?{' '}
-          <Link to="/register">Đăng ký ngay</Link>
-        </div>
-      </div>
-    </div>
+    </AuthShell>
   );
 }

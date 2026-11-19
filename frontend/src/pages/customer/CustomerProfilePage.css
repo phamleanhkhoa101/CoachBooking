@@ -5,14 +5,14 @@
 .customer-profile-page {
   display: flex;
   flex-direction: column;
-  background-color: #f8fafc;
+  background-color: var(--bg);
   min-height: calc(100vh - 200px);
 }
 
 /* 1. HERO HEADER */
 .profile-page-header {
-  background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
   padding: 2.25rem 1.5rem;
 }
 

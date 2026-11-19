@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import { homePathFor, useAuth } from '../../auth/AuthContext';
+import { AuthShell } from '../../components/layout/AuthShell';
 
 export function OAuth2Callback() {
   const { restoreSession } = useAuth();
@@ -32,8 +33,15 @@ export function OAuth2Callback() {
   }, [restoreSession, navigate]);
 
   return (
-    <div className="page-loading">
-      <span className="spinner" /> Đang hoàn tất đăng nhập Google…
-    </div>
+    <AuthShell
+      title="Đang xác thực Google"
+      subtitle="Vui lòng chờ trong giây lát khi hệ thống hoàn tất phiên đăng nhập"
+      showBackHome={false}
+    >
+      <div className="auth-callback-state" aria-busy="true">
+        <span className="spinner" />
+        <span>Đang kết nối tài khoản của bạn…</span>
+      </div>
+    </AuthShell>
   );
 }

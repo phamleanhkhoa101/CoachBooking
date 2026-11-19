@@ -1,7 +1,8 @@
 import { ClipboardEvent, KeyboardEvent, useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { apiRequest, getErrorMessage } from '../../api/client';
-import { BrandLogo } from '../../components/common/BrandLogo';
+import { isAdminPortal } from '../../auth/portal';
+import { AuthShell } from '../../components/layout/AuthShell';
 
 type Step = 'email' | 'otp' | 'password';
 
@@ -237,15 +238,28 @@ export function ForgotPassword() {
 
   const strength = passwordStrength(newPassword);
   const stepIndex = step === 'email' ? 1 : step === 'otp' ? 2 : 3;
+  const admin = isAdminPortal();
 
   return (
-    <div className="auth-page auth-page-single">
-      <div className="auth-card auth-card-wide">
-        <div className="auth-brand-center">
-          <BrandLogo size={56} className="auth-logo-badge" />
-          <h2 className="auth-brand-title">CoachBooking</h2>
-        </div>
-
+    <AuthShell
+      wide
+      showBrandTitle={!admin}
+      showBackHome={!admin}
+      title={
+        step === 'email'
+          ? 'Quên mật khẩu'
+          : step === 'otp'
+            ? 'Xác thực mã OTP'
+            : 'Đặt lại mật khẩu mới'
+      }
+      subtitle={
+        step === 'email'
+          ? 'Nhập email đã đăng ký để nhận mã xác thực 6 chữ số'
+          : step === 'otp'
+            ? `Nhập mã 6 chữ số vừa gửi tới ${email.trim()}`
+            : 'Tạo mật khẩu mới để bảo vệ tài khoản của bạn'
+      }
+      topSlot={
         <div className="auth-steps" aria-label="Tiến trình đặt lại mật khẩu">
           <div className={`auth-step ${stepIndex === 1 ? 'is-active' : 'is-done'}`}>
             {stepIndex > 1 ? '✓ ' : ''}1. Nhập Email
@@ -257,19 +271,11 @@ export function ForgotPassword() {
             3. Mật khẩu mới
           </div>
         </div>
-
-        <div className="auth-heading-center">
-          <h1>
-            {step === 'email'
-              ? 'Quên mật khẩu'
-              : step === 'otp'
-                ? 'Xác thực mã OTP'
-                : 'Đặt lại mật khẩu mới'}
-          </h1>
-        </div>
-
-        {error ? <div className="alert alert-error">{error}</div> : null}
-        {info ? <div className="alert alert-success">{info}</div> : null}
+      }
+      footer={<Link to="/login">← Quay lại đăng nhập</Link>}
+    >
+      {error ? <div className="alert alert-error">{error}</div> : null}
+      {info ? <div className="alert alert-success">{info}</div> : null}
 
         {step === 'email' ? (
           <form
@@ -441,7 +447,7 @@ export function ForgotPassword() {
                 </button>
               </div>
               {newPassword.length > 0 && !isStrongPassword(newPassword) && (
-                <span style={{ fontSize: '0.8rem', color: '#dc2626', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span className="auth-field-error">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <circle cx="12" cy="12" r="10"></circle>
                     <line x1="12" y1="8" x2="12" y2="12"></line>
@@ -511,11 +517,6 @@ export function ForgotPassword() {
             </button>
           </form>
         ) : null}
-
-        <div className="auth-card-footer">
-          <Link to="/login">← Quay lại đăng nhập</Link>
-        </div>
-      </div>
-    </div>
+    </AuthShell>
   );
 }

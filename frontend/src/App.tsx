@@ -44,10 +44,12 @@ function HomeRoute() {
       </div>
     );
   }
-  // Nếu là cổng Admin (port 3001) thì chuyển hướng vào /admin hoặc /login
+  // Nếu là cổng Admin (port 3001) thì chỉ cho Admin/NhanVien vào /admin, còn lại chuyển sang /login
   if (isAdminPortal()) {
-    if (!nguoiDung) return <Navigate to="/login" replace />;
-    return <Navigate to="/admin" replace />;
+    if (nguoiDung && (nguoiDung.role === 'Admin' || nguoiDung.role === 'NhanVien')) {
+      return <Navigate to="/admin" replace />;
+    }
+    return <Navigate to="/login" replace />;
   }
   // Cổng Khách hàng (port 3000): hiển thị Trang chủ (Home)
   return <Home />;

@@ -1,82 +1,8 @@
 /* =====================================================================
-   CoachBooking — Design System & Giao diện quản trị (CSS thuần)
-   Hệ màu chủ đạo: Royal Sapphire & Highway Amber (Bến xe Miền Đông)
+   CoachBooking — Base & Application Styles (CSS thuần)
+   Art Direction: THE NIGHT WINDOW — CINEMATIC TWILIGHT
+   Tokens defined in ./styles/tokens.css
    ===================================================================== */
-
-:root {
-  /* ==================== 1. COLOR PALETTE ==================== */
-  /* Brand Primary: Royal Sapphire */
-  --primary: #1d4ed8;            /* Xanh hoàng gia năng động cho interactive UI */
-  --primary-strong: #0f2b5c;     /* Xanh đậm quý phái cho sidebar, active states */
-  --primary-soft: #eff6ff;       /* Nền nhạt cho hover, selected row, badge info */
-  --primary-surface: #dbeafe;    /* Border & highlight tint */
-
-  /* Brand Accent: Highway Amber */
-  --accent: #d97706;             /* Hổ phách hành trình cho giá vé, highlight, CTA phụ */
-  --accent-strong: #b45309;
-  --accent-soft: #fffbeb;
-
-  /* Neutrals: Canvas, Surface & Borders */
-  --bg: #f8fafc;                 /* Nền canvas tổng thể */
-  --surface: #ffffff;            /* Nền thẻ, modal, dropdown, table */
-  --surface-alt: #f1f5f9;        /* Nền header bảng, sub-card, input disabled */
-  --border: #e2e8f0;             /* Đường kẻ chuẩn */
-  --border-strong: #cbd5e1;      /* Đường kẻ nhấn, viền input */
-
-  /* Typography / Text Colors */
-  --text: #0f172a;               /* Màu chữ chính (Slate 900) */
-  --text-secondary: #475569;     /* Màu chữ thứ cấp (Slate 600) */
-  --muted: #64748b;              /* Màu chữ mờ / chú thích (Slate 500) */
-  --text-inverse: #ffffff;       /* Màu chữ trên nền tối */
-
-  /* Semantic Status */
-  --success: #059669;            /* Xanh lục bảo (đã thanh toán, vé hợp lệ, ghế trống) */
-  --success-bg: #ecfdf5;
-  --success-border: #a7f3d0;
-
-  --warning: #d97706;            /* Hổ phách (chờ thanh toán, giữ chỗ tạm thời) */
-  --warning-bg: #fffbeb;
-  --warning-border: #fde68a;
-
-  --danger: #dc2626;             /* Đỏ trầm (đã hủy, ghế đã bán, lỗi) */
-  --danger-bg: #fef2f2;
-  --danger-border: #fecaca;
-
-  --info: #0284c7;               /* Xanh biển thông tin */
-  --info-bg: #f0f9ff;
-  --info-border: #bae6fd;
-
-  --indigo: #4338ca;             /* Tương thích token indigo cũ */
-
-  /* ==================== 2. SPACING SCALE (8px Grid) ==================== */
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 20px;
-  --space-6: 24px;
-  --space-8: 32px;
-  --space-10: 40px;
-  --space-12: 48px;
-
-  /* ==================== 3. RADII ==================== */
-  --radius-xs: 4px;
-  --radius-sm: 8px;
-  --radius: 12px;
-  --radius-lg: 16px;
-  --radius-full: 9999px;
-
-  /* ==================== 4. ELEVATION / SHADOWS ==================== */
-  --shadow-xs: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
-  --shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.08), 0 1px 2px -1px rgba(15, 23, 42, 0.06);
-  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.04);
-  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.03);
-  --shadow-hover: 0 12px 24px -4px rgba(15, 23, 42, 0.12), 0 4px 8px -2px rgba(15, 23, 42, 0.04);
-
-  /* ==================== 5. TRANSITIONS ==================== */
-  --transition-fast: 0.15s ease;
-  --transition-normal: 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
 
 *,
 *::before,
@@ -94,7 +20,7 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
-  font-family: 'Plus Jakarta Sans', 'Be Vietnam Pro', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  font-family: var(--font-sans);
   font-size: 15px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
@@ -154,14 +80,15 @@ textarea {
   top: 0;
   z-index: 50;
   display: flex;
-  flex: 0 0 252px;
+  flex: 0 0 256px;
   flex-direction: column;
   gap: 14px;
-  width: 252px;
+  width: 256px;
   height: 100vh;
   padding: 18px 14px 12px;
-  color: #cbd5e1;
-  background: linear-gradient(180deg, #09172e 0%, #0c2340 100%);
+  color: var(--nw-ivory-muted);
+  background: linear-gradient(180deg, var(--nw-midnight) 0%, #0e1c2c 100%);
+  border-right: 1px solid rgba(245, 242, 238, 0.08);
 }
 
 .brand {
@@ -253,15 +180,19 @@ textarea {
 }
 
 .nav-link:hover {
-  background: rgba(148, 163, 184, 0.14);
-  color: #fff;
+  background: rgba(245, 242, 238, 0.08);
+  color: var(--nw-ivory);
   text-decoration: none;
 }
 
 .nav-link-active {
-  background: linear-gradient(90deg, rgba(29, 78, 216, 0.95), rgba(29, 78, 216, 0.65));
-  color: #fff;
-  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.28);
+  background: linear-gradient(90deg, rgba(242, 163, 75, 0.18), rgba(242, 163, 75, 0.06));
+  color: var(--nw-ivory);
+  box-shadow: inset 3px 0 0 var(--nw-amber);
+}
+
+.nav-link-active .nav-icon {
+  color: var(--nw-amber);
 }
 
 .nav-icon {
@@ -481,19 +412,19 @@ textarea {
 }
 
 .btn-primary {
-  background: var(--primary);
-  color: #fff;
-  box-shadow: 0 1px 3px rgba(29, 78, 216, 0.25);
+  background: var(--nw-midnight);
+  color: var(--nw-ivory);
+  box-shadow: 0 2px 6px rgba(11, 21, 33, 0.22);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: var(--primary-strong);
+  background: var(--nw-deep-navy);
 }
 
 .btn-secondary {
   background: var(--primary-soft);
   border-color: var(--primary-surface);
-  color: var(--primary);
+  color: var(--nw-midnight);
 }
 
 .btn-secondary:hover:not(:disabled) {
@@ -501,13 +432,13 @@ textarea {
 }
 
 .btn-accent {
-  background: var(--accent);
-  color: #fff;
-  box-shadow: 0 1px 3px rgba(217, 119, 6, 0.25);
+  background: var(--nw-amber);
+  color: var(--nw-midnight);
+  box-shadow: 0 2px 10px rgba(242, 163, 75, 0.28);
 }
 
 .btn-accent:hover:not(:disabled) {
-  background: var(--accent-strong);
+  background: var(--nw-amber-hover);
 }
 
 .btn-danger {
@@ -1226,7 +1157,10 @@ textarea {
   justify-content: center;
   min-height: 100vh;
   padding: 40px 16px;
-  background-color: #f8fafc;
+  background:
+    radial-gradient(circle at 80% 15%, rgba(242, 163, 75, 0.14) 0%, transparent 45%),
+    radial-gradient(circle at 18% 85%, rgba(48, 68, 91, 0.35) 0%, transparent 50%),
+    linear-gradient(160deg, var(--nw-midnight) 0%, var(--nw-deep-navy) 100%);
 }
 
 .auth-page-single {
@@ -1239,10 +1173,10 @@ textarea {
   width: 100%;
   max-width: 440px;
   padding: 36px 32px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid rgba(245, 242, 238, 0.16);
   border-radius: 20px;
-  background: #ffffff;
-  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05);
+  background: var(--surface);
+  box-shadow: 0 24px 60px rgba(4, 9, 16, 0.45);
 }
 
 .auth-card-wide {
@@ -1256,7 +1190,7 @@ textarea {
   align-items: center;
   justify-content: center;
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .auth-logo-badge {
@@ -1266,13 +1200,13 @@ textarea {
   border-radius: 14px;
   overflow: hidden;
   margin-bottom: 12px;
-  box-shadow: 0 4px 12px rgba(15, 43, 92, 0.22);
+  box-shadow: 0 6px 16px rgba(11, 21, 33, 0.28);
 }
 
 .auth-brand-title {
-  font-size: 1.45rem;
+  font-size: 1.4rem;
   font-weight: 800;
-  color: #00288e;
+  color: var(--nw-midnight);
   letter-spacing: -0.02em;
   margin: 0;
 }
@@ -1280,7 +1214,7 @@ textarea {
 .auth-card-divider {
   width: 100%;
   height: 1px;
-  background: #f1f5f9;
+  background: var(--border);
   margin: 16px 0 20px;
 }
 
@@ -1291,15 +1225,15 @@ textarea {
 
 .auth-heading-center h1 {
   margin: 0 0 6px;
-  font-size: 1.75rem;
-  font-weight: 800;
-  color: #0f172a;
-  letter-spacing: -0.025em;
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: var(--nw-midnight);
+  letter-spacing: -0.02em;
 }
 
 .auth-heading-center p {
   margin: 0;
-  color: #64748b;
+  color: var(--muted);
   font-size: 0.88rem;
   line-height: 1.5;
 }

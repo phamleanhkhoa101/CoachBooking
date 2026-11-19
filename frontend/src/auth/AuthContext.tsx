@@ -10,6 +10,7 @@ import {
 import { Navigate } from 'react-router-dom';
 import { ApiError, getErrorMessage, loginSession, logoutSession, refreshSession, subscribeSession } from '../api/client';
 import type { Role, User } from '../api/types';
+import { isAdminPortal } from './portal';
 
 interface AuthContextValue {
   user: User | null;
@@ -98,6 +99,9 @@ export function RequireRole({ roles, children }: { roles: Role[]; children: Reac
   }
   const currentRole = user.role;
   if (!currentRole || !roles.includes(currentRole)) {
+    if (isAdminPortal()) {
+      return <Navigate to="/login" replace />;
+    }
     return <Navigate to={homePathFor(currentRole)} replace />;
   }
   return <>{children}</>;

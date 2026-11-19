@@ -20,11 +20,11 @@
 
 /* FOOTER */
 .customer-footer {
-  background: linear-gradient(180deg, #0c2340 0%, #09172e 100%);
-  color: #94a3b8;
+  background: linear-gradient(180deg, var(--nw-midnight) 0%, #070e17 100%);
+  color: var(--nw-ivory-subtle);
   padding: 3.5rem var(--space-6) var(--space-6);
   margin-top: auto;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(245, 242, 238, 0.08);
 }
 
 .footer-container {

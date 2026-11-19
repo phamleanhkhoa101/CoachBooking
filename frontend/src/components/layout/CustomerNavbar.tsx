@@ -6,7 +6,11 @@ import { BrandLogo } from '../common/BrandLogo';
 import { RoleBadge } from '../common/Badge';
 import './CustomerNavbar.css';
 
-export function CustomerNavbar() {
+export interface CustomerNavbarProps {
+  variant?: 'solid' | 'transparent';
+}
+
+export function CustomerNavbar({ variant = 'solid' }: CustomerNavbarProps) {
   const { user, logout } = useAuth();
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
@@ -71,32 +75,27 @@ export function CustomerNavbar() {
   const role = user?.role ?? 'KhachHang';
 
   return (
-    <header className="shared-customer-header">
+    <header className={`shared-customer-header shared-customer-header--${variant}`}>
       {logoutError && <div className="alert alert-error" role="alert">{logoutError}</div>}
       <div className="shared-customer-header-inner">
         {/* BRAND LOGO */}
         <Link to="/" className="shared-brand-link">
-          <BrandLogo size={40} className="shared-brand-badge" />
+          <BrandLogo size={38} className="shared-brand-badge" />
           <div className="shared-brand-text">
             <span className="shared-brand-title">CoachBooking</span>
-            <span className="shared-brand-subtitle">Bến xe Miền Đông Mới · SAMCO</span>
+            {variant === 'solid' && (
+              <span className="shared-brand-subtitle">Bến xe Miền Đông</span>
+            )}
           </div>
         </Link>
 
         {/* DESKTOP NAVIGATION LINKS */}
         <nav className="shared-customer-nav" aria-label="Điều hướng chính">
           <NavLink
-            to="/"
-            end
-            className={({ isActive }) => `shared-nav-item ${isActive ? 'active' : ''}`}
-          >
-            Trang chủ
-          </NavLink>
-          <NavLink
             to="/tim-chuyen"
             className={({ isActive }) => `shared-nav-item ${isActive ? 'active' : ''}`}
           >
-            Tìm chuyến xe
+            Đặt vé
           </NavLink>
           <NavLink
             to="/tra-cuu-ve"
@@ -110,10 +109,22 @@ export function CustomerNavbar() {
           >
             Vé của tôi
           </NavLink>
+          {variant === 'transparent' ? (
+            <a href="#tuyen-pho-bien" className="shared-nav-item">
+              Tuyến xe
+            </a>
+          ) : null}
         </nav>
 
-        {/* ACTIONS: AUTH / USER MENU & MOBILE HAMBURGER */}
+        {/* ACTIONS: SUPPORT + AUTH / USER MENU & MOBILE HAMBURGER */}
         <div className="shared-header-actions">
+          <a href="tel:19006067" className="shared-support-pill" title="Tổng đài hỗ trợ 24/7: 1900 6067">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+              <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
+              <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
+            </svg>
+            <span>Hỗ trợ 24/7</span>
+          </a>
           {user ? (
             <div className="shared-user-wrap" ref={userMenuRef}>
               <button

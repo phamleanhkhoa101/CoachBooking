@@ -10,41 +10,6 @@ import { ErrorBanner } from '../../components/common/ErrorBanner';
 import { formatTime, formatVnd } from '../../utils/format';
 import './TripSearchPage.css';
 
-interface QuickDateItem {
-  iso: string;
-  dayLabel: string;
-  dateLabel: string;
-  isToday: boolean;
-}
-
-function generateQuickDates(baseDateIso: string): QuickDateItem[] {
-  const dates: QuickDateItem[] = [];
-  const base = new Date(baseDateIso);
-  const now = new Date();
-  now.setHours(0, 0, 0, 0);
-
-  // Generate 7 days starting from max(today, baseDate - 1 day)
-  const start = new Date(base);
-  start.setDate(start.getDate() - 1);
-  if (start < now) {
-    start.setTime(now.getTime());
-  }
-
-  const weekdays = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
-
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(start);
-    d.setDate(start.getDate() + i);
-    const iso = d.toISOString().slice(0, 10);
-    const isToday = d.getTime() === now.getTime();
-    const dayLabel = isToday ? 'Hôm nay' : weekdays[d.getDay()];
-    const dateLabel = `${d.getDate()}/${d.getMonth() + 1}`;
-    dates.push({ iso, dayLabel, dateLabel, isToday });
-  }
-
-  return dates;
-}
-
 function calculateDuration(depTime?: string, arrTime?: string): string {
   if (!depTime || !arrTime) return '';
   try {
@@ -132,11 +97,6 @@ export function TripSearchPage() {
     void fetchTrips(departure, destination, travelDate);
   };
 
-  const handleDateSelect = (newDateIso: string) => {
-    setTravelDate(newDateIso);
-    void fetchTrips(departure, destination, newDateIso);
-  };
-
   // Departure and Destination options
   const departureOptions = useMemo(() => {
     const list = Array.from(
@@ -168,9 +128,6 @@ export function TripSearchPage() {
       .filter(Boolean) as string[];
     return Array.from(new Set(types));
   }, [trips]);
-
-  // Quick dates list
-  const quickDates = useMemo(() => generateQuickDates(travelDate), [travelDate]);
 
   // Filter & Sort trips
   const filteredTrips = useMemo(() => {
@@ -288,27 +245,6 @@ export function TripSearchPage() {
               Tìm chuyến xe
             </Button>
           </form>
-
-          {/* QUICK DATE TIMELINE PICKER */}
-          <div className="date-timeline-strip">
-            <span className="timeline-caption">Chọn nhanh ngày đi:</span>
-            <div className="timeline-scroll">
-              {quickDates.map((item) => {
-                const isSelected = item.iso === travelDate;
-                return (
-                  <button
-                    key={item.iso}
-                    type="button"
-                    className={`timeline-day-chip ${isSelected ? 'active' : ''}`}
-                    onClick={() => handleDateSelect(item.iso)}
-                  >
-                    <span className="chip-day">{item.dayLabel}</span>
-                    <span className="chip-date">{item.dateLabel}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
         </div>
       </section>
 

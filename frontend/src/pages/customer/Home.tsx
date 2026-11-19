@@ -195,9 +195,9 @@ export function Home() {
         <div className="nw-hero-inner">
           <div className="nw-hero-copy">
             <h1 className="nw-hero-title">
-              <span className="nw-hero-serif">Đi xa một chút.</span>
+              <span className="nw-hero-serif">Khởi hành êm ái.</span>
               <span className="nw-hero-sans">
-                GẦN NHAU HƠN.
+                VỮNG BƯỚC ĐƯỜNG DÀI.
                 <svg
                   className="nw-amber-brush"
                   viewBox="0 0 220 14"

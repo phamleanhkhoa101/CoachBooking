@@ -73,11 +73,13 @@ export function TripSearchPage() {
     setErrorMsg('');
     try {
       const qs = buildQuery({
-        departureLocation: dep,
-        arrivalLocation: dest,
-        departureDate: d,
+        departure: dep,
+        destination: dest,
+        date: d,
       });
-      const res = await api.get<TripSearchResponse[]>(`/trips/search${qs}`);
+      const res = await api.get<TripSearchResponse[]>(`/trips/search${qs}`, {
+        redirectOn401: false,
+      });
       setTrips(Array.isArray(res) ? res : []);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Lỗi khi tra cứu chuyến xe';
@@ -89,12 +91,29 @@ export function TripSearchPage() {
   };
 
   useEffect(() => {
-    void fetchTrips(departure, destination, travelDate);
-  }, []);
+    const params = new URLSearchParams(location.search);
+    const nextDep = params.get('departure') || 'TP HCM';
+    const nextDest = params.get('destination') || 'Đà Lạt';
+    const nextDate = params.get('date') || new Date().toISOString().slice(0, 10);
+    setDeparture(nextDep);
+    setDestination(nextDest);
+    setTravelDate(nextDate);
+    void fetchTrips(nextDep, nextDest, nextDate);
+  }, [location.search]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    void fetchTrips(departure, destination, travelDate);
+    const qs = new URLSearchParams({
+      departure,
+      destination,
+      date: travelDate,
+    });
+    const nextSearch = `?${qs.toString()}`;
+    if (location.search !== nextSearch) {
+      navigate(`/tim-chuyen${nextSearch}`, { replace: true });
+    } else {
+      void fetchTrips(departure, destination, travelDate);
+    }
   };
 
   // Departure and Destination options

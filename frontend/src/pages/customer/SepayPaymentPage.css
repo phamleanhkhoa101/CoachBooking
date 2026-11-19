@@ -1,21 +1,80 @@
+/* =====================================================================
+   SepayPaymentPage.css — THE NIGHT WINDOW · Calm Payment Status Card
+   ===================================================================== */
+
 .payment-transition {
-  min-height: max(440px, calc(100svh - 180px));
+  min-height: max(460px, calc(100svh - 180px));
   display: grid;
   place-items: center;
   padding: 48px 20px;
-  background: var(--surface);
+  background: var(--bg);
   color: var(--text);
 }
 
-.payment-transition-content { width: 100%; max-width: 480px; min-width: 0; text-align: center; }
-.payment-transition-spinner { display: inline-flex; margin-bottom: 24px; color: var(--primary); }
-.payment-transition-spinner .app-spinner { width: 44px; height: 44px; }
-.payment-transition-content h1 { margin: 0 0 12px; font-size: clamp(22px, 4vw, 28px); line-height: 1.35; }
-.payment-transition-content p { margin: 0 0 16px; color: var(--muted); line-height: 1.65; }
-.payment-transition-content .payment-transition-error { color: var(--danger); }
-.payment-transition-content .payment-transition-sandbox { margin: 32px 0 0; font-size: 12px; }
-.payment-transition-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 24px; }
+.payment-transition-content {
+  width: 100%;
+  max-width: 500px;
+  min-width: 0;
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 36px 28px;
+  box-shadow: var(--shadow-md);
+}
+
+.payment-transition-spinner {
+  display: inline-flex;
+  margin-bottom: 20px;
+  color: var(--nw-amber-strong);
+}
+
+.payment-transition-spinner .app-spinner {
+  width: 44px;
+  height: 44px;
+}
+
+.payment-transition-content h1 {
+  margin: 0 0 10px;
+  font-size: clamp(20px, 3.6vw, 26px);
+  color: var(--nw-midnight);
+  line-height: 1.35;
+}
+
+.payment-transition-content p {
+  margin: 0 0 16px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  font-size: 0.94rem;
+}
+
+.payment-transition-content .payment-transition-error {
+  color: var(--danger);
+  background: var(--danger-bg);
+  border: 1px solid var(--danger-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-size: 0.88rem;
+}
+
+.payment-transition-content .payment-transition-sandbox {
+  margin: 24px 0 0;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.payment-transition-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 22px;
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .payment-transition .app-spinner { animation: none; }
+  .payment-transition .app-spinner {
+    animation: none;
+  }
 }

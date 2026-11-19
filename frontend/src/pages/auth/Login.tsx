@@ -3,7 +3,7 @@ import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { getErrorMessage } from '../../api/client';
 import { homePathFor, useAuth } from '../../auth/AuthContext';
 import { isAdminPortal } from '../../auth/portal';
-import { BrandLogo } from '../../components/common/BrandLogo';
+import { AuthShell } from '../../components/layout/AuthShell';
 
 export function Login() {
   const { user, login, logout } = useAuth();
@@ -73,22 +73,25 @@ export function Login() {
   };
 
   return (
-    <div className="auth-page auth-page-single">
-      <div className="auth-card">
-        {/* Logo Bus centered & Brand Title */}
-        <div className="auth-brand-center">
-          <BrandLogo size={56} className="auth-logo-badge" />
-          {!admin && <h2 className="auth-brand-title">CoachBooking</h2>}
-        </div>
-
-        <div className="auth-card-divider" />
-
-        <div className="auth-heading-center">
-          <h1>{admin ? 'Đăng nhập Quản trị' : 'Đăng nhập'}</h1>
-        </div>
-
-        {error ? <div className="alert alert-error">{error}</div> : null}
-        {notice ? <div className="alert alert-success">{notice}</div> : null}
+    <AuthShell
+      title={admin ? 'Đăng nhập Quản trị' : 'Đăng nhập'}
+      subtitle={
+        admin
+          ? 'Dành cho quản trị viên và nhân viên bán vé'
+          : 'Tiếp tục hành trình cùng CoachBooking'
+      }
+      showBrandTitle={!admin}
+      showBackHome={!admin}
+      footer={
+        !admin ? (
+          <>
+            Chưa có tài khoản? <Link to="/register">Đăng ký ngay</Link>
+          </>
+        ) : undefined
+      }
+    >
+      {error ? <div className="alert alert-error">{error}</div> : null}
+      {notice ? <div className="alert alert-success">{notice}</div> : null}
 
         {customerOnAdminPortal ? (
           <div className="auth-form">
@@ -240,14 +243,6 @@ export function Login() {
             </button>
           </>
         )}
-
-        {!admin && (
-          <div className="auth-card-footer">
-            Chưa có tài khoản?{' '}
-            <Link to="/register">Đăng ký ngay</Link>
-          </div>
-        )}
-      </div>
-    </div>
+    </AuthShell>
   );
 }

@@ -140,9 +140,9 @@
 }
 
 .seat-box.selecting {
-  background: var(--primary);
-  border: 1.5px solid var(--primary-strong);
-  box-shadow: 0 0 0 2px var(--primary-surface);
+  background: var(--nw-amber);
+  border: 1.5px solid var(--nw-amber-strong);
+  box-shadow: 0 0 0 2px rgba(242, 163, 75, 0.25);
 }
 
 .seat-box.booked {
@@ -271,10 +271,10 @@
 
 /* 2. GHẾ ĐANG CHỌN */
 .seat-unit.selected {
-  background: var(--primary);
-  border: 1.5px solid var(--primary-strong);
-  color: #ffffff;
-  box-shadow: 0 4px 10px rgba(29, 78, 216, 0.35);
+  background: var(--nw-amber);
+  border: 1.5px solid var(--nw-amber-strong);
+  color: var(--nw-midnight);
+  box-shadow: 0 4px 12px rgba(242, 163, 75, 0.36);
   transform: translateY(-1px);
 }
 
